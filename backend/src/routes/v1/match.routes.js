@@ -6,8 +6,8 @@ import {
   getCurrentInning,
   getMatchById,
   startMatch,
-} from "../controllers/match.controller.js";
-import { authenticate, authorize } from "../middleware/auth.js";
+} from "../../controllers/match.controller.js";
+import { authenticate, authorize } from "../../middleware/auth.js";
 
 const router = express.Router();
 

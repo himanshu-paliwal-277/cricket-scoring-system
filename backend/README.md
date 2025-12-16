@@ -16,23 +16,27 @@ A complete REST API for a cricket scoring and statistics management system built
 ## Setup
 
 1. Install dependencies:
+
 ```bash
 npm install
 ```
 
 2. Create a `.env` file based on `.env.example`:
+
 ```bash
 cp .env.example .env
 ```
 
 3. Update `.env` with your MongoDB URI and JWT secret:
+
 ```
-MONGO_URI=mongodb://localhost:27017/cricket-scoring
-PORT=5000
+MONGODB_URI=mongodb://localhost:27017/cricket-scoring
+PORT=4000
 JWT_SECRET=your_secret_key_here
 ```
 
 4. Start the server:
+
 ```bash
 npm start
 ```
@@ -40,11 +44,13 @@ npm start
 ## API Routes
 
 ### Authentication
+
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - Login user
 - `GET /api/auth/me` - Get current user (protected)
 
 ### Players
+
 - `GET /api/players` - Get all players
 - `GET /api/players/:id` - Get player by ID
 - `GET /api/players/:id/stats` - Get player statistics
@@ -52,6 +58,7 @@ npm start
 - `PUT /api/players/:id` - Update player (Owner only)
 
 ### Teams
+
 - `GET /api/teams` - Get all teams
 - `GET /api/teams/:id` - Get team by ID
 - `POST /api/teams` - Create team (Owner only)
@@ -59,6 +66,7 @@ npm start
 - `DELETE /api/teams/:id` - Delete team (Owner only)
 
 ### Matches
+
 - `GET /api/matches` - Get all matches
 - `GET /api/matches/:id` - Get match by ID with innings
 - `GET /api/matches/:id/current-inning` - Get current live inning
@@ -66,6 +74,7 @@ npm start
 - `POST /api/matches/:id/start` - Start match (Owner/Scorer)
 
 ### Scoring
+
 - `POST /api/scoring/ball` - Add ball to inning (Scorer/Owner)
 - `POST /api/scoring/undo/:inningId` - Undo last ball (Scorer/Owner)
 - `PUT /api/scoring/batsmen` - Update striker/non-striker (Scorer/Owner)

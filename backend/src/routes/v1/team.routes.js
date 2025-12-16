@@ -6,8 +6,8 @@ import {
   getAllTeams,
   getTeamById,
   updateTeam,
-} from "../controllers/team.controller.js";
-import { authenticate, authorize } from "../middleware/auth.js";
+} from "../../controllers/team.controller.js";
+import { authenticate, authorize } from "../../middleware/auth.js";
 
 const router = express.Router();
 

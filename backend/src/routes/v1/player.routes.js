@@ -6,8 +6,8 @@ import {
   getPlayerById,
   getPlayerStats,
   updatePlayer,
-} from "../controllers/player.controller.js";
-import { authenticate, authorize } from "../middleware/auth.js";
+} from "../../controllers/player.controller.js";
+import { authenticate, authorize } from "../../middleware/auth.js";
 
 const router = express.Router();
 

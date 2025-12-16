@@ -6,8 +6,8 @@ import {
   undoLastBall,
   updateBatsmen,
   updateBowler,
-} from "../controllers/scoring.controller.js";
-import { authenticate, authorize } from "../middleware/auth.js";
+} from "../../controllers/scoring.controller.js";
+import { authenticate, authorize } from "../../middleware/auth.js";
 
 const router = express.Router();
 
