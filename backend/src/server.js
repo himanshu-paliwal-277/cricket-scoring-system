@@ -2,12 +2,28 @@ import cors from "cors";
 import express from "express";
 
 import connectDB from "./config/dbConfig.js";
-import { PORT } from "./config/serverConfig.js";
+import { ALLOWED_ORIGINS, PORT } from "./config/serverConfig.js";
 import apiRouter from "./routes/apiRouter.routes.js";
 
 const app = express();
 
-app.use(cors());
+// CORS configuration
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or Postman)
+    if (!origin) return callback(null, true);
+
+    if (ALLOWED_ORIGINS.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.use("/api", apiRouter);
