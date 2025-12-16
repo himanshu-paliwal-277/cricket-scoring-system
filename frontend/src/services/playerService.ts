@@ -1,4 +1,4 @@
-import axios from "@/lib/axios";
+import axiosInstance from "@/utils/axiosInstance";
 
 export interface Player {
   _id: string;
@@ -25,26 +25,29 @@ export interface CreatePlayerData {
 
 export const playerService = {
   getAll: async (): Promise<Player[]> => {
-    const response = await axios.get("/v1/players");
+    const response = await axiosInstance.get("/players");
     return response.data;
   },
 
   getById: async (id: string): Promise<Player> => {
-    const response = await axios.get(`/v1/players/${id}`);
+    const response = await axiosInstance.get(`/players/${id}`);
     return response.data;
   },
 
   create: async (data: CreatePlayerData): Promise<Player> => {
-    const response = await axios.post("/v1/players", data);
+    const response = await axiosInstance.post("/players", data);
     return response.data;
   },
 
-  update: async (id: string, data: Partial<CreatePlayerData>): Promise<Player> => {
-    const response = await axios.put(`/v1/players/${id}`, data);
+  update: async (
+    id: string,
+    data: Partial<CreatePlayerData>
+  ): Promise<Player> => {
+    const response = await axiosInstance.put(`/players/${id}`, data);
     return response.data;
   },
 
   delete: async (id: string): Promise<void> => {
-    await axios.delete(`/v1/players/${id}`);
+    await axiosInstance.delete(`/players/${id}`);
   },
 };

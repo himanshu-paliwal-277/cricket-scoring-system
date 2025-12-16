@@ -1,4 +1,4 @@
-import axios from "@/lib/axios";
+import axiosInstance from "@/utils/axiosInstance";
 
 export interface Match {
   _id: string;
@@ -31,27 +31,27 @@ export interface StartMatchData {
 
 export const matchService = {
   getAll: async (): Promise<Match[]> => {
-    const response = await axios.get("/v1/matches");
+    const response = await axiosInstance.get("/matches");
     return response.data;
   },
 
   getById: async (id: string): Promise<Match> => {
-    const response = await axios.get(`/v1/matches/${id}`);
+    const response = await axiosInstance.get(`/matches/${id}`);
     return response.data;
   },
 
   create: async (data: CreateMatchData): Promise<Match> => {
-    const response = await axios.post("/v1/matches", data);
+    const response = await axiosInstance.post("/matches", data);
     return response.data;
   },
 
   start: async (id: string, data: StartMatchData): Promise<any> => {
-    const response = await axios.post(`/v1/matches/${id}/start`, data);
+    const response = await axiosInstance.post(`/matches/${id}/start`, data);
     return response.data;
   },
 
   complete: async (id: string): Promise<Match> => {
-    const response = await axios.post(`/v1/matches/${id}/complete`);
+    const response = await axiosInstance.post(`/matches/${id}/complete`);
     return response.data;
   },
 };

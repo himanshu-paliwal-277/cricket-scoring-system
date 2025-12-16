@@ -12,8 +12,8 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const { matches, isLoading } = useMatches();
 
-  const liveMatches = matches.filter((m) => m.status === "live");
-  const upcomingMatches = matches.filter((m) => m.status === "not_started");
+  const liveMatches = matches?.filter((m) => m.status === "live") || [];
+  const upcomingMatches = matches?.filter((m) => m.status === "not_started") || [];
 
   return (
     <ProtectedRoute>
@@ -78,7 +78,9 @@ export default function DashboardPage() {
 
           <div>
             <h2 className="text-2xl font-bold mb-4">Upcoming Matches</h2>
-            {upcomingMatches.length > 0 ? (
+            {isLoading ? (
+              <p>Loading...</p>
+            ) : upcomingMatches.length > 0 ? (
               <div className="grid gap-4">
                 {upcomingMatches.map((match) => (
                   <Card key={match._id}>

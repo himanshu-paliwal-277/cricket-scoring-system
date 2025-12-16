@@ -1,14 +1,14 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const axiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api",
+const AxiosInstance = axios.create({
+  baseURL: "https://cricket-scoring-system-production-f831.up.railway.app/api/v1",
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-axiosInstance.interceptors.request.use(
+AxiosInstance.interceptors.request.use(
   (config) => {
     const token = Cookies.get("token");
     if (token) {
@@ -19,7 +19,7 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-axiosInstance.interceptors.response.use(
+AxiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
@@ -30,4 +30,4 @@ axiosInstance.interceptors.response.use(
   }
 );
 
-export default axiosInstance;
+export default AxiosInstance;

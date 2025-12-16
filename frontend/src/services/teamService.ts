@@ -1,4 +1,4 @@
-import axios from "@/lib/axios";
+import axiosInstance from "@/utils/axiosInstance";
 
 export interface Team {
   _id: string;
@@ -16,26 +16,26 @@ export interface CreateTeamData {
 
 export const teamService = {
   getAll: async (): Promise<Team[]> => {
-    const response = await axios.get("/v1/teams");
+    const response = await axiosInstance.get("/teams");
     return response.data;
   },
 
   getById: async (id: string): Promise<Team> => {
-    const response = await axios.get(`/v1/teams/${id}`);
+    const response = await axiosInstance.get(`/teams/${id}`);
     return response.data;
   },
 
   create: async (data: CreateTeamData): Promise<Team> => {
-    const response = await axios.post("/v1/teams", data);
+    const response = await axiosInstance.post("/teams", data);
     return response.data;
   },
 
   update: async (id: string, data: Partial<CreateTeamData>): Promise<Team> => {
-    const response = await axios.put(`/v1/teams/${id}`, data);
+    const response = await axiosInstance.put(`/teams/${id}`, data);
     return response.data;
   },
 
   delete: async (id: string): Promise<void> => {
-    await axios.delete(`/v1/teams/${id}`);
+    await axiosInstance.delete(`/teams/${id}`);
   },
 };

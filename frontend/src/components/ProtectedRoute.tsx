@@ -9,7 +9,10 @@ interface ProtectedRouteProps {
   allowedRoles?: string[];
 }
 
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles }) => {
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+  children,
+  allowedRoles,
+}) => {
   const { isAuthenticated, user, isLoading } = useAuth();
   const router = useRouter();
 
@@ -26,11 +29,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowe
   }, [user, allowedRoles, router]);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl">Loading...</div>
-      </div>
-    );
+    return null;
   }
 
   if (!isAuthenticated) {

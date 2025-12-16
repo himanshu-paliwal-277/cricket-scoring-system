@@ -1,4 +1,4 @@
-import axios from "@/lib/axios";
+import axiosInstance from "@/utils/axiosInstance";
 
 export interface RegisterData {
   name: string;
@@ -12,29 +12,31 @@ export interface LoginData {
   password: string;
 }
 
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
 export interface AuthResponse {
   token: string;
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-  };
+  user: User;
 }
 
 export const authService = {
   register: async (data: RegisterData): Promise<AuthResponse> => {
-    const response = await axios.post("/v1/auth/register", data);
+    const response = await axiosInstance.post("/auth/register", data);
     return response.data;
   },
 
   login: async (data: LoginData): Promise<AuthResponse> => {
-    const response = await axios.post("/v1/auth/login", data);
+    const response = await axiosInstance.post("/auth/login", data);
     return response.data;
   },
 
-  getMe: async () => {
-    const response = await axios.get("/v1/auth/me");
+  getMe: async (): Promise<User> => {
+    const response = await axiosInstance.get("/auth/me");
     return response.data;
   },
 };

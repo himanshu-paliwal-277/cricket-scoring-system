@@ -9,30 +9,53 @@ export const useAuth = () => {
   const queryClient = useQueryClient();
   const { setUser, clearUser } = useAuthStore();
 
-  const { data: user, isLoading } = useQuery({
+  const { data: user, isLoading, error } = useQuery({
     queryKey: ["me"],
     queryFn: authService.getMe,
     enabled: !!Cookies.get("token"),
     retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    staleTime: Infinity,
+    onError: (error: any) => {
+      // Handle CORS or network errors
+      if (error.message?.includes("Network Error") || error.code === "ERR_NETWORK") {
+        console.error("Network/CORS Error:", error);
+        Cookies.remove("token");
+        clearUser();
+        router.push("/login");
+      }
+    },
   });
 
   const registerMutation = useMutation({
     mutationFn: (data: RegisterData) => authService.register(data),
     onSuccess: (data) => {
-      Cookies.set("token", data.token, { expires: 30 });
-      setUser(data.user);
-      queryClient.invalidateQueries({ queryKey: ["me"] });
-      router.push("/dashboard");
+      if (data && data.token) {
+        Cookies.set("token", data.token, { expires: 30 });
+        setUser(data.user);
+        queryClient.invalidateQueries({ queryKey: ["me"] });
+        router.push("/dashboard");
+      }
+    },
+    onError: (error) => {
+      console.error("Registration failed:", error);
     },
   });
 
   const loginMutation = useMutation({
     mutationFn: (data: LoginData) => authService.login(data),
     onSuccess: (data) => {
-      Cookies.set("token", data.token, { expires: 30 });
-      setUser(data.user);
-      queryClient.invalidateQueries({ queryKey: ["me"] });
-      router.push("/dashboard");
+      if (data && data.token) {
+        Cookies.set("token", data.token, { expires: 30 });
+        setUser(data.user);
+        queryClient.invalidateQueries({ queryKey: ["me"] });
+        router.push("/dashboard");
+      }
+    },
+    onError: (error) => {
+      console.error("Login failed:", error);
     },
   });
 
