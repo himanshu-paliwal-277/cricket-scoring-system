@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
+import { Providers } from "@/providers/Providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -37,7 +38,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/logo.png" />
       </head>
       <body>
-        {children}
+        <Providers>{children}</Providers>
         <Script
           id="register-sw"
           strategy="afterInteractive"

@@ -8,10 +8,10 @@ import teamRouter from "./team.routes.js";
 
 const router = express.Router();
 
-router.use("/api/auth", authRouter);
-router.use("/api/players", playerRouter);
-router.use("/api/teams", teamRouter);
-router.use("/api/matches", matchRouter);
-router.use("/api/scoring", scoringRouter);
+router.use("/auth", authRouter);
+router.use("/players", playerRouter);
+router.use("/teams", teamRouter);
+router.use("/matches", matchRouter);
+router.use("/scoring", scoringRouter);
 
 export default router;
