@@ -77,9 +77,22 @@ export const addBall = async (req, res) => {
 
     await inning.save();
 
-    const populatedBall = await Ball.findById(ball._id).populate("batsman bowler");
+    const populatedInning = await Inning.findById(inning._id)
+      .populate({
+        path: "striker",
+        populate: { path: "userId", select: "name email" }
+      })
+      .populate({
+        path: "nonStriker",
+        populate: { path: "userId", select: "name email" }
+      })
+      .populate({
+        path: "currentBowler",
+        populate: { path: "userId", select: "name email" }
+      })
+      .populate("battingTeam bowlingTeam");
 
-    res.json({ ball: populatedBall, inning });
+    res.json({ inning: populatedInning });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -120,7 +133,22 @@ export const undoLastBall = async (req, res) => {
     await lastBall.save();
     await inning.save();
 
-    res.json({ message: "Ball undone successfully", inning });
+    const populatedInning = await Inning.findById(inning._id)
+      .populate({
+        path: "striker",
+        populate: { path: "userId", select: "name email" }
+      })
+      .populate({
+        path: "nonStriker",
+        populate: { path: "userId", select: "name email" }
+      })
+      .populate({
+        path: "currentBowler",
+        populate: { path: "userId", select: "name email" }
+      })
+      .populate("battingTeam bowlingTeam");
+
+    res.json({ message: "Ball undone successfully", inning: populatedInning });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -134,7 +162,20 @@ export const updateBatsmen = async (req, res) => {
       inningId,
       { striker, nonStriker },
       { new: true }
-    ).populate("striker nonStriker currentBowler");
+    )
+      .populate({
+        path: "striker",
+        populate: { path: "userId", select: "name email" }
+      })
+      .populate({
+        path: "nonStriker",
+        populate: { path: "userId", select: "name email" }
+      })
+      .populate({
+        path: "currentBowler",
+        populate: { path: "userId", select: "name email" }
+      })
+      .populate("battingTeam bowlingTeam");
 
     res.json(inning);
   } catch (error) {
@@ -150,7 +191,20 @@ export const updateBowler = async (req, res) => {
       inningId,
       { currentBowler: bowler },
       { new: true }
-    ).populate("striker nonStriker currentBowler");
+    )
+      .populate({
+        path: "striker",
+        populate: { path: "userId", select: "name email" }
+      })
+      .populate({
+        path: "nonStriker",
+        populate: { path: "userId", select: "name email" }
+      })
+      .populate({
+        path: "currentBowler",
+        populate: { path: "userId", select: "name email" }
+      })
+      .populate("battingTeam bowlingTeam");
 
     res.json(inning);
   } catch (error) {

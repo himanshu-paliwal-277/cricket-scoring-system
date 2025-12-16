@@ -26,10 +26,10 @@ export default function StartMatchPage() {
     bowler: "",
   });
 
-  const teamAPlayers = match?.teamA?.players || [];
-  const teamBPlayers = match?.teamB?.players || [];
+  const teamAPlayers = match?.teamA.players || [];
+  const teamBPlayers = match?.teamB.players || [];
   const battingTeamPlayers =
-    formData.tossWinner === match?.teamA?._id
+    formData.tossWinner === match?.teamA._id
       ? formData.tossDecision === "bat"
         ? teamAPlayers
         : teamBPlayers
@@ -37,7 +37,7 @@ export default function StartMatchPage() {
         ? teamBPlayers
         : teamAPlayers;
   const bowlingTeamPlayers =
-    formData.tossWinner === match?.teamA?._id
+    formData.tossWinner === match?.teamA._id
       ? formData.tossDecision === "bowl"
         ? teamAPlayers
         : teamBPlayers
@@ -57,7 +57,7 @@ export default function StartMatchPage() {
     );
   };
 
-  if (isLoading) return <Layout><p>Loading...</p></Layout>;
+  if (isLoading || !match) return <Layout><p>Loading...</p></Layout>;
 
   return (
     <ProtectedRoute allowedRoles={["owner", "scorer"]}>
@@ -65,7 +65,7 @@ export default function StartMatchPage() {
         <Card className="max-w-2xl mx-auto">
           <h1 className="text-2xl font-bold mb-6">Start Match</h1>
           <h2 className="text-xl mb-6">
-            {match?.teamA.name} vs {match?.teamB.name}
+            {match.teamA.name} vs {match.teamB.name}
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -75,8 +75,8 @@ export default function StartMatchPage() {
               onChange={(e) => setFormData({ ...formData, tossWinner: e.target.value })}
               options={[
                 { value: "", label: "Select Toss Winner" },
-                { value: match?.teamA._id, label: match?.teamA.name },
-                { value: match?.teamB._id, label: match?.teamB.name },
+                { value: match.teamA._id, label: match.teamA.name },
+                { value: match.teamB._id, label: match.teamB.name },
               ]}
               required
             />

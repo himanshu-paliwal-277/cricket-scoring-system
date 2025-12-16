@@ -8,7 +8,16 @@ export const useScoring = (matchId: string) => {
     queryKey: ["inning", matchId],
     queryFn: () => scoringService.getCurrentInning(matchId),
     enabled: !!matchId,
-    refetchInterval: 5000,
+    refetchInterval: false, // Disabled auto-refetch - manual refresh via mutations
+    retry: (failureCount, error: any) => {
+      // Don't retry on 404 - match hasn't started yet
+      if (error?.response?.status === 404) {
+        return false;
+      }
+      // Retry up to 3 times for other errors
+      return failureCount < 3;
+    },
+    refetchOnWindowFocus: false,
   });
 
   const addBallMutation = useMutation({

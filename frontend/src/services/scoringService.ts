@@ -1,14 +1,27 @@
 import axiosInstance from "@/utils/axiosInstance";
 
+export interface Player {
+  _id: string;
+  userId: {
+    _id: string;
+    name: string;
+  };
+}
+
+export interface Team {
+  _id: string;
+  name: string;
+}
+
 export interface Inning {
   _id: string;
   matchId: string;
-  battingTeam: any;
-  bowlingTeam: any;
+  battingTeam: Team;
+  bowlingTeam: Team;
   inningNumber: number;
-  striker: any;
-  nonStriker: any;
-  currentBowler: any;
+  striker: Player;
+  nonStriker: Player;
+  currentBowler: Player;
   totalRuns: number;
   totalWickets: number;
   currentOver: number;
@@ -32,9 +45,9 @@ export interface AddBallData {
 export const scoringService = {
   getCurrentInning: async (matchId: string): Promise<Inning> => {
     const response = await axiosInstance.get(
-      `/scoring/match/${matchId}/inning`
+      `/matches/${matchId}/current-inning`
     );
-    return response.data;
+    return response.data.inning;
   },
 
   addBall: async (data: AddBallData): Promise<any> => {
@@ -44,23 +57,27 @@ export const scoringService = {
 
   undoLastBall: async (inningId: string): Promise<any> => {
     const response = await axiosInstance.post(
-      `/scoring/inning/${inningId}/undo`
+      `/scoring/undo/${inningId}`
     );
     return response.data;
   },
 
   changeStriker: async (inningId: string): Promise<Inning> => {
-    const response = await axiosInstance.post(
-      `/scoring/inning/${inningId}/change-striker`
+    const response = await axiosInstance.put(
+      `/scoring/batsmen`,
+      {
+        inningId,
+      }
     );
     return response.data;
   },
 
   changeBowler: async (inningId: string, bowlerId: string): Promise<Inning> => {
-    const response = await axiosInstance.post(
-      `/scoring/inning/${inningId}/change-bowler`,
+    const response = await axiosInstance.put(
+      `/scoring/bowler`,
       {
-        bowlerId,
+        inningId,
+        bowler: bowlerId,
       }
     );
     return response.data;
@@ -70,10 +87,11 @@ export const scoringService = {
     inningId: string,
     newBatsmanId: string
   ): Promise<Inning> => {
-    const response = await axiosInstance.post(
-      `/scoring/inning/${inningId}/change-batsman`,
+    const response = await axiosInstance.put(
+      `/scoring/batsmen`,
       {
-        newBatsmanId,
+        inningId,
+        striker: newBatsmanId,
       }
     );
     return response.data;

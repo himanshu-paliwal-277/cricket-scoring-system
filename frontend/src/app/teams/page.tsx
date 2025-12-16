@@ -87,7 +87,7 @@ export default function TeamsPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Players (Minimum 11)
+                  Select Players (Minimum 2)
                 </label>
                 <div className="max-h-60 overflow-y-auto border rounded p-2 space-y-2">
                   {players.map((player) => (
@@ -114,7 +114,7 @@ export default function TeamsPage() {
                 type="submit"
                 className="w-full"
                 isLoading={isCreating}
-                disabled={formData.players.length < 11}
+                disabled={formData.players.length < 2}
               >
                 Create Team
               </Button>

@@ -1,16 +1,23 @@
 import axiosInstance from "@/utils/axiosInstance";
 
+export interface Team {
+  _id: string;
+  name: string;
+  players: string[];
+  isLocked: boolean;
+}
+
 export interface Match {
   _id: string;
-  teamA: any;
-  teamB: any;
+  teamA: Team;
+  teamB: Team;
   overs: number;
-  tossWinner?: any;
+  tossWinner?: Team;
   tossDecision?: string;
   currentInning: number;
   status: string;
   scorerId?: string;
-  winner?: any;
+  winner?: Team;
   resultText?: string;
   createdAt: string;
 }
@@ -37,7 +44,7 @@ export const matchService = {
 
   getById: async (id: string): Promise<Match> => {
     const response = await axiosInstance.get(`/matches/${id}`);
-    return response.data;
+    return response.data.match;
   },
 
   create: async (data: CreateMatchData): Promise<Match> => {

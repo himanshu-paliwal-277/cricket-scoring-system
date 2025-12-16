@@ -4,6 +4,10 @@ export const createTeam = async (req, res) => {
   try {
     const { name, players } = req.body;
 
+    if (!players || players.length < 2) {
+      return res.status(400).json({ message: "Team must have at least 2 players" });
+    }
+
     const team = await Team.create({
       name,
       players,
@@ -58,6 +62,11 @@ export const updateTeam = async (req, res) => {
     }
 
     const { name, players } = req.body;
+
+    if (players && players.length < 2) {
+      return res.status(400).json({ message: "Team must have at least 2 players" });
+    }
+
     team.name = name || team.name;
     team.players = players || team.players;
 

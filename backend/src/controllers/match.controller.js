@@ -126,7 +126,18 @@ export const getCurrentInning = async (req, res) => {
       inningNumber: match.currentInning,
       isCompleted: false,
     })
-      .populate("striker nonStriker currentBowler")
+      .populate({
+        path: "striker",
+        populate: { path: "userId", select: "name email" }
+      })
+      .populate({
+        path: "nonStriker",
+        populate: { path: "userId", select: "name email" }
+      })
+      .populate({
+        path: "currentBowler",
+        populate: { path: "userId", select: "name email" }
+      })
       .populate("battingTeam bowlingTeam");
 
     if (!inning) {

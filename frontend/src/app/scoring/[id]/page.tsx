@@ -64,6 +64,19 @@ export default function ScoringPage() {
 
   if (isLoading) return <Layout><p>Loading...</p></Layout>;
 
+  if (!inning) {
+    return (
+      <ProtectedRoute allowedRoles={["owner", "scorer"]}>
+        <Layout>
+          <Card className="max-w-2xl mx-auto text-center">
+            <h1 className="text-2xl font-bold mb-4">Match Not Started</h1>
+            <p className="text-gray-600">This match hasn't been started yet. Please start the match first.</p>
+          </Card>
+        </Layout>
+      </ProtectedRoute>
+    );
+  }
+
   return (
     <ProtectedRoute allowedRoles={["owner", "scorer"]}>
       <Layout>
