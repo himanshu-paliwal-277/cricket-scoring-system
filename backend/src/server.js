@@ -28,6 +28,11 @@ app.use(express.json());
 
 app.use("/api", apiRouter);
 
+app.get("/api/v1/ping", (req, res) => {
+  res.json({ message: "Pong" });
+});
+
+
 app.get("/", (req, res) => {
   res.json({ message: "Cricket Scoring API is running" });
 });
