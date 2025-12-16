@@ -8,7 +8,7 @@ export const useScoring = (matchId: string) => {
     queryKey: ["inning", matchId],
     queryFn: () => scoringService.getCurrentInning(matchId),
     enabled: !!matchId,
-    refetchInterval: false, // Disabled auto-refetch - manual refresh via mutations
+    refetchInterval: 3000, // Auto-refetch every 3 seconds for live updates
     retry: (failureCount, error: any) => {
       // Don't retry on 404 - match hasn't started yet
       if (error?.response?.status === 404) {
@@ -23,6 +23,7 @@ export const useScoring = (matchId: string) => {
   const addBallMutation = useMutation({
     mutationFn: (data: AddBallData) => scoringService.addBall(data),
     onSuccess: () => {
+      // Force immediate refetch of inning data
       queryClient.invalidateQueries({ queryKey: ["inning", matchId] });
       queryClient.invalidateQueries({ queryKey: ["match", matchId] });
     },
