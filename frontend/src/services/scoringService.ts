@@ -13,6 +13,19 @@ export interface Team {
   name: string;
 }
 
+export interface Ball {
+  _id: string;
+  inningId: string;
+  overNumber: number;
+  ballNumber: number;
+  batsman: Player;
+  bowler: Player;
+  runs: number;
+  ballType: string;
+  wicketType: string;
+  isValid: boolean;
+}
+
 export interface Inning {
   _id: string;
   matchId: string;
@@ -33,6 +46,7 @@ export interface Inning {
     legByes: number;
   };
   isCompleted: boolean;
+  balls?: Ball[];
 }
 
 export interface AddBallData {
@@ -47,7 +61,7 @@ export const scoringService = {
     const response = await axiosInstance.get(
       `/matches/${matchId}/current-inning`
     );
-    return response.data.inning;
+    return { ...response.data.inning, balls: response.data.balls };
   },
 
   addBall: async (data: AddBallData): Promise<any> => {
@@ -62,9 +76,9 @@ export const scoringService = {
     return response.data;
   },
 
-  changeStriker: async (inningId: string): Promise<Inning> => {
-    const response = await axiosInstance.put(
-      `/scoring/batsmen`,
+  swapStrike: async (inningId: string): Promise<Inning> => {
+    const response = await axiosInstance.post(
+      `/scoring/swap-strike`,
       {
         inningId,
       }

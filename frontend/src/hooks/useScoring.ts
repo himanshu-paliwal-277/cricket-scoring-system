@@ -36,8 +36,8 @@ export const useScoring = (matchId: string) => {
     },
   });
 
-  const changeStrikerMutation = useMutation({
-    mutationFn: (inningId: string) => scoringService.changeStriker(inningId),
+  const swapStrikeMutation = useMutation({
+    mutationFn: (inningId: string) => scoringService.swapStrike(inningId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inning", matchId] });
     },
@@ -65,7 +65,7 @@ export const useScoring = (matchId: string) => {
     error,
     addBall: addBallMutation.mutate,
     undoLastBall: undoMutation.mutate,
-    changeStriker: changeStrikerMutation.mutate,
+    swapStrike: swapStrikeMutation.mutate,
     changeBowler: changeBowlerMutation.mutate,
     changeBatsman: changeBatsmanMutation.mutate,
     isAddingBall: addBallMutation.isPending,

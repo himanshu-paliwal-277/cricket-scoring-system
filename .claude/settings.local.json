@@ -4,7 +4,9 @@
       "Bash(npm install:*)",
       "Bash(git rm:*)",
       "Bash(cat:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git push:*)",
+      "Bash(git commit:*)"
     ]
   }
 }

@@ -15,7 +15,7 @@ import { Select } from "@/components/ui/Select";
 export default function ScoringPage() {
   const params = useParams();
   const matchId = params.id as string;
-  const { inning, isLoading, addBall, undoLastBall, changeBowler, changeBatsman, isAddingBall } =
+  const { inning, isLoading, addBall, undoLastBall, swapStrike, changeBowler, changeBatsman, isAddingBall } =
     useScoring(matchId);
   const { match } = useMatch(matchId);
   const { players } = usePlayers();
@@ -182,21 +182,56 @@ export default function ScoringPage() {
               </div>
             </div>
 
-            <div className="flex gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <Button
                 variant="danger"
                 onClick={() => inning && undoLastBall(inning._id)}
-                className="flex-1"
               >
                 Undo Last Ball
               </Button>
-              <Button variant="secondary" onClick={() => setShowBatsmanModal(true)} className="flex-1">
+              <Button
+                variant="secondary"
+                onClick={() => inning && swapStrike(inning._id)}
+              >
+                Swap Strike
+              </Button>
+              <Button variant="secondary" onClick={() => setShowBatsmanModal(true)}>
                 Change Batsman
               </Button>
             </div>
           </Card>
 
           <Card>
+            <h3 className="font-semibold mb-4">Current Over</h3>
+            <div className="flex gap-2 mb-6 flex-wrap">
+              {inning?.balls
+                ?.filter((ball) => ball.overNumber === inning.currentOver && ball.isValid)
+                .map((ball, index) => (
+                  <div
+                    key={ball._id}
+                    className={`w-12 h-12 flex items-center justify-center rounded font-bold text-lg ${
+                      ball.ballType === "wicket"
+                        ? "bg-red-500 text-white"
+                        : ball.ballType === "wide" || ball.ballType === "noBall"
+                        ? "bg-yellow-500 text-white"
+                        : ball.runs === 4
+                        ? "bg-blue-500 text-white"
+                        : ball.runs === 6
+                        ? "bg-purple-500 text-white"
+                        : "bg-gray-200 text-gray-800"
+                    }`}
+                  >
+                    {ball.ballType === "wicket"
+                      ? "W"
+                      : ball.ballType === "wide"
+                      ? `${ball.runs}Wd`
+                      : ball.ballType === "noBall"
+                      ? `${ball.runs}Nb`
+                      : ball.runs}
+                  </div>
+                ))}
+            </div>
+
             <h3 className="font-semibold mb-2">Extras</h3>
             <div className="grid grid-cols-4 gap-4">
               <div>

@@ -32,27 +32,32 @@ export const addBall = async (req, res) => {
     // Update inning stats
     inning.totalRuns += runs;
 
+    // Handle extras
     if (ballType === "wide" || ballType === "noBall") {
       if (ballType === "wide") inning.extras.wides += 1;
       if (ballType === "noBall") inning.extras.noBalls += 1;
+      // Extras don't count as a ball
     } else {
+      // Regular ball, increment ball count
       inning.currentBall += 1;
     }
 
     // Handle wicket
     if (ballType === "wicket") {
       inning.totalWickets += 1;
+      // Don't swap on wicket - new batsman comes to striker end
+    } else {
+      // Swap striker for odd runs (only on valid balls, not wickets)
+      if (runs % 2 !== 0) {
+        [inning.striker, inning.nonStriker] = [inning.nonStriker, inning.striker];
+      }
     }
 
-    // Swap striker for odd runs
-    if (runs % 2 !== 0 && ballType !== "wicket") {
-      [inning.striker, inning.nonStriker] = [inning.nonStriker, inning.striker];
-    }
-
-    // Check over completion
-    if (inning.currentBall === 6) {
+    // Check over completion (after incrementing ball count)
+    if (inning.currentBall >= 6) {
       inning.currentOver += 1;
       inning.currentBall = 0;
+      // Swap batsmen at end of over
       [inning.striker, inning.nonStriker] = [inning.nonStriker, inning.striker];
     }
 
@@ -149,6 +154,40 @@ export const undoLastBall = async (req, res) => {
       .populate("battingTeam bowlingTeam");
 
     res.json({ message: "Ball undone successfully", inning: populatedInning });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const swapStrike = async (req, res) => {
+  try {
+    const { inningId } = req.body;
+
+    const inning = await Inning.findById(inningId);
+    if (!inning) {
+      return res.status(404).json({ message: "Inning not found" });
+    }
+
+    // Swap striker and non-striker
+    [inning.striker, inning.nonStriker] = [inning.nonStriker, inning.striker];
+    await inning.save();
+
+    const populatedInning = await Inning.findById(inning._id)
+      .populate({
+        path: "striker",
+        populate: { path: "userId", select: "name email" }
+      })
+      .populate({
+        path: "nonStriker",
+        populate: { path: "userId", select: "name email" }
+      })
+      .populate({
+        path: "currentBowler",
+        populate: { path: "userId", select: "name email" }
+      })
+      .populate("battingTeam bowlingTeam");
+
+    res.json(populatedInning);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
