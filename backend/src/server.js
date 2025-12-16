@@ -1,14 +1,14 @@
-import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import express from "express";
+
 import connectDB from "./config/db.js";
 import { PORT } from "./config/serverConfig.js";
-
 import authRouter from "./routes/auth.routes.js";
-import playerRouter from "./routes/player.routes.js";
-import teamRouter from "./routes/team.routes.js";
 import matchRouter from "./routes/match.routes.js";
+import playerRouter from "./routes/player.routes.js";
 import scoringRouter from "./routes/scoring.routes.js";
+import teamRouter from "./routes/team.routes.js";
 
 dotenv.config();
 
@@ -27,6 +27,7 @@ app.get("/", (req, res) => {
   res.json({ message: "Cricket Scoring API is running" });
 });
 
+// eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ message: "Something went wrong!" });

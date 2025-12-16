@@ -1,10 +1,11 @@
 import express from "express";
+
 import {
   createMatch,
-  startMatch,
   getAllMatches,
+  getCurrentInning,
   getMatchById,
-  getCurrentInning
+  startMatch,
 } from "../controllers/match.controller.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 

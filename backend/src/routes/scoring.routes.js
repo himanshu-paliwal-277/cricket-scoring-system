@@ -1,10 +1,11 @@
 import express from "express";
+
 import {
   addBall,
+  startSecondInning,
   undoLastBall,
   updateBatsmen,
   updateBowler,
-  startSecondInning
 } from "../controllers/scoring.controller.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 

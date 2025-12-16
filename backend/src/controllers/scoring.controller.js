@@ -1,7 +1,6 @@
-import Match from "../schema/Match.js";
-import Inning from "../schema/Inning.js";
 import Ball from "../schema/Ball.js";
-import Player from "../schema/Player.js";
+import Inning from "../schema/Inning.js";
+import Match from "../schema/Match.js";
 
 export const addBall = async (req, res) => {
   try {
@@ -27,7 +26,7 @@ export const addBall = async (req, res) => {
       bowler: inning.currentBowler,
       runs,
       ballType,
-      wicketType: wicketType || "none"
+      wicketType: wicketType || "none",
     });
 
     // Update inning stats
@@ -78,8 +77,7 @@ export const addBall = async (req, res) => {
 
     await inning.save();
 
-    const populatedBall = await Ball.findById(ball._id)
-      .populate("batsman bowler");
+    const populatedBall = await Ball.findById(ball._id).populate("batsman bowler");
 
     res.json({ ball: populatedBall, inning });
   } catch (error) {
@@ -91,8 +89,7 @@ export const undoLastBall = async (req, res) => {
   try {
     const { inningId } = req.params;
 
-    const lastBall = await Ball.findOne({ inningId, isValid: true })
-      .sort({ createdAt: -1 });
+    const lastBall = await Ball.findOne({ inningId, isValid: true }).sort({ createdAt: -1 });
 
     if (!lastBall) {
       return res.status(404).json({ message: "No ball to undo" });
@@ -182,7 +179,7 @@ export const startSecondInning = async (req, res) => {
       inningNumber: 2,
       striker,
       nonStriker,
-      currentBowler: bowler
+      currentBowler: bowler,
     });
 
     res.json(secondInning);

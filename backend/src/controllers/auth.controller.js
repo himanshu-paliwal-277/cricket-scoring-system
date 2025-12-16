@@ -1,6 +1,7 @@
-import User from "../schema/User.js";
-import Player from "../schema/Player.js";
 import jwt from "jsonwebtoken";
+
+import Player from "../schema/Player.js";
+import User from "../schema/User.js";
 
 export const register = async (req, res) => {
   try {
@@ -19,7 +20,7 @@ export const register = async (req, res) => {
     }
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "30d"
+      expiresIn: "30d",
     });
 
     res.status(201).json({
@@ -28,8 +29,8 @@ export const register = async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
-      }
+        role: user.role,
+      },
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -51,7 +52,7 @@ export const login = async (req, res) => {
     }
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "30d"
+      expiresIn: "30d",
     });
 
     res.json({
@@ -60,8 +61,8 @@ export const login = async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
-      }
+        role: user.role,
+      },
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

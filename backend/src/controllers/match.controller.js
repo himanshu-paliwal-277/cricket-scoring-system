@@ -1,8 +1,7 @@
+import Ball from "../schema/Ball.js";
+import Inning from "../schema/Inning.js";
 import Match from "../schema/Match.js";
 import Team from "../schema/Team.js";
-import Inning from "../schema/Inning.js";
-import Ball from "../schema/Ball.js";
-import Player from "../schema/Player.js";
 
 export const createMatch = async (req, res) => {
   try {
@@ -13,7 +12,7 @@ export const createMatch = async (req, res) => {
       teamB,
       overs,
       scorerId,
-      createdBy: req.user._id
+      createdBy: req.user._id,
     });
 
     const populatedMatch = await Match.findById(match._id)
@@ -46,8 +45,14 @@ export const startMatch = async (req, res) => {
     await Team.findByIdAndUpdate(match.teamB, { isLocked: true });
 
     // Determine batting and bowling teams
-    const battingTeam = tossDecision === "bat" ? tossWinner : (tossWinner.toString() === match.teamA.toString() ? match.teamB : match.teamA);
-    const bowlingTeam = battingTeam.toString() === match.teamA.toString() ? match.teamB : match.teamA;
+    const battingTeam =
+      tossDecision === "bat"
+        ? tossWinner
+        : tossWinner.toString() === match.teamA.toString()
+          ? match.teamB
+          : match.teamA;
+    const bowlingTeam =
+      battingTeam.toString() === match.teamA.toString() ? match.teamB : match.teamA;
 
     // Create first inning
     const inning = await Inning.create({
@@ -57,7 +62,7 @@ export const startMatch = async (req, res) => {
       inningNumber: 1,
       striker,
       nonStriker,
-      currentBowler: bowler
+      currentBowler: bowler,
     });
 
     match.status = "live";
@@ -65,9 +70,7 @@ export const startMatch = async (req, res) => {
     match.tossDecision = tossDecision;
     await match.save();
 
-    const populatedMatch = await Match.findById(match._id)
-      .populate("teamA")
-      .populate("teamB");
+    const populatedMatch = await Match.findById(match._id).populate("teamA").populate("teamB");
 
     res.json({ match: populatedMatch, inning });
   } catch (error) {
@@ -121,7 +124,7 @@ export const getCurrentInning = async (req, res) => {
     const inning = await Inning.findOne({
       matchId: match._id,
       inningNumber: match.currentInning,
-      isCompleted: false
+      isCompleted: false,
     })
       .populate("striker nonStriker currentBowler")
       .populate("battingTeam bowlingTeam");

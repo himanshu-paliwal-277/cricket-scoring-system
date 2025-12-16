@@ -7,7 +7,7 @@ export const createTeam = async (req, res) => {
     const team = await Team.create({
       name,
       players,
-      createdBy: req.user._id
+      createdBy: req.user._id,
     });
 
     const populatedTeam = await Team.findById(team._id)
@@ -22,9 +22,7 @@ export const createTeam = async (req, res) => {
 
 export const getAllTeams = async (req, res) => {
   try {
-    const teams = await Team.find()
-      .populate("players")
-      .populate("createdBy", "name email");
+    const teams = await Team.find().populate("players").populate("createdBy", "name email");
     res.json(teams);
   } catch (error) {
     res.status(500).json({ message: error.message });

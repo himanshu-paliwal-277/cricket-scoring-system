@@ -78,9 +78,16 @@ export const getPlayerStats = async (req, res) => {
       totalWickets: player.totalWickets,
       matchesPlayed: player.matchesPlayed,
       highestScore: player.highestScore,
-      battingAverage: player.matchesPlayed > 0 ? (player.totalRuns / player.matchesPlayed).toFixed(2) : 0,
-      strikeRate: player.totalBallsFaced > 0 ? ((player.totalRuns / player.totalBallsFaced) * 100).toFixed(2) : 0,
-      economy: player.totalBallsBowled > 0 ? ((player.totalWickets / player.totalBallsBowled) * 6).toFixed(2) : 0
+      battingAverage:
+        player.matchesPlayed > 0 ? (player.totalRuns / player.matchesPlayed).toFixed(2) : 0,
+      strikeRate:
+        player.totalBallsFaced > 0
+          ? ((player.totalRuns / player.totalBallsFaced) * 100).toFixed(2)
+          : 0,
+      economy:
+        player.totalBallsBowled > 0
+          ? ((player.totalWickets / player.totalBallsBowled) * 6).toFixed(2)
+          : 0,
     };
 
     res.json(stats);

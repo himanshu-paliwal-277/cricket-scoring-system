@@ -1,10 +1,11 @@
 import express from "express";
+
 import {
+  createPlayer,
   getAllPlayers,
   getPlayerById,
-  createPlayer,
+  getPlayerStats,
   updatePlayer,
-  getPlayerStats
 } from "../controllers/player.controller.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 

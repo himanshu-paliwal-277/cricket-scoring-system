@@ -1,10 +1,11 @@
 import express from "express";
+
 import {
   createTeam,
+  deleteTeam,
   getAllTeams,
   getTeamById,
   updateTeam,
-  deleteTeam
 } from "../controllers/team.controller.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 
