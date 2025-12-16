@@ -1,5 +1,5 @@
 {
-  "name": "backend",
+  "name": "cricket-scoring-backend",
   "version": "1.0.0",
   "main": "src/server.js",
   "type": "module",
@@ -12,9 +12,9 @@
     "format:check": "prettier --check \"src/**/*.js\""
   },
   "keywords": [],
-  "author": "",
+  "author": "Himanshu Paliwal",
   "license": "ISC",
-  "description": "",
+  "description": "Backend for Cricket Scoring System",
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
