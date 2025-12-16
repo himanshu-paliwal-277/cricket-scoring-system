@@ -1,0 +1,1007 @@
+{
+	"info": {
+		"_postman_id": "cricket-scoring-api-collection",
+		"name": "Cricket Scoring API",
+		"description": "Complete API collection for Cricket Scoring System with authentication, players, teams, matches, and live scoring",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"owner\"\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/auth/register",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Register a new user. Role can be: owner, scorer, or player"
+					},
+					"response": []
+				},
+				{
+					"name": "Register Player",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Virat Kohli\",\n  \"email\": \"virat@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"player\"\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/auth/register",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Register a player (automatically creates player profile)"
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"AUTH_TOKEN\", jsonData.token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/auth/login",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login user and get JWT token (automatically saved to environment)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Current User",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/api/auth/me",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"me"
+							]
+						},
+						"description": "Get current authenticated user details"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Players",
+			"item": [
+				{
+					"name": "Get All Players",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/api/players",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"players"
+							]
+						},
+						"description": "Get all players (reusable for team selection)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Player By ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/api/players/:id",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"players",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "PLAYER_ID_HERE"
+								}
+							]
+						},
+						"description": "Get specific player details"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Player Stats",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/api/players/:id/stats",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"players",
+								":id",
+								"stats"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "PLAYER_ID_HERE"
+								}
+							]
+						},
+						"description": "Get player statistics (dashboard)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Player",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"USER_ID_HERE\",\n  \"battingStyle\": \"right-hand\",\n  \"bowlingStyle\": \"right-arm-fast\"\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/players",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"players"
+							]
+						},
+						"description": "Create player profile (Owner/Scorer only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Player",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"battingStyle\": \"left-hand\",\n  \"bowlingStyle\": \"left-arm-spin\"\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/players/:id",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"players",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "PLAYER_ID_HERE"
+								}
+							]
+						},
+						"description": "Update player details (Owner only)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Teams",
+			"item": [
+				{
+					"name": "Get All Teams",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/api/teams",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"teams"
+							]
+						},
+						"description": "Get all teams"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Team By ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/api/teams/:id",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"teams",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "TEAM_ID_HERE"
+								}
+							]
+						},
+						"description": "Get specific team with players"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Team",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Mumbai Indians\",\n  \"players\": [\n    \"PLAYER_ID_1\",\n    \"PLAYER_ID_2\",\n    \"PLAYER_ID_3\"\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/teams",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"teams"
+							]
+						},
+						"description": "Create team with existing players (Owner only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Team",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Mumbai Indians\",\n  \"players\": [\n    \"PLAYER_ID_1\",\n    \"PLAYER_ID_2\",\n    \"PLAYER_ID_4\"\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/teams/:id",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"teams",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "TEAM_ID_HERE"
+								}
+							]
+						},
+						"description": "Update team (Owner only, cannot edit if locked)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Team",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/api/teams/:id",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"teams",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "TEAM_ID_HERE"
+								}
+							]
+						},
+						"description": "Delete team (Owner only, cannot delete if locked)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Matches",
+			"item": [
+				{
+					"name": "Get All Matches",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/api/matches",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"matches"
+							]
+						},
+						"description": "Get all matches with teams"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Match By ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/api/matches/:id",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"matches",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "MATCH_ID_HERE"
+								}
+							]
+						},
+						"description": "Get match details with innings"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Current Inning",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/api/matches/:id/current-inning",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"matches",
+								":id",
+								"current-inning"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "MATCH_ID_HERE"
+								}
+							]
+						},
+						"description": "Get live inning with ball-by-ball data"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Match",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"teamA\": \"TEAM_A_ID\",\n  \"teamB\": \"TEAM_B_ID\",\n  \"overs\": 20,\n  \"scorerId\": \"SCORER_USER_ID\"\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/matches",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"matches"
+							]
+						},
+						"description": "Create new match (Owner only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Start Match",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"tossWinner\": \"TEAM_ID\",\n  \"tossDecision\": \"bat\",\n  \"striker\": \"PLAYER_ID_1\",\n  \"nonStriker\": \"PLAYER_ID_2\",\n  \"bowler\": \"PLAYER_ID_3\"\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/matches/:id/start",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"matches",
+								":id",
+								"start"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "MATCH_ID_HERE"
+								}
+							]
+						},
+						"description": "Start match and lock teams (Owner/Scorer)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Scoring",
+			"item": [
+				{
+					"name": "Add Ball - Dot Ball",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"inningId\": \"INNING_ID\",\n  \"runs\": 0,\n  \"ballType\": \"normal\"\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/scoring/ball",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"scoring",
+								"ball"
+							]
+						},
+						"description": "Add dot ball (0 runs)"
+					},
+					"response": []
+				},
+				{
+					"name": "Add Ball - Single",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"inningId\": \"INNING_ID\",\n  \"runs\": 1,\n  \"ballType\": \"normal\"\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/scoring/ball",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"scoring",
+								"ball"
+							]
+						},
+						"description": "Add single (striker swaps)"
+					},
+					"response": []
+				},
+				{
+					"name": "Add Ball - Four",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"inningId\": \"INNING_ID\",\n  \"runs\": 4,\n  \"ballType\": \"normal\"\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/scoring/ball",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"scoring",
+								"ball"
+							]
+						},
+						"description": "Add boundary (4 runs)"
+					},
+					"response": []
+				},
+				{
+					"name": "Add Ball - Six",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"inningId\": \"INNING_ID\",\n  \"runs\": 6,\n  \"ballType\": \"normal\"\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/scoring/ball",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"scoring",
+								"ball"
+							]
+						},
+						"description": "Add six"
+					},
+					"response": []
+				},
+				{
+					"name": "Add Ball - Wide",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"inningId\": \"INNING_ID\",\n  \"runs\": 1,\n  \"ballType\": \"wide\"\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/scoring/ball",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"scoring",
+								"ball"
+							]
+						},
+						"description": "Add wide (ball not counted)"
+					},
+					"response": []
+				},
+				{
+					"name": "Add Ball - No Ball",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"inningId\": \"INNING_ID\",\n  \"runs\": 1,\n  \"ballType\": \"noBall\"\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/scoring/ball",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"scoring",
+								"ball"
+							]
+						},
+						"description": "Add no ball (ball not counted)"
+					},
+					"response": []
+				},
+				{
+					"name": "Add Ball - Wicket",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"inningId\": \"INNING_ID\",\n  \"runs\": 0,\n  \"ballType\": \"wicket\",\n  \"wicketType\": \"bowled\"\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/scoring/ball",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"scoring",
+								"ball"
+							]
+						},
+						"description": "Add wicket (wicketType: bowled, caught, lbw, stumped, runOut, hitWicket)"
+					},
+					"response": []
+				},
+				{
+					"name": "Undo Last Ball",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/api/scoring/undo/:inningId",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"scoring",
+								"undo",
+								":inningId"
+							],
+							"variable": [
+								{
+									"key": "inningId",
+									"value": "INNING_ID_HERE"
+								}
+							]
+						},
+						"description": "Undo last ball (Scorer/Owner)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Batsmen",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"inningId\": \"INNING_ID\",\n  \"striker\": \"NEW_STRIKER_PLAYER_ID\",\n  \"nonStriker\": \"NON_STRIKER_PLAYER_ID\"\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/scoring/batsmen",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"scoring",
+								"batsmen"
+							]
+						},
+						"description": "Update striker/non-striker (after wicket)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Bowler",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"inningId\": \"INNING_ID\",\n  \"bowler\": \"NEW_BOWLER_PLAYER_ID\"\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/scoring/bowler",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"scoring",
+								"bowler"
+							]
+						},
+						"description": "Update current bowler (after over completion)"
+					},
+					"response": []
+				},
+				{
+					"name": "Start Second Inning",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AUTH_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"matchId\": \"MATCH_ID\",\n  \"striker\": \"PLAYER_ID_1\",\n  \"nonStriker\": \"PLAYER_ID_2\",\n  \"bowler\": \"PLAYER_ID_3\"\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/scoring/second-inning",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"scoring",
+								"second-inning"
+							]
+						},
+						"description": "Start second inning after first inning completes"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "BASE_URL",
+			"value": "http://localhost:5000",
+			"type": "string"
+		},
+		{
+			"key": "AUTH_TOKEN",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
