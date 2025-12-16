@@ -1,7 +1,7 @@
 import cors from "cors";
 import express from "express";
 
-import connectDB from "./config/db.js";
+import connectDB from "./config/dbConfig.js";
 import { PORT } from "./config/serverConfig.js";
 import apiRouter from "./routes/apiRouter.routes.js";
 
@@ -23,6 +23,6 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server is up and running at: http://localhost:${PORT}`);
   connectDB();
 });
