@@ -204,32 +204,36 @@ export default function ScoringPage() {
           <Card>
             <h3 className="font-semibold mb-4">Current Over</h3>
             <div className="flex gap-2 mb-6 flex-wrap">
-              {inning?.balls
-                ?.filter((ball) => ball.overNumber === inning.currentOver && ball.isValid)
-                .map((ball, index) => (
-                  <div
-                    key={ball._id}
-                    className={`w-12 h-12 flex items-center justify-center rounded font-bold text-lg ${
-                      ball.ballType === "wicket"
-                        ? "bg-red-500 text-white"
-                        : ball.ballType === "wide" || ball.ballType === "noBall"
-                        ? "bg-yellow-500 text-white"
-                        : ball.runs === 4
-                        ? "bg-blue-500 text-white"
-                        : ball.runs === 6
-                        ? "bg-purple-500 text-white"
-                        : "bg-gray-200 text-gray-800"
-                    }`}
-                  >
-                    {ball.ballType === "wicket"
-                      ? "W"
-                      : ball.ballType === "wide"
-                      ? `${ball.runs}Wd`
-                      : ball.ballType === "noBall"
-                      ? `${ball.runs}Nb`
-                      : ball.runs}
-                  </div>
-                ))}
+              {inning?.balls && inning.balls.length > 0 ? (
+                inning.balls
+                  .filter((ball) => ball.overNumber === inning.currentOver && ball.isValid)
+                  .map((ball, index) => (
+                    <div
+                      key={ball._id}
+                      className={`w-12 h-12 flex items-center justify-center rounded font-bold text-lg ${
+                        ball.ballType === "wicket"
+                          ? "bg-red-500 text-white"
+                          : ball.ballType === "wide" || ball.ballType === "noBall"
+                          ? "bg-yellow-500 text-white"
+                          : ball.runs === 4
+                          ? "bg-blue-500 text-white"
+                          : ball.runs === 6
+                          ? "bg-purple-500 text-white"
+                          : "bg-gray-200 text-gray-800"
+                      }`}
+                    >
+                      {ball.ballType === "wicket"
+                        ? "W"
+                        : ball.ballType === "wide"
+                        ? `${ball.runs}Wd`
+                        : ball.ballType === "noBall"
+                        ? `${ball.runs}Nb`
+                        : ball.runs}
+                    </div>
+                  ))
+              ) : (
+                <p className="text-gray-500 text-sm">No balls bowled yet</p>
+              )}
             </div>
 
             <h3 className="font-semibold mb-2">Extras</h3>
