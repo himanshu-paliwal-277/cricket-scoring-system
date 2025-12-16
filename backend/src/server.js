@@ -2,10 +2,16 @@ import cors from "cors";
 import express from "express";
 
 import connectDB from "./config/dbConfig.js";
-import { ALLOWED_ORIGINS, PORT } from "./config/serverConfig.js";
+import { PORT } from "./config/serverConfig.js";
 import apiRouter from "./routes/apiRouter.routes.js";
 
 const app = express();
+
+const ALLOWED_ORIGINS = [
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "https://cricket-scoring-system.netlify.app",
+];
 
 // CORS configuration
 const corsOptions = {
