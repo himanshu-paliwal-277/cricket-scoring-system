@@ -25,17 +25,12 @@ export default function ScoringPage() {
     changeBatsman,
     isAddingBall,
   } = useScoring(matchId);
-  const {
-    match,
-    endMatch,
-    startInning,
-    startMatch,
-    isEndingMatch,
-    isStartingInning,
-    isStartingMatch,
-  } = useMatch(matchId);
+  const { match, endMatch, startInning, isEndingMatch, isStartingInning } =
+    useMatch(matchId);
   const { players } = usePlayers();
-  const [ballType, setBallType] = useState<string>("normal");
+  const [ballType, setBallType] = useState<
+    "normal" | "wide" | "noBall" | "wicket"
+  >("normal");
   const [showBowlerModal, setShowBowlerModal] = useState(false);
   const [showBatsmanModal, setShowBatsmanModal] = useState(false);
   const [showEndMatchModal, setShowEndMatchModal] = useState(false);
@@ -45,7 +40,34 @@ export default function ScoringPage() {
   const [inningNonStriker, setInningNonStriker] = useState("");
   const [inningBowler, setInningBowler] = useState("");
 
-  const firstInning = match?.innings?.find((i: any) => i.inningNumber === 1);
+  const firstInning = match?.innings?.find((i) => i.inningNumber === 1);
+
+  // Determine teams for current inning
+  const currentInningBattingTeam =
+    match?.currentInning === 1
+      ? match.tossDecision === "bat" && match.tossWinner
+        ? match.tossWinner._id === match.teamA._id
+          ? match.teamA
+          : match.teamB
+        : match.tossWinner
+        ? match.tossWinner._id === match.teamA._id
+          ? match.teamB
+          : match.teamA
+        : match.teamA
+      : firstInning?.bowlingTeam;
+
+  const currentInningBowlingTeam =
+    match?.currentInning === 1
+      ? match.tossDecision === "bat" && match.tossWinner
+        ? match.tossWinner._id === match.teamA._id
+          ? match.teamB
+          : match.teamA
+        : match.tossWinner
+        ? match.tossWinner._id === match.teamA._id
+          ? match.teamA
+          : match.teamB
+        : match.teamB
+      : firstInning?.battingTeam;
 
   const handleEndMatch = () => {
     setShowEndMatchModal(true);
@@ -58,14 +80,14 @@ export default function ScoringPage() {
 
   const handleAddBall = (
     runs: number,
-    type: string = "normal",
+    type: "normal" | "wide" | "noBall" | "wicket" | "bye" | "legBye" = "normal",
     wicketType?: string
   ) => {
     if (!inning) return;
     addBall({
       inningId: inning._id,
       runs,
-      ballType: type as any,
+      ballType: type,
       wicketType,
     });
     setBallType("normal");
@@ -89,21 +111,11 @@ export default function ScoringPage() {
 
   const handleStartInning = () => {
     if (inningStriker && inningNonStriker && inningBowler) {
-      if (match?.currentInning === 1) {
-        startMatch({
-          tossWinner: match.tossWinner,
-          tossDecision: match.tossDecision,
-          striker: inningStriker,
-          nonStriker: inningNonStriker,
-          bowler: inningBowler,
-        });
-      } else {
-        startInning({
-          striker: inningStriker,
-          nonStriker: inningNonStriker,
-          bowler: inningBowler,
-        });
-      }
+      startInning({
+        striker: inningStriker,
+        nonStriker: inningNonStriker,
+        bowler: inningBowler,
+      });
       setInningStriker("");
       setInningNonStriker("");
       setInningBowler("");
@@ -148,16 +160,6 @@ export default function ScoringPage() {
     const economy = balls > 0 ? ((runs / balls) * 6).toFixed(1) : "0.0";
     return { balls, runs, wickets, overs, economy };
   };
-
-  const bowlingTeamPlayers =
-    match?.teamA._id === inning?.bowlingTeam._id
-      ? match?.teamA.players || []
-      : match?.teamB.players || [];
-
-  const battingTeamPlayers =
-    match?.teamA._id === inning?.battingTeam._id
-      ? match?.teamA.players || []
-      : match?.teamB.players || [];
 
   if (isLoading)
     return (
@@ -233,11 +235,7 @@ export default function ScoringPage() {
               <Button
                 onClick={handleStartInning}
                 className="w-full"
-                isLoading={
-                  match?.currentInning === 1
-                    ? isStartingMatch
-                    : isStartingInning
-                }
+                isLoading={isStartingInning}
                 disabled={!inningStriker || !inningNonStriker || !inningBowler}
               >
                 Start {match?.currentInning === 1 ? "First" : "Second"} Inning
@@ -274,6 +272,47 @@ export default function ScoringPage() {
               </div>
             </div>
           </Card>
+
+          {/* Current Inning Scoreboard */}
+          <Card>
+            <h2 className="text-xl font-bold mb-4">
+              Current Inning Scoreboard
+            </h2>
+            <div className="text-center">
+              <p className="text-3xl font-bold">
+                {inning?.battingTeam.name}: {inning?.totalRuns}/
+                {inning?.totalWickets}
+              </p>
+              <p className="text-lg text-gray-600">
+                Overs: {inning?.currentOver}.{inning?.currentBall}
+              </p>
+            </div>
+          </Card>
+
+          {/* First Inning Scoreboard (when in second inning) */}
+          {match?.currentInning === 2 && firstInning && (
+            <Card>
+              <h2 className="text-xl font-bold mb-4">
+                First Inning Scoreboard
+              </h2>
+              <div className="text-center">
+                <p className="text-2xl font-bold">
+                  {firstInning.battingTeam.name}: {firstInning.totalRuns}/
+                  {firstInning.totalWickets}
+                </p>
+                <p className="text-lg text-gray-600">
+                  Overs:{" "}
+                  {Math.floor(
+                    firstInning.currentOver + firstInning.currentBall / 6
+                  )}
+                  .{firstInning.currentBall % 6}
+                </p>
+                <p className="text-sm text-gray-500 mt-2">
+                  Target: {firstInning.totalRuns + 1} runs
+                </p>
+              </div>
+            </Card>
+          )}
 
           <Card>
             <div className="text-center mb-6">
@@ -500,7 +539,7 @@ export default function ScoringPage() {
                       </span>
                       <div className="flex gap-2 flex-wrap">
                         {inning.balls
-                          .filter(
+                          ?.filter(
                             (ball) =>
                               ball.overNumber === overNumber && ball.isValid
                           )
@@ -571,97 +610,120 @@ export default function ScoringPage() {
             </Card>
           )}
 
-          <Modal
-            isOpen={showEndMatchModal}
-            onClose={() => setShowEndMatchModal(false)}
-            title="End Match Confirmation"
-          >
-            <div className="space-y-4">
-              <p className="text-gray-700">
-                Are you sure you want to end this match? This action cannot be
-                undone.
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  variant="danger"
-                  onClick={confirmEndMatch}
-                  className="flex-1"
-                  isLoading={isEndingMatch}
-                >
-                  Yes, End Match
-                </Button>
-                <Button
-                  variant="secondary"
-                  onClick={() => setShowEndMatchModal(false)}
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </Modal>
+          {(() => {
+            // Calculate team players only when inning is active
+            const bowlingTeamPlayers =
+              match?.teamA._id === inning?.bowlingTeam?._id
+                ? match?.teamA.players || []
+                : match?.teamB.players || [];
 
-          <Modal
-            isOpen={showBowlerModal}
-            onClose={() => setShowBowlerModal(false)}
-            title="Change Bowler"
-          >
-            <div className="space-y-4">
-              <Select
-                label="Select New Bowler"
-                value={newBowlerId}
-                onChange={(e) => setNewBowlerId(e.target.value)}
-                options={[
-                  { value: "", label: "Select Bowler" },
-                  ...bowlingTeamPlayers
-                    .filter((id: string) => id !== inning?.currentBowler?._id)
-                    .map((playerId: string) => {
-                      const player = players.find((p) => p._id === playerId);
-                      return {
-                        value: playerId,
-                        label: player?.userId.name || "",
-                      };
-                    }),
-                ]}
-              />
-              <Button onClick={handleChangeBowler} className="w-full">
-                Confirm
-              </Button>
-            </div>
-          </Modal>
+            const battingTeamPlayers =
+              match?.teamA._id === inning?.battingTeam?._id
+                ? match?.teamA.players || []
+                : match?.teamB.players || [];
 
-          <Modal
-            isOpen={showBatsmanModal}
-            onClose={() => setShowBatsmanModal(false)}
-            title="Change Batsman"
-          >
-            <div className="space-y-4">
-              <Select
-                label="Select New Batsman"
-                value={newBatsmanId}
-                onChange={(e) => setNewBatsmanId(e.target.value)}
-                options={[
-                  { value: "", label: "Select Batsman" },
-                  ...battingTeamPlayers
-                    .filter(
-                      (id: string) =>
-                        id !== inning?.striker?._id &&
-                        id !== inning?.nonStriker?._id
-                    )
-                    .map((playerId: string) => {
-                      const player = players.find((p) => p._id === playerId);
-                      return {
-                        value: playerId,
-                        label: player?.userId.name || "",
-                      };
-                    }),
-                ]}
-              />
-              <Button onClick={handleChangeBatsman} className="w-full">
-                Confirm
-              </Button>
-            </div>
-          </Modal>
+            return (
+              <>
+                <Modal
+                  isOpen={showEndMatchModal}
+                  onClose={() => setShowEndMatchModal(false)}
+                  title="End Match Confirmation"
+                >
+                  <div className="space-y-4">
+                    <p className="text-gray-700">
+                      Are you sure you want to end this match? This action
+                      cannot be undone.
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="danger"
+                        onClick={confirmEndMatch}
+                        className="flex-1"
+                        isLoading={isEndingMatch}
+                      >
+                        Yes, End Match
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        onClick={() => setShowEndMatchModal(false)}
+                        className="flex-1"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </Modal>
+
+                <Modal
+                  isOpen={showBowlerModal}
+                  onClose={() => setShowBowlerModal(false)}
+                  title="Change Bowler"
+                >
+                  <div className="space-y-4">
+                    <Select
+                      label="Select New Bowler"
+                      value={newBowlerId}
+                      onChange={(e) => setNewBowlerId(e.target.value)}
+                      options={[
+                        { value: "", label: "Select Bowler" },
+                        ...bowlingTeamPlayers
+                          .filter(
+                            (id: string) => id !== inning?.currentBowler?._id
+                          )
+                          .map((playerId: string) => {
+                            const player = players.find(
+                              (p) => p._id === playerId
+                            );
+                            return {
+                              value: playerId,
+                              label: player?.userId.name || "",
+                            };
+                          }),
+                      ]}
+                    />
+                    <Button onClick={handleChangeBowler} className="w-full">
+                      Confirm
+                    </Button>
+                  </div>
+                </Modal>
+
+                <Modal
+                  isOpen={showBatsmanModal}
+                  onClose={() => setShowBatsmanModal(false)}
+                  title="Change Batsman"
+                >
+                  <div className="space-y-4">
+                    <Select
+                      label="Select New Batsman"
+                      value={newBatsmanId}
+                      onChange={(e) => setNewBatsmanId(e.target.value)}
+                      options={[
+                        { value: "", label: "Select Batsman" },
+                        ...battingTeamPlayers
+                          .filter(
+                            (id: string) =>
+                              id !== inning?.striker?._id &&
+                              id !== inning?.nonStriker?._id
+                          )
+                          .map((playerId: string) => {
+                            const player = players.find(
+                              (p) => p._id === playerId
+                            );
+                            return {
+                              value: playerId,
+                              label: player?.userId.name || "",
+                            };
+                          }),
+                      ]}
+                    />
+                    <Button onClick={handleChangeBatsman} className="w-full">
+                      Confirm
+                    </Button>
+                  </div>
+                </Modal>
+              </>
+            );
+          })()}
         </div>
       </Layout>
     </ProtectedRoute>

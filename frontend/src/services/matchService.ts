@@ -20,6 +20,7 @@ export interface Match {
   winner?: Team;
   resultText?: string;
   createdAt: string;
+  innings?: any[]; // Add innings array
 }
 
 export interface CreateMatchData {
@@ -28,9 +29,7 @@ export interface CreateMatchData {
   overs: number;
 }
 
-export interface StartMatchData {
-  tossWinner: string;
-  tossDecision: "bat" | "bowl";
+export interface StartInningData {
   striker: string;
   nonStriker: string;
   bowler: string;
@@ -44,7 +43,7 @@ export const matchService = {
 
   getById: async (id: string): Promise<Match> => {
     const response = await axiosInstance.get(`/matches/${id}`);
-    return response.data.match;
+    return { ...response.data.match, innings: response.data.innings };
   },
 
   create: async (data: CreateMatchData): Promise<Match> => {
@@ -54,6 +53,14 @@ export const matchService = {
 
   start: async (id: string, data: StartMatchData): Promise<any> => {
     const response = await axiosInstance.post(`/matches/${id}/start`, data);
+    return response.data;
+  },
+
+  startInning: async (id: string, data: StartInningData): Promise<any> => {
+    const response = await axiosInstance.post(
+      `/matches/${id}/start-inning`,
+      data
+    );
     return response.data;
   },
 
