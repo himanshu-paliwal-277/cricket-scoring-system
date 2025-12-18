@@ -1,10 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CreateMatchData, matchService, StartMatchData } from "@/services/matchService";
+import {
+  CreateMatchData,
+  matchService,
+  StartMatchData,
+  StartInningData,
+} from "@/services/matchService";
 
 export const useMatches = () => {
   const queryClient = useQueryClient();
 
-  const { data: matches = [], isLoading, error } = useQuery({
+  const {
+    data: matches = [],
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["matches"],
     queryFn: matchService.getAll,
   });
@@ -47,7 +56,11 @@ export const useMatches = () => {
 export const useMatch = (id: string) => {
   const queryClient = useQueryClient();
 
-  const { data: match, isLoading, error } = useQuery({
+  const {
+    data: match,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["match", id],
     queryFn: () => matchService.getById(id),
     enabled: !!id,
@@ -62,11 +75,22 @@ export const useMatch = (id: string) => {
     },
   });
 
+  const startInningMutation = useMutation({
+    mutationFn: (data: StartInningData) => matchService.startInning(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["match", id] });
+      queryClient.invalidateQueries({ queryKey: ["matches"] });
+      queryClient.invalidateQueries({ queryKey: ["inning", id] });
+    },
+  });
+
   return {
     match,
     isLoading,
     error,
     endMatch: endMatchMutation.mutate,
+    startInning: startInningMutation.mutate,
     isEndingMatch: endMatchMutation.isPending,
+    isStartingInning: startInningMutation.isPending,
   };
 };
