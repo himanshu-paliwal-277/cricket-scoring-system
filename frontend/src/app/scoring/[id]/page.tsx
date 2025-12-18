@@ -25,7 +25,15 @@ export default function ScoringPage() {
     changeBatsman,
     isAddingBall,
   } = useScoring(matchId);
-  const { match, endMatch, isEndingMatch } = useMatch(matchId);
+  const {
+    match,
+    endMatch,
+    startInning,
+    startMatch,
+    isEndingMatch,
+    isStartingInning,
+    isStartingMatch,
+  } = useMatch(matchId);
   const { players } = usePlayers();
   const [ballType, setBallType] = useState<string>("normal");
   const [showBowlerModal, setShowBowlerModal] = useState(false);
@@ -33,6 +41,11 @@ export default function ScoringPage() {
   const [showEndMatchModal, setShowEndMatchModal] = useState(false);
   const [newBowlerId, setNewBowlerId] = useState("");
   const [newBatsmanId, setNewBatsmanId] = useState("");
+  const [inningStriker, setInningStriker] = useState("");
+  const [inningNonStriker, setInningNonStriker] = useState("");
+  const [inningBowler, setInningBowler] = useState("");
+
+  const firstInning = match?.innings?.find((i: any) => i.inningNumber === 1);
 
   const handleEndMatch = () => {
     setShowEndMatchModal(true);
@@ -74,6 +87,68 @@ export default function ScoringPage() {
     }
   };
 
+  const handleStartInning = () => {
+    if (inningStriker && inningNonStriker && inningBowler) {
+      if (match?.currentInning === 1) {
+        startMatch({
+          tossWinner: match.tossWinner,
+          tossDecision: match.tossDecision,
+          striker: inningStriker,
+          nonStriker: inningNonStriker,
+          bowler: inningBowler,
+        });
+      } else {
+        startInning({
+          striker: inningStriker,
+          nonStriker: inningNonStriker,
+          bowler: inningBowler,
+        });
+      }
+      setInningStriker("");
+      setInningNonStriker("");
+      setInningBowler("");
+    }
+  };
+
+  const getBatsmanStats = (playerId: string) => {
+    if (!inning?.balls) return { runs: 0, balls: 0 };
+    let runs = 0;
+    let balls = 0;
+    inning.balls.forEach((ball) => {
+      if (ball.batsman._id === playerId) {
+        if (ball.ballType === "normal" || ball.ballType === "wicket") {
+          balls += 1;
+        }
+        if (ball.ballType !== "wide" && ball.ballType !== "noBall") {
+          runs += ball.runs;
+        }
+      }
+    });
+    return { runs, balls };
+  };
+
+  const getBowlerStats = (playerId: string) => {
+    if (!inning?.balls)
+      return { balls: 0, runs: 0, wickets: 0, economy: "0.0" };
+    let balls = 0;
+    let runs = 0;
+    let wickets = 0;
+    inning.balls.forEach((ball) => {
+      if (ball.bowler._id === playerId) {
+        if (ball.ballType === "normal" || ball.ballType === "wicket") {
+          balls += 1;
+        }
+        runs += ball.runs;
+        if (ball.ballType === "wicket") {
+          wickets += 1;
+        }
+      }
+    });
+    const overs = Math.floor(balls / 6) + (balls % 6) / 10;
+    const economy = balls > 0 ? ((runs / balls) * 6).toFixed(1) : "0.0";
+    return { balls, runs, wickets, overs, economy };
+  };
+
   const bowlingTeamPlayers =
     match?.teamA._id === inning?.bowlingTeam._id
       ? match?.teamA.players || []
@@ -91,13 +166,83 @@ export default function ScoringPage() {
       </Layout>
     );
 
-  if (!inning) {
+  if (!inning || !inning._id) {
     return (
       <ProtectedRoute allowedRoles={["owner", "scorer"]}>
         <Layout>
-          <Card className="max-w-2xl mx-auto text-center">
-            <h1 className="text-2xl font-bold mb-4">Match Not Started</h1>
-            <p className="text-gray-600">{`This match hasn't been started yet. Please start the match first.`}</p>
+          <Card className="max-w-2xl mx-auto">
+            <h1 className="text-2xl font-bold mb-4 text-center">
+              Start {match?.currentInning === 1 ? "First" : "Second"} Inning
+            </h1>
+            <p className="text-gray-600 mb-6 text-center">
+              Select the opening batsmen and bowler for the{" "}
+              {match?.currentInning === 1 ? "first" : "second"} inning.
+            </p>
+            <div className="space-y-4">
+              <Select
+                label={`Striker (${currentInningBattingTeam?.name})`}
+                value={inningStriker}
+                onChange={(e) => setInningStriker(e.target.value)}
+                options={[
+                  { value: "", label: "Select Striker" },
+                  ...(currentInningBattingTeam?.players || []).map(
+                    (playerId: string) => {
+                      const player = players.find((p) => p._id === playerId);
+                      return {
+                        value: playerId,
+                        label: player?.userId.name || "",
+                      };
+                    }
+                  ),
+                ]}
+              />
+              <Select
+                label={`Non-Striker (${currentInningBattingTeam?.name})`}
+                value={inningNonStriker}
+                onChange={(e) => setInningNonStriker(e.target.value)}
+                options={[
+                  { value: "", label: "Select Non-Striker" },
+                  ...(currentInningBattingTeam?.players || [])
+                    .filter((id: string) => id !== inningStriker)
+                    .map((playerId: string) => {
+                      const player = players.find((p) => p._id === playerId);
+                      return {
+                        value: playerId,
+                        label: player?.userId.name || "",
+                      };
+                    }),
+                ]}
+              />
+              <Select
+                label={`Bowler (${currentInningBowlingTeam?.name})`}
+                value={inningBowler}
+                onChange={(e) => setInningBowler(e.target.value)}
+                options={[
+                  { value: "", label: "Select Bowler" },
+                  ...(currentInningBowlingTeam?.players || []).map(
+                    (playerId: string) => {
+                      const player = players.find((p) => p._id === playerId);
+                      return {
+                        value: playerId,
+                        label: player?.userId.name || "",
+                      };
+                    }
+                  ),
+                ]}
+              />
+              <Button
+                onClick={handleStartInning}
+                className="w-full"
+                isLoading={
+                  match?.currentInning === 1
+                    ? isStartingMatch
+                    : isStartingInning
+                }
+                disabled={!inningStriker || !inningNonStriker || !inningBowler}
+              >
+                Start {match?.currentInning === 1 ? "First" : "Second"} Inning
+              </Button>
+            </div>
           </Card>
         </Layout>
       </ProtectedRoute>
@@ -144,13 +289,23 @@ export default function ScoringPage() {
               <div className="border-r pr-4">
                 <h3 className="font-semibold mb-2">Striker</h3>
                 <p className="text-lg">
-                  {inning?.striker?.userId.name || "N/A"}
+                  {inning?.striker?.userId.name || "N/A"}{" "}
+                  {inning?.striker
+                    ? `(${getBatsmanStats(inning.striker._id).runs}(${
+                        getBatsmanStats(inning.striker._id).balls
+                      }))`
+                    : ""}
                 </p>
               </div>
               <div>
                 <h3 className="font-semibold mb-2">Non-Striker</h3>
                 <p className="text-lg">
-                  {inning?.nonStriker?.userId.name || "N/A"}
+                  {inning?.nonStriker?.userId.name || "N/A"}{" "}
+                  {inning?.nonStriker
+                    ? `(${getBatsmanStats(inning.nonStriker._id).runs}(${
+                        getBatsmanStats(inning.nonStriker._id).balls
+                      }))`
+                    : ""}
                 </p>
               </div>
             </div>
@@ -158,9 +313,25 @@ export default function ScoringPage() {
             <div className="mb-6">
               <h3 className="font-semibold mb-2">Current Bowler</h3>
               <div className="flex justify-between items-center">
-                <p className="text-lg">
-                  {inning?.currentBowler?.userId.name || "N/A"}
-                </p>
+                <div>
+                  <p className="text-lg">
+                    {inning?.currentBowler?.userId.name || "N/A"}
+                  </p>
+                  {inning?.currentBowler && (
+                    <p className="text-sm text-gray-600">
+                      Balls:{" "}
+                      {Math.floor(
+                        getBowlerStats(inning.currentBowler._id).balls / 6
+                      )}
+                      .{getBowlerStats(inning.currentBowler._id).balls % 6}{" "}
+                      Runs: {getBowlerStats(inning.currentBowler._id).runs}{" "}
+                      Economy:{" "}
+                      {getBowlerStats(inning.currentBowler._id).economy}{" "}
+                      Wickets:{" "}
+                      {getBowlerStats(inning.currentBowler._id).wickets}
+                    </p>
+                  )}
+                </div>
                 <Button
                   variant="secondary"
                   onClick={() => setShowBowlerModal(true)}
@@ -337,9 +508,7 @@ export default function ScoringPage() {
                   {match.resultText || "Match has ended"}
                 </p>
                 {match.winner && (
-                  <p className="text-gray-600">
-                    Winner: {match.winner.name}
-                  </p>
+                  <p className="text-gray-600">Winner: {match.winner.name}</p>
                 )}
               </div>
             </Card>
@@ -352,7 +521,8 @@ export default function ScoringPage() {
           >
             <div className="space-y-4">
               <p className="text-gray-700">
-                Are you sure you want to end this match? This action cannot be undone.
+                Are you sure you want to end this match? This action cannot be
+                undone.
               </p>
               <div className="flex gap-2">
                 <Button
