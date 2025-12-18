@@ -15,17 +15,39 @@ import { Select } from "@/components/ui/Select";
 export default function ScoringPage() {
   const params = useParams();
   const matchId = params.id as string;
-  const { inning, isLoading, addBall, undoLastBall, swapStrike, changeBowler, changeBatsman, isAddingBall } =
-    useScoring(matchId);
-  const { match } = useMatch(matchId);
+  const {
+    inning,
+    isLoading,
+    addBall,
+    undoLastBall,
+    swapStrike,
+    changeBowler,
+    changeBatsman,
+    isAddingBall,
+  } = useScoring(matchId);
+  const { match, endMatch, isEndingMatch } = useMatch(matchId);
   const { players } = usePlayers();
   const [ballType, setBallType] = useState<string>("normal");
   const [showBowlerModal, setShowBowlerModal] = useState(false);
   const [showBatsmanModal, setShowBatsmanModal] = useState(false);
+  const [showEndMatchModal, setShowEndMatchModal] = useState(false);
   const [newBowlerId, setNewBowlerId] = useState("");
   const [newBatsmanId, setNewBatsmanId] = useState("");
 
-  const handleAddBall = (runs: number, type: string = "normal", wicketType?: string) => {
+  const handleEndMatch = () => {
+    setShowEndMatchModal(true);
+  };
+
+  const confirmEndMatch = () => {
+    endMatch(matchId);
+    setShowEndMatchModal(false);
+  };
+
+  const handleAddBall = (
+    runs: number,
+    type: string = "normal",
+    wicketType?: string
+  ) => {
     if (!inning) return;
     addBall({
       inningId: inning._id,
@@ -62,7 +84,12 @@ export default function ScoringPage() {
       ? match?.teamA.players || []
       : match?.teamB.players || [];
 
-  if (isLoading) return <Layout><p>Loading...</p></Layout>;
+  if (isLoading)
+    return (
+      <Layout>
+        <p>Loading...</p>
+      </Layout>
+    );
 
   if (!inning) {
     return (
@@ -70,7 +97,7 @@ export default function ScoringPage() {
         <Layout>
           <Card className="max-w-2xl mx-auto text-center">
             <h1 className="text-2xl font-bold mb-4">Match Not Started</h1>
-            <p className="text-gray-600">This match hasn't been started yet. Please start the match first.</p>
+            <p className="text-gray-600">{`This match hasn't been started yet. Please start the match first.`}</p>
           </Card>
         </Layout>
       </ProtectedRoute>
@@ -87,8 +114,12 @@ export default function ScoringPage() {
             </h1>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-gray-600">Batting: {inning?.battingTeam.name}</p>
-                <p className="text-gray-600">Bowling: {inning?.bowlingTeam.name}</p>
+                <p className="text-gray-600">
+                  Batting: {inning?.battingTeam.name}
+                </p>
+                <p className="text-gray-600">
+                  Bowling: {inning?.bowlingTeam.name}
+                </p>
               </div>
               <div>
                 <p className="text-gray-600">Inning: {inning?.inningNumber}</p>
@@ -112,26 +143,37 @@ export default function ScoringPage() {
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="border-r pr-4">
                 <h3 className="font-semibold mb-2">Striker</h3>
-                <p className="text-lg">{inning?.striker?.userId.name || "N/A"}</p>
+                <p className="text-lg">
+                  {inning?.striker?.userId.name || "N/A"}
+                </p>
               </div>
               <div>
                 <h3 className="font-semibold mb-2">Non-Striker</h3>
-                <p className="text-lg">{inning?.nonStriker?.userId.name || "N/A"}</p>
+                <p className="text-lg">
+                  {inning?.nonStriker?.userId.name || "N/A"}
+                </p>
               </div>
             </div>
 
             <div className="mb-6">
               <h3 className="font-semibold mb-2">Current Bowler</h3>
               <div className="flex justify-between items-center">
-                <p className="text-lg">{inning?.currentBowler?.userId.name || "N/A"}</p>
-                <Button variant="secondary" onClick={() => setShowBowlerModal(true)}>
+                <p className="text-lg">
+                  {inning?.currentBowler?.userId.name || "N/A"}
+                </p>
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowBowlerModal(true)}
+                >
                   Change
                 </Button>
               </div>
             </div>
 
             <div className="mb-6">
-              <label className="block text-sm font-medium mb-2">Ball Type</label>
+              <label className="block text-sm font-medium mb-2">
+                Ball Type
+              </label>
               <div className="flex gap-2">
                 <Button
                   variant={ballType === "normal" ? "primary" : "secondary"}
@@ -195,7 +237,10 @@ export default function ScoringPage() {
               >
                 Swap Strike
               </Button>
-              <Button variant="secondary" onClick={() => setShowBatsmanModal(true)}>
+              <Button
+                variant="secondary"
+                onClick={() => setShowBatsmanModal(true)}
+              >
                 Change Batsman
               </Button>
             </div>
@@ -206,14 +251,18 @@ export default function ScoringPage() {
             <div className="flex gap-2 mb-6 flex-wrap">
               {inning?.balls && inning.balls.length > 0 ? (
                 inning.balls
-                  .filter((ball) => ball.overNumber === inning.currentOver && ball.isValid)
-                  .map((ball, index) => (
+                  .filter(
+                    (ball) =>
+                      ball.overNumber === inning.currentOver && ball.isValid
+                  )
+                  .map((ball) => (
                     <div
                       key={ball._id}
                       className={`w-12 h-12 flex items-center justify-center rounded font-bold text-lg ${
                         ball.ballType === "wicket"
                           ? "bg-red-500 text-white"
-                          : ball.ballType === "wide" || ball.ballType === "noBall"
+                          : ball.ballType === "wide" ||
+                            ball.ballType === "noBall"
                           ? "bg-yellow-500 text-white"
                           : ball.runs === 4
                           ? "bg-blue-500 text-white"
@@ -244,7 +293,9 @@ export default function ScoringPage() {
               </div>
               <div>
                 <p className="text-sm text-gray-600">No Balls</p>
-                <p className="text-lg font-semibold">{inning?.extras.noBalls}</p>
+                <p className="text-lg font-semibold">
+                  {inning?.extras.noBalls}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Byes</p>
@@ -252,10 +303,76 @@ export default function ScoringPage() {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Leg Byes</p>
-                <p className="text-lg font-semibold">{inning?.extras.legByes}</p>
+                <p className="text-lg font-semibold">
+                  {inning?.extras.legByes}
+                </p>
               </div>
             </div>
           </Card>
+
+          {match?.status !== "completed" && (
+            <Card>
+              <div className="text-center">
+                <h3 className="font-semibold mb-4">Match Controls</h3>
+                <Button
+                  variant="danger"
+                  onClick={handleEndMatch}
+                  className="w-full"
+                  isLoading={isEndingMatch}
+                >
+                  End Match
+                </Button>
+                <p className="text-sm text-gray-500 mt-2">
+                  Use this to manually end the match before completion
+                </p>
+              </div>
+            </Card>
+          )}
+
+          {match?.status === "completed" && (
+            <Card>
+              <div className="text-center">
+                <h3 className="font-semibold text-xl mb-2">Match Completed</h3>
+                <p className="text-lg text-green-600 font-semibold mb-4">
+                  {match.resultText || "Match has ended"}
+                </p>
+                {match.winner && (
+                  <p className="text-gray-600">
+                    Winner: {match.winner.name}
+                  </p>
+                )}
+              </div>
+            </Card>
+          )}
+
+          <Modal
+            isOpen={showEndMatchModal}
+            onClose={() => setShowEndMatchModal(false)}
+            title="End Match Confirmation"
+          >
+            <div className="space-y-4">
+              <p className="text-gray-700">
+                Are you sure you want to end this match? This action cannot be undone.
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="danger"
+                  onClick={confirmEndMatch}
+                  className="flex-1"
+                  isLoading={isEndingMatch}
+                >
+                  Yes, End Match
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowEndMatchModal(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </Modal>
 
           <Modal
             isOpen={showBowlerModal}
@@ -273,7 +390,10 @@ export default function ScoringPage() {
                     .filter((id: string) => id !== inning?.currentBowler?._id)
                     .map((playerId: string) => {
                       const player = players.find((p) => p._id === playerId);
-                      return { value: playerId, label: player?.userId.name || "" };
+                      return {
+                        value: playerId,
+                        label: player?.userId.name || "",
+                      };
                     }),
                 ]}
               />
@@ -298,11 +418,15 @@ export default function ScoringPage() {
                   ...battingTeamPlayers
                     .filter(
                       (id: string) =>
-                        id !== inning?.striker?._id && id !== inning?.nonStriker?._id
+                        id !== inning?.striker?._id &&
+                        id !== inning?.nonStriker?._id
                     )
                     .map((playerId: string) => {
                       const player = players.find((p) => p._id === playerId);
-                      return { value: playerId, label: player?.userId.name || "" };
+                      return {
+                        value: playerId,
+                        label: player?.userId.name || "",
+                      };
                     }),
                 ]}
               />

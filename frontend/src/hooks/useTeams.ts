@@ -6,7 +6,7 @@ export const useTeams = () => {
 
   const { data: teams = [], isLoading, error } = useQuery({
     queryKey: ["teams"],
-    queryFn: teamService.getAll,
+    queryFn: teamService.initialize,
   });
 
   const createMutation = useMutation({

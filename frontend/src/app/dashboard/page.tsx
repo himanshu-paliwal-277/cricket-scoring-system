@@ -13,7 +13,8 @@ export default function DashboardPage() {
   const { matches, isLoading } = useMatches();
 
   const liveMatches = matches?.filter((m) => m.status === "live") || [];
-  const upcomingMatches = matches?.filter((m) => m.status === "not_started") || [];
+  const upcomingMatches =
+    matches?.filter((m) => m.status === "not_started") || [];
 
   return (
     <ProtectedRoute>
@@ -60,7 +61,7 @@ export default function DashboardPage() {
                     <div className="flex justify-between items-center">
                       <div>
                         <h3 className="text-xl font-semibold">
-                          {match.teamA.name} vs {match.teamB.name}
+                          {match?.teamA?.name} vs {match?.teamB?.name}
                         </h3>
                         <p className="text-green-600 font-semibold">LIVE</p>
                       </div>

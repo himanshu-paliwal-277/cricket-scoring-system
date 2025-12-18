@@ -2,7 +2,9 @@ import axios from "axios";
 import Cookies from "js-cookie";
 
 const AxiosInstance = axios.create({
-  baseURL: "https://cricket-scoring-system-production-f831.up.railway.app/api/v1",
+  baseURL:
+    // process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000/api/v1",
+    "http://localhost:4000/api/v1",
   headers: {
     "Content-Type": "application/json",
   },

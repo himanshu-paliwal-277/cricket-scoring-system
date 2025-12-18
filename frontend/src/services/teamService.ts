@@ -1,9 +1,19 @@
 import axiosInstance from "@/utils/axiosInstance";
 
+export interface Player {
+  _id: string;
+  userId: {
+    _id: string;
+    name: string;
+    email: string;
+  };
+}
+
 export interface Team {
   _id: string;
   name: string;
-  players: string[];
+  teamType: "team1" | "team2";
+  players: Player[];
   createdBy: string;
   isLocked: boolean;
   createdAt: string;
@@ -17,6 +27,11 @@ export interface CreateTeamData {
 export const teamService = {
   getAll: async (): Promise<Team[]> => {
     const response = await axiosInstance.get("/teams");
+    return response.data;
+  },
+
+  initialize: async (): Promise<Team[]> => {
+    const response = await axiosInstance.get("/teams/initialize");
     return response.data;
   },
 

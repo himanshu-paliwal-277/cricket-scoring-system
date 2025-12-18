@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Layout } from "@/components/Layout";
 import { Card } from "@/components/ui/Card";
@@ -9,15 +9,32 @@ import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 import { useTeams } from "@/hooks/useTeams";
 import { usePlayers } from "@/hooks/usePlayers";
+import { Team } from "@/services/teamService";
 
 export default function TeamsPage() {
-  const { teams, isLoading, createTeam, isCreating, deleteTeam } = useTeams();
+  const { teams, isLoading, updateTeam, isUpdating } = useTeams();
   const { players } = usePlayers();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingTeam, setEditingTeam] = useState<Team | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     players: [] as string[],
   });
+
+  // Initialize teams on component mount
+  useEffect(() => {
+    // Teams will be automatically fetched by useTeams hook
+  }, []);
+
+  const team1 = teams?.find((t) => t.teamType === "team1");
+  const team2 = teams?.find((t) => t.teamType === "team2");
+
+  const handleEditTeam = (team: Team) => {
+    setEditingTeam(team);
+    setFormData({
+      name: team.name,
+      players: team.players.map((p) => p._id),
+    });
+  };
 
   const handlePlayerToggle = (playerId: string) => {
     setFormData((prev) => ({
@@ -30,94 +47,176 @@ export default function TeamsPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    createTeam(formData, {
-      onSuccess: () => {
-        setIsModalOpen(false);
-        setFormData({ name: "", players: [] });
-      },
-    });
+    if (!editingTeam) return;
+
+    updateTeam(
+      { id: editingTeam._id, data: formData },
+      {
+        onSuccess: () => {
+          setEditingTeam(null);
+          setFormData({ name: "", players: [] });
+        },
+      }
+    );
+  };
+
+  const getAvailablePlayers = (currentTeam: Team) => {
+    const otherTeam = currentTeam.teamType === "team1" ? team2 : team1;
+    const otherTeamPlayerIds = otherTeam?.players.map((p) => p._id) || [];
+
+    return players.filter((player) => !otherTeamPlayerIds.includes(player._id));
+  };
+
+  const renderTeamCard = (team: Team | undefined) => {
+    if (!team) return null;
+
+    return (
+      <Card key={team._id}>
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <h3 className="text-2xl font-bold">{team.name}</h3>
+            <p className="text-sm text-gray-500">
+              {team.teamType === "team1" ? "First Team" : "Second Team"}
+            </p>
+          </div>
+          <Button variant="secondary" onClick={() => handleEditTeam(team)}>
+            Edit Team
+          </Button>
+        </div>
+
+        <div className="mb-4">
+          <h4 className="font-semibold mb-2">
+            Players ({team.players.length})
+          </h4>
+          {team.players.length > 0 ? (
+            <ul className="space-y-2">
+              {team.players.map((player) => (
+                <li
+                  key={player._id}
+                  className="flex items-center justify-between bg-gray-50 p-2 rounded"
+                >
+                  <span>{player.userId.name}</span>
+                  <span className="text-sm text-gray-500">
+                    {player.userId.email}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-gray-500 text-sm">No players added yet</p>
+          )}
+        </div>
+      </Card>
+    );
   };
 
   return (
-    <ProtectedRoute allowedRoles={["owner", "scorer"]}>
+    <ProtectedRoute allowedRoles={["owner"]}>
       <Layout>
         <div className="space-y-6">
           <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold">Teams</h1>
-            <Button onClick={() => setIsModalOpen(true)}>Create Team</Button>
+            <div>
+              <h1 className="text-3xl font-bold">Teams</h1>
+              <p className="text-gray-600 mt-1">
+                Manage your two teams. Players can only be in one team at a
+                time.
+              </p>
+            </div>
           </div>
 
           {isLoading ? (
             <p>Loading...</p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {teams.map((team) => (
-                <Card key={team._id}>
-                  <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-xl font-semibold">{team.name}</h3>
-                    {team.isLocked && (
-                      <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm">
-                        Locked
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-gray-600 mb-2">{team.players.length} players</p>
-                  {!team.isLocked && (
-                    <Button
-                      variant="danger"
-                      className="w-full"
-                      onClick={() => deleteTeam(team._id)}
-                    >
-                      Delete
-                    </Button>
-                  )}
-                </Card>
-              ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {renderTeamCard(team1)}
+              {renderTeamCard(team2)}
             </div>
           )}
 
-          <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Create Team">
+          {!team1 && !team2 && !isLoading && (
+            <Card>
+              <div className="text-center py-8">
+                <p className="text-gray-600 mb-4">
+                  No teams found. Teams will be automatically created when you
+                  access this page.
+                </p>
+                <p className="text-sm text-gray-500">
+                  Please refresh the page if teams don&apos;t appear.
+                </p>
+              </div>
+            </Card>
+          )}
+
+          <Modal
+            isOpen={!!editingTeam}
+            onClose={() => {
+              setEditingTeam(null);
+              setFormData({ name: "", players: [] });
+            }}
+            title={`Edit ${editingTeam?.name}`}
+          >
             <form onSubmit={handleSubmit} className="space-y-4">
               <Input
                 label="Team Name"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
                 required
               />
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Players (Minimum 2)
+                  Select Players
                 </label>
+                <p className="text-xs text-gray-500 mb-2">
+                  Players already in the other team are not available for
+                  selection
+                </p>
                 <div className="max-h-60 overflow-y-auto border rounded p-2 space-y-2">
-                  {players.map((player) => (
-                    <div key={player._id} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        id={player._id}
-                        checked={formData.players.includes(player._id)}
-                        onChange={() => handlePlayerToggle(player._id)}
-                        className="mr-2"
-                      />
-                      <label htmlFor={player._id} className="cursor-pointer">
-                        {player.userId.name}
-                      </label>
-                    </div>
-                  ))}
+                  {editingTeam &&
+                    getAvailablePlayers(editingTeam).map((player) => (
+                      <div key={player._id} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          id={player._id}
+                          checked={formData.players.includes(player._id)}
+                          onChange={() => handlePlayerToggle(player._id)}
+                          className="mr-2"
+                        />
+                        <label
+                          htmlFor={player._id}
+                          className="cursor-pointer flex-1"
+                        >
+                          {player.userId.name}
+                          <span className="text-xs text-gray-500 ml-2">
+                            ({player.userId.email})
+                          </span>
+                        </label>
+                      </div>
+                    ))}
                 </div>
                 <p className="text-sm text-gray-600 mt-1">
                   Selected: {formData.players.length}
                 </p>
               </div>
 
-              <Button
-                type="submit"
-                className="w-full"
-                isLoading={isCreating}
-                disabled={formData.players.length < 2}
-              >
-                Create Team
-              </Button>
+              <div className="flex gap-2">
+                <Button type="submit" className="flex-1" isLoading={isUpdating}>
+                  Save Changes
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="flex-1"
+                  onClick={() => {
+                    setEditingTeam(null);
+                    setFormData({ name: "", players: [] });
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
             </form>
           </Modal>
         </div>

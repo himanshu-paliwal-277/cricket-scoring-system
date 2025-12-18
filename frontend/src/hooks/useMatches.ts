@@ -45,11 +45,28 @@ export const useMatches = () => {
 };
 
 export const useMatch = (id: string) => {
+  const queryClient = useQueryClient();
+
   const { data: match, isLoading, error } = useQuery({
     queryKey: ["match", id],
     queryFn: () => matchService.getById(id),
     enabled: !!id,
   });
 
-  return { match, isLoading, error };
+  const endMatchMutation = useMutation({
+    mutationFn: (matchId: string) => matchService.endMatch(matchId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["match", id] });
+      queryClient.invalidateQueries({ queryKey: ["matches"] });
+      queryClient.invalidateQueries({ queryKey: ["inning", id] });
+    },
+  });
+
+  return {
+    match,
+    isLoading,
+    error,
+    endMatch: endMatchMutation.mutate,
+    isEndingMatch: endMatchMutation.isPending,
+  };
 };

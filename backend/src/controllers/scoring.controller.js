@@ -6,7 +6,8 @@ export const addBall = async (req, res) => {
   try {
     const { inningId, runs, ballType, wicketType } = req.body;
 
-    const inning = await Inning.findById(inningId);
+    const inning = await Inning.findById(inningId)
+      .populate('battingTeam bowlingTeam');
     if (!inning) {
       return res.status(404).json({ message: "Inning not found" });
     }
@@ -15,10 +16,11 @@ export const addBall = async (req, res) => {
       return res.status(400).json({ message: "Inning is already completed" });
     }
 
-    const match = await Match.findById(inning.matchId);
+    const match = await Match.findById(inning.matchId)
+      .populate('teamA teamB');
 
     // Create ball record
-    const ball = await Ball.create({
+    await Ball.create({
       inningId,
       overNumber: inning.currentOver,
       ballNumber: inning.currentBall,
@@ -66,18 +68,43 @@ export const addBall = async (req, res) => {
       inning.isCompleted = true;
 
       if (match.currentInning === 1) {
+        // First innings complete - prepare for second innings
         match.currentInning = 2;
+        await match.save();
+
+        // Note: Second innings should be started manually with selected players
+        // This ensures scorers select the opening batsmen and bowler for 2nd innings
       } else {
+        // Second innings complete - end the match
         match.status = "completed";
         // Determine winner
         const firstInning = await Inning.findOne({ matchId: match._id, inningNumber: 1 });
+
         if (inning.totalRuns > firstInning.totalRuns) {
           match.winner = inning.battingTeam;
+          const wicketsRemaining = 10 - inning.totalWickets;
+          match.resultText = `${inning.battingTeam.name} won by ${wicketsRemaining} wickets`;
         } else if (firstInning.totalRuns > inning.totalRuns) {
           match.winner = firstInning.battingTeam;
+          const runsDifference = firstInning.totalRuns - inning.totalRuns;
+          match.resultText = `${firstInning.battingTeam.name} won by ${runsDifference} runs`;
+        } else {
+          match.resultText = "Match tied";
         }
+        await match.save();
       }
-      await match.save();
+    } else if (match.currentInning === 2) {
+      // Check if chasing team has won before completing overs/wickets
+      const firstInning = await Inning.findOne({ matchId: match._id, inningNumber: 1 });
+      if (inning.totalRuns > firstInning.totalRuns) {
+        inning.isCompleted = true;
+        match.status = "completed";
+        match.winner = inning.battingTeam;
+        const wicketsRemaining = 10 - inning.totalWickets;
+        const ballsRemaining = (match.overs * 6) - (inning.currentOver * 6 + inning.currentBall);
+        match.resultText = `${inning.battingTeam.name} won by ${wicketsRemaining} wickets (${ballsRemaining} balls remaining)`;
+        await match.save();
+      }
     }
 
     await inning.save();

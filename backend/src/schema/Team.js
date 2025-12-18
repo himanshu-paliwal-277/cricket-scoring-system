@@ -7,6 +7,11 @@ const teamSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    teamType: {
+      type: String,
+      enum: ["team1", "team2"],
+      required: true,
+    },
     players: [
       {
         type: mongoose.Schema.Types.ObjectId,

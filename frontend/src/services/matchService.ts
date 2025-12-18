@@ -61,4 +61,9 @@ export const matchService = {
     const response = await axiosInstance.post(`/matches/${id}/complete`);
     return response.data;
   },
+
+  endMatch: async (id: string): Promise<Match> => {
+    const response = await axiosInstance.post(`/matches/${id}/end`);
+    return response.data.match;
+  },
 };

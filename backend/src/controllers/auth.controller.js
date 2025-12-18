@@ -72,7 +72,13 @@ export const login = async (req, res) => {
 export const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select("-password");
-    res.json(user);
+
+    if (user.role === "player") {
+      const playerProfile = await Player.findOne({ userId: user._id });
+      console.log(playerProfile);
+      return res.status(200).json({ ...user.toObject(), playerProfile });
+    }
+    return res.status(200).json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

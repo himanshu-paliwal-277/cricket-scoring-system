@@ -121,6 +121,9 @@ export const getCurrentInning = async (req, res) => {
       return res.status(404).json({ message: "Match not found" });
     }
 
+    console.log("Match Current Inning:", match.currentInning);
+
+
     const inning = await Inning.findOne({
       matchId: match._id,
       inningNumber: match.currentInning,
@@ -128,17 +131,19 @@ export const getCurrentInning = async (req, res) => {
     })
       .populate({
         path: "striker",
-        populate: { path: "userId", select: "name email" }
+        populate: { path: "userId", select: "name email" },
       })
       .populate({
         path: "nonStriker",
-        populate: { path: "userId", select: "name email" }
+        populate: { path: "userId", select: "name email" },
       })
       .populate({
         path: "currentBowler",
-        populate: { path: "userId", select: "name email" }
+        populate: { path: "userId", select: "name email" },
       })
       .populate("battingTeam bowlingTeam");
+
+    console.log("Current Inning Found:", inning);
 
     if (!inning) {
       return res.status(404).json({ message: "No active inning found" });
@@ -149,6 +154,67 @@ export const getCurrentInning = async (req, res) => {
       .sort({ createdAt: 1 });
 
     res.json({ inning, balls });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const endMatch = async (req, res) => {
+  try {
+    const match = await Match.findById(req.params.id).populate("teamA teamB");
+
+    if (!match) {
+      return res.status(404).json({ message: "Match not found" });
+    }
+
+    if (match.status === "completed") {
+      return res.status(400).json({ message: "Match is already completed" });
+    }
+
+    // Get all innings for this match
+    const innings = await Inning.find({ matchId: match._id })
+      .populate("battingTeam")
+      .sort({ inningNumber: 1 });
+
+    if (innings.length === 0) {
+      return res.status(400).json({ message: "Cannot end match - no innings played" });
+    }
+
+    // Mark all innings as completed
+    await Inning.updateMany({ matchId: match._id, isCompleted: false }, { isCompleted: true });
+
+    // Determine winner based on available innings
+    match.status = "completed";
+
+    if (innings.length === 1) {
+      // Only first innings completed - team batting first wins by walkover
+      match.winner = innings[0].battingTeam._id;
+      match.resultText = `${innings[0].battingTeam.name} won (opponent did not bat)`;
+    } else if (innings.length === 2) {
+      const firstInning = innings[0];
+      const secondInning = innings[1];
+
+      if (secondInning.totalRuns > firstInning.totalRuns) {
+        match.winner = secondInning.battingTeam._id;
+        const wicketsRemaining = 10 - secondInning.totalWickets;
+        match.resultText = `${secondInning.battingTeam.name} won by ${wicketsRemaining} wickets`;
+      } else if (firstInning.totalRuns > secondInning.totalRuns) {
+        match.winner = firstInning.battingTeam._id;
+        const runsDifference = firstInning.totalRuns - secondInning.totalRuns;
+        match.resultText = `${firstInning.battingTeam.name} won by ${runsDifference} runs`;
+      } else {
+        match.resultText = "Match tied";
+      }
+    }
+
+    await match.save();
+
+    const populatedMatch = await Match.findById(match._id).populate("teamA teamB winner");
+
+    res.json({
+      message: "Match ended successfully",
+      match: populatedMatch,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

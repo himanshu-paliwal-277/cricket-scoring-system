@@ -1,3 +1,5 @@
+import Inning from "../schema/Inning.js";
+import Match from "../schema/Match.js";
 import Team from "../schema/Team.js";
 
 export const createTeam = async (req, res) => {
@@ -24,9 +26,51 @@ export const createTeam = async (req, res) => {
   }
 };
 
+// Initialize default teams if they don't exist
+export const initializeTeams = async (req, res) => {
+  try {
+    const existingTeams = await Team.find();
+
+    if (existingTeams.length === 0) {
+      await Team.create({
+        name: "Team 1",
+        teamType: "team1",
+        players: [],
+        createdBy: req.user._id,
+      });
+
+      await Team.create({
+        name: "Team 2",
+        teamType: "team2",
+        players: [],
+        createdBy: req.user._id,
+      });
+    }
+
+    const populatedTeams = await Team.find()
+      .populate({
+        path: "players",
+        populate: { path: "userId", select: "name email" },
+      })
+      .populate("createdBy", "name email")
+      .sort({ teamType: 1 });
+
+    res.json(populatedTeams);
+    // res.status(200).json({ message: "Team initialization endpoint is currently disabled." });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const getAllTeams = async (req, res) => {
   try {
-    const teams = await Team.find().populate("players").populate("createdBy", "name email");
+    const teams = await Team.find()
+      .populate({
+        path: "players",
+        populate: { path: "userId", select: "name email" },
+      })
+      .populate("createdBy", "name email")
+      .sort({ teamType: 1 });
     res.json(teams);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -57,22 +101,50 @@ export const updateTeam = async (req, res) => {
       return res.status(404).json({ message: "Team not found" });
     }
 
+    // Check if team is in any live match
+    const liveMatch = await Match.findOne({
+      $or: [{ teamA: team._id }, { teamB: team._id }],
+      status: "live",
+    });
+
+    if (liveMatch) {
+      return res.status(400).json({
+        message: "Team is in a live match and cannot be edited",
+      });
+    }
+
     if (team.isLocked) {
       return res.status(400).json({ message: "Team is locked, cannot edit" });
     }
 
     const { name, players } = req.body;
 
-    if (players && players.length < 2) {
-      return res.status(400).json({ message: "Team must have at least 2 players" });
+    // Get the other team to check for player conflicts
+    const otherTeamType = team.teamType === "team1" ? "team2" : "team1";
+    const otherTeam = await Team.findOne({ teamType: otherTeamType });
+
+    if (players) {
+      // Check if any selected players are already in the other team
+      const conflictingPlayers = players.filter((playerId) =>
+        otherTeam.players.some((p) => p.toString() === playerId.toString())
+      );
+
+      if (conflictingPlayers.length > 0) {
+        return res.status(400).json({
+          message: "Some selected players are already in the other team",
+        });
+      }
     }
 
     team.name = name || team.name;
-    team.players = players || team.players;
+    team.players = players !== undefined ? players : team.players;
 
     await team.save();
     const updatedTeam = await Team.findById(team._id)
-      .populate("players")
+      .populate({
+        path: "players",
+        populate: { path: "userId", select: "name email" },
+      })
       .populate("createdBy", "name email");
 
     res.json(updatedTeam);
