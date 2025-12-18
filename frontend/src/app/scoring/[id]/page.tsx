@@ -481,6 +481,63 @@ export default function ScoringPage() {
             </div>
           </Card>
 
+          <Card>
+            <h3 className="font-semibold mb-4">Previous Overs</h3>
+            <div className="space-y-4">
+              {inning?.balls && inning.balls.length > 0 ? (
+                Array.from(
+                  new Set(
+                    inning.balls
+                      .filter((ball) => ball.overNumber < inning.currentOver)
+                      .map((ball) => ball.overNumber)
+                  )
+                )
+                  .sort((a, b) => b - a) // Show latest overs first
+                  .map((overNumber) => (
+                    <div key={overNumber} className="flex items-center gap-4">
+                      <span className="font-medium text-sm w-12">
+                        Over {overNumber + 1}:
+                      </span>
+                      <div className="flex gap-2 flex-wrap">
+                        {inning.balls
+                          .filter(
+                            (ball) =>
+                              ball.overNumber === overNumber && ball.isValid
+                          )
+                          .map((ball) => (
+                            <div
+                              key={ball._id}
+                              className={`w-10 h-10 flex items-center justify-center rounded font-bold text-sm ${
+                                ball.ballType === "wicket"
+                                  ? "bg-red-500 text-white"
+                                  : ball.ballType === "wide" ||
+                                    ball.ballType === "noBall"
+                                  ? "bg-yellow-500 text-white"
+                                  : ball.runs === 4
+                                  ? "bg-blue-500 text-white"
+                                  : ball.runs === 6
+                                  ? "bg-purple-500 text-white"
+                                  : "bg-gray-200 text-gray-800"
+                              }`}
+                            >
+                              {ball.ballType === "wicket"
+                                ? "W"
+                                : ball.ballType === "wide"
+                                ? `${ball.runs}Wd`
+                                : ball.ballType === "noBall"
+                                ? `${ball.runs}Nb`
+                                : ball.runs}
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  ))
+              ) : (
+                <p className="text-gray-500 text-sm">No previous overs</p>
+              )}
+            </div>
+          </Card>
+
           {match?.status !== "completed" && (
             <Card>
               <div className="text-center">
