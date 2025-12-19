@@ -78,6 +78,57 @@ export const startMatch = async (req, res) => {
   }
 };
 
+export const startInning = async (req, res) => {
+  try {
+    const { striker, nonStriker, bowler } = req.body;
+    const match = await Match.findById(req.params.id);
+
+    if (!match) {
+      return res.status(404).json({ message: "Match not found" });
+    }
+
+    if (match.status !== "live" || match.currentInning !== 2) {
+      return res.status(400).json({ message: "Cannot start inning at this time" });
+    }
+
+    // Check if second inning already exists
+    const existingInning = await Inning.findOne({
+      matchId: match._id,
+      inningNumber: 2,
+    });
+
+    if (existingInning) {
+      return res.status(400).json({ message: "Second inning already started" });
+    }
+
+    // Determine batting and bowling teams (opposite of first inning)
+    const firstInning = await Inning.findOne({
+      matchId: match._id,
+      inningNumber: 1,
+    });
+
+    const battingTeam = firstInning.bowlingTeam;
+    const bowlingTeam = firstInning.battingTeam;
+
+    // Create second inning
+    const inning = await Inning.create({
+      matchId: match._id,
+      battingTeam,
+      bowlingTeam,
+      inningNumber: 2,
+      striker,
+      nonStriker,
+      currentBowler: bowler,
+    });
+
+    const populatedMatch = await Match.findById(match._id).populate("teamA").populate("teamB");
+
+    res.json({ match: populatedMatch, inning });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const getAllMatches = async (req, res) => {
   try {
     const matches = await Match.find()
@@ -123,6 +174,16 @@ export const getCurrentInning = async (req, res) => {
 
     console.log("Match Current Inning:", match.currentInning);
 
+    // If currentInning is 2 but no second inning exists, return null to indicate second inning needs to be started
+    if (match.currentInning === 2) {
+      const existingSecondInning = await Inning.findOne({
+        matchId: match._id,
+        inningNumber: 2,
+      });
+      if (!existingSecondInning) {
+        return res.json({ inning: null, balls: [] });
+      }
+    }
 
     const inning = await Inning.findOne({
       matchId: match._id,

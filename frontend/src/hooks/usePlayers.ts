@@ -1,10 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CreatePlayerData, playerService } from "@/services/playerService";
+import {
+  CreatePlayerData,
+  playerService,
+  PlayerStats,
+} from "@/services/playerService";
 
 export const usePlayers = () => {
   const queryClient = useQueryClient();
 
-  const { data: players = [], isLoading, error } = useQuery({
+  const {
+    data: players = [],
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["players"],
     queryFn: playerService.getAll,
   });
@@ -17,8 +25,13 @@ export const usePlayers = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<CreatePlayerData> }) =>
-      playerService.update(id, data),
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: Partial<CreatePlayerData>;
+    }) => playerService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["players"] });
     },
@@ -45,11 +58,46 @@ export const usePlayers = () => {
 };
 
 export const usePlayer = (id: string) => {
-  const { data: player, isLoading, error } = useQuery({
+  const queryClient = useQueryClient();
+
+  const {
+    data: player,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["player", id],
     queryFn: () => playerService.getById(id),
     enabled: !!id,
   });
 
-  return { player, isLoading, error };
+  const updateMutation = useMutation({
+    mutationFn: (data: Partial<CreatePlayerData>) =>
+      playerService.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["player", id] });
+      queryClient.invalidateQueries({ queryKey: ["players"] });
+    },
+  });
+
+  return {
+    player,
+    isLoading,
+    error,
+    updatePlayer: updateMutation.mutate,
+    isUpdating: updateMutation.isPending,
+  };
+};
+
+export const usePlayerStats = (id: string) => {
+  const {
+    data: stats,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["playerStats", id],
+    queryFn: () => playerService.getStats(id),
+    enabled: !!id,
+  });
+
+  return { stats, isLoading, error };
 };

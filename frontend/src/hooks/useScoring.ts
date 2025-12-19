@@ -1,14 +1,24 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { AddBallData, scoringService } from "@/services/scoringService";
 
 export const useScoring = (matchId: string) => {
   const queryClient = useQueryClient();
+  const [isClient, setIsClient] = useState(false);
 
-  const { data: inning, isLoading, error } = useQuery({
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const {
+    data: inning,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["inning", matchId],
     queryFn: () => scoringService.getCurrentInning(matchId),
     enabled: !!matchId,
-    refetchInterval: 3000, // Auto-refetch every 3 seconds for live updates
+    refetchInterval: isClient ? 3000 : false, // Only refetch on client
     retry: (failureCount, error: any) => {
       // Don't retry on 404 - match hasn't started yet
       if (error?.response?.status === 404) {
@@ -17,7 +27,7 @@ export const useScoring = (matchId: string) => {
       // Retry up to 3 times for other errors
       return failureCount < 3;
     },
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: isClient, // Only refetch on focus on client
   });
 
   const addBallMutation = useMutation({
@@ -45,16 +55,26 @@ export const useScoring = (matchId: string) => {
   });
 
   const changeBowlerMutation = useMutation({
-    mutationFn: ({ inningId, bowlerId }: { inningId: string; bowlerId: string }) =>
-      scoringService.changeBowler(inningId, bowlerId),
+    mutationFn: ({
+      inningId,
+      bowlerId,
+    }: {
+      inningId: string;
+      bowlerId: string;
+    }) => scoringService.changeBowler(inningId, bowlerId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inning", matchId] });
     },
   });
 
   const changeBatsmanMutation = useMutation({
-    mutationFn: ({ inningId, newBatsmanId }: { inningId: string; newBatsmanId: string }) =>
-      scoringService.changeBatsman(inningId, newBatsmanId),
+    mutationFn: ({
+      inningId,
+      newBatsmanId,
+    }: {
+      inningId: string;
+      newBatsmanId: string;
+    }) => scoringService.changeBatsman(inningId, newBatsmanId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inning", matchId] });
     },

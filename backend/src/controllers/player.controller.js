@@ -49,8 +49,8 @@ export const updatePlayer = async (req, res) => {
   try {
     const { battingStyle, bowlingStyle } = req.body;
 
-    const player = await Player.findByIdAndUpdate(
-      req.params.id,
+    const player = await Player.findOneAndUpdate(
+      { userId: req.params.id },
       { battingStyle, bowlingStyle },
       { new: true }
     ).populate("userId", "name email");
@@ -67,7 +67,7 @@ export const updatePlayer = async (req, res) => {
 
 export const getPlayerStats = async (req, res) => {
   try {
-    const player = await Player.findById(req.params.id).populate("userId", "name email");
+    const player = await Player.findOne({ userId: req.params.id }).populate("userId", "name email");
     if (!player) {
       return res.status(404).json({ message: "Player not found" });
     }

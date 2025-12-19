@@ -1,20 +1,47 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Layout } from "@/components/Layout";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Select";
 import { useAuth } from "@/hooks/useAuth";
 import { useMatches } from "@/hooks/useMatches";
+import { usePlayer, usePlayerStats } from "@/hooks/usePlayers";
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const { matches, isLoading } = useMatches();
+  const { stats: playerStats, isLoading: statsLoading } = usePlayerStats(
+    user?._id
+  );
+  const { updatePlayer } = usePlayer();
+
+  const [updateForm, setUpdateForm] = useState({
+    battingStyle: "",
+    bowlingStyle: "",
+  });
 
   const liveMatches = matches?.filter((m) => m.status === "live") || [];
   const upcomingMatches =
     matches?.filter((m) => m.status === "not_started") || [];
+
+  const handleUpdatePlayer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user?._id) return;
+
+    try {
+      await updatePlayer.mutateAsync({
+        id: user._id,
+        data: updateForm,
+      });
+      alert("Player updated successfully!");
+    } catch (error) {
+      alert("Failed to update player");
+    }
+  };
 
   return (
     <ProtectedRoute>
@@ -24,6 +51,109 @@ export default function DashboardPage() {
             <h1 className="text-3xl font-bold">Welcome, {user?.name}!</h1>
             <p className="text-gray-600">Role: {user?.role}</p>
           </div>
+
+          {user?.role === "player" && (
+            <Card>
+              <h2 className="text-2xl font-bold mb-4">Your Statistics</h2>
+              {statsLoading ? (
+                <p>Loading stats...</p>
+              ) : playerStats ? (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-blue-600">
+                      {playerStats.totalRuns}
+                    </p>
+                    <p className="text-sm text-gray-600">Total Runs</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-green-600">
+                      {playerStats.totalWickets}
+                    </p>
+                    <p className="text-sm text-gray-600">Total Wickets</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-purple-600">
+                      {playerStats.matchesPlayed}
+                    </p>
+                    <p className="text-sm text-gray-600">Matches Played</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-orange-600">
+                      {playerStats.average || 0}
+                    </p>
+                    <p className="text-sm text-gray-600">Batting Average</p>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-gray-600">No stats available</p>
+              )}
+            </Card>
+          )}
+
+          {user?.role === "owner" && (
+            <Card>
+              <h2 className="text-2xl font-bold mb-4">Update Player Details</h2>
+              <form onSubmit={handleUpdatePlayer} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Batting Style
+                  </label>
+                  <Select
+                    value={updateForm.battingStyle}
+                    onChange={(e) =>
+                      setUpdateForm({
+                        ...updateForm,
+                        battingStyle: e.target.value,
+                      })
+                    }
+                    options={[
+                      { value: "right-handed", label: "Right-handed" },
+                      { value: "left-handed", label: "Left-handed" },
+                    ]}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Bowling Style
+                  </label>
+                  <Select
+                    value={updateForm.bowlingStyle}
+                    onChange={(e) =>
+                      setUpdateForm({
+                        ...updateForm,
+                        bowlingStyle: e.target.value,
+                      })
+                    }
+                    options={[
+                      { value: "right-arm-fast", label: "Right-arm Fast" },
+                      { value: "right-arm-medium", label: "Right-arm Medium" },
+                      {
+                        value: "right-arm-off-spin",
+                        label: "Right-arm Off-spin",
+                      },
+                      {
+                        value: "right-arm-leg-spin",
+                        label: "Right-arm Leg-spin",
+                      },
+                      { value: "left-arm-fast", label: "Left-arm Fast" },
+                      { value: "left-arm-medium", label: "Left-arm Medium" },
+                      {
+                        value: "left-arm-off-spin",
+                        label: "Left-arm Off-spin",
+                      },
+                      {
+                        value: "left-arm-leg-spin",
+                        label: "Left-arm Leg-spin",
+                      },
+                    ]}
+                  />
+                </div>
+                <Button type="submit" disabled={updatePlayer.isPending}>
+                  {updatePlayer.isPending ? "Updating..." : "Update Player"}
+                </Button>
+              </form>
+            </Card>
+          )}
 
           {user?.role !== "player" && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
