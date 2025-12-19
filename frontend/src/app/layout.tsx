@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { Providers } from "@/providers/Providers";
 import "./globals.css";
+import { MantineProvider } from "@mantine/core";
+import "@mantine/core/styles.css";
 
 export const metadata: Metadata = {
   title: "Cricket Scoring System",
@@ -38,7 +40,9 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/logo.png" />
       </head>
       <body>
-        <Providers>{children}</Providers>
+        <Providers>
+          <MantineProvider>{children}</MantineProvider>
+        </Providers>
         <Script
           id="register-sw"
           strategy="afterInteractive"
