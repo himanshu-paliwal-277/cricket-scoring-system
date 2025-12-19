@@ -20,15 +20,15 @@ AxiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-AxiosInstance.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      Cookies.remove("token");
-      window.location.href = "/login";
-    }
-    return Promise.reject(error);
-  }
-);
+// AxiosInstance.interceptors.response.use(
+//   (response) => response,
+//   (error) => {
+//     if (error.response?.status === 401) {
+//       Cookies.remove("token");
+//       window.location.href = "/login";
+//     }
+//     return Promise.reject(error);
+//   }
+// );
 
 export default AxiosInstance;

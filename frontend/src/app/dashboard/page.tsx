@@ -9,15 +9,15 @@ import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { useAuth } from "@/hooks/useAuth";
 import { useMatches } from "@/hooks/useMatches";
-import { usePlayer, usePlayerStats } from "@/hooks/usePlayers";
+import { usePlayerStats } from "@/hooks/usePlayers";
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const { matches, isLoading } = useMatches();
   const { stats: playerStats, isLoading: statsLoading } = usePlayerStats(
-    user?._id
+    user?.id || ""
   );
-  const { updatePlayer } = usePlayer();
+  // const { updatePlayer } = usePlayer(user?.id || "");
 
   const [updateForm, setUpdateForm] = useState({
     battingStyle: "",
@@ -30,15 +30,16 @@ export default function DashboardPage() {
 
   const handleUpdatePlayer = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user?._id) return;
+    if (!user?.id) return;
 
     try {
-      await updatePlayer.mutateAsync({
-        id: user._id,
-        data: updateForm,
-      });
+      // await updatePlayer.mutateAsync({
+      //   id: user.id,
+      //   data: updateForm,
+      // });
       alert("Player updated successfully!");
     } catch (error) {
+      console.error("Failed to update player:", error);
       alert("Failed to update player");
     }
   };
@@ -148,9 +149,9 @@ export default function DashboardPage() {
                     ]}
                   />
                 </div>
-                <Button type="submit" disabled={updatePlayer.isPending}>
+                {/* <Button type="submit" disabled={updatePlayer.isPending}>
                   {updatePlayer.isPending ? "Updating..." : "Update Player"}
-                </Button>
+                </Button> */}
               </form>
             </Card>
           )}

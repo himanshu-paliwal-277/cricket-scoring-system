@@ -34,7 +34,7 @@ export const playerService = {
     return response.data;
   },
 
-  getStats: async (id: string): Promise<PlayerStats> => {
+  getStats: async (id: string): Promise<any> => {
     const response = await axiosInstance.get(`/players/${id}/stats`);
     return response.data;
   },

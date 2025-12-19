@@ -328,22 +328,26 @@ export default function ScoringPage() {
               <div className="border-r pr-4">
                 <h3 className="font-semibold mb-2">Striker</h3>
                 <p className="text-lg">
-                  {inning?.striker?.userId.name || "N/A"}{" "}
+                  <span className="mr-5">
+                    {inning?.striker?.userId.name + "* " || "N/A"}
+                  </span>
                   {inning?.striker
-                    ? `(${getBatsmanStats(inning.striker._id).runs}(${
+                    ? `${getBatsmanStats(inning.striker._id).runs}(${
                         getBatsmanStats(inning.striker._id).balls
-                      }))`
+                      })`
                     : ""}
                 </p>
               </div>
               <div>
                 <h3 className="font-semibold mb-2">Non-Striker</h3>
                 <p className="text-lg">
-                  {inning?.nonStriker?.userId.name || "N/A"}{" "}
+                  <span className="mr-5">
+                    {inning?.nonStriker?.userId.name || "N/A"}
+                  </span>
                   {inning?.nonStriker
-                    ? `(${getBatsmanStats(inning.nonStriker._id).runs}(${
+                    ? `${getBatsmanStats(inning.nonStriker._id).runs}(${
                         getBatsmanStats(inning.nonStriker._id).balls
-                      }))`
+                      })`
                     : ""}
                 </p>
               </div>

@@ -1,9 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  CreatePlayerData,
-  playerService,
-  PlayerStats,
-} from "@/services/playerService";
+import { CreatePlayerData, playerService } from "@/services/playerService";
 
 export const usePlayers = () => {
   const queryClient = useQueryClient();

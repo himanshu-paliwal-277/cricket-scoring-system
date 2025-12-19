@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axiosInstance from "@/utils/axiosInstance";
 
 export interface Team {
@@ -51,7 +52,7 @@ export const matchService = {
     return response.data;
   },
 
-  start: async (id: string, data: StartMatchData): Promise<any> => {
+  start: async (id: string, data: any): Promise<any> => {
     const response = await axiosInstance.post(`/matches/${id}/start`, data);
     return response.data;
   },

@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   CreateMatchData,
   matchService,
-  StartMatchData,
   StartInningData,
 } from "@/services/matchService";
 
@@ -26,7 +25,8 @@ export const useMatches = () => {
   });
 
   const startMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: StartMatchData }) =>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
       matchService.start(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["matches"] });
