@@ -1,7 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
-import { authService, LoginData, RegisterData } from "@/services/authService";
+import {
+  authService,
+  LoginData,
+  RegisterData,
+  User,
+} from "@/services/authService";
 import { useAuthStore } from "@/store/authStore";
 
 export const useAuth = () => {
@@ -9,7 +14,7 @@ export const useAuth = () => {
   const queryClient = useQueryClient();
   const { setUser, clearUser } = useAuthStore();
 
-  const { data: user, isLoading, error } = useQuery({
+  const { data: user, isLoading } = useQuery<User>({
     queryKey: ["me"],
     queryFn: authService.getMe,
     enabled: !!Cookies.get("token"),
@@ -18,15 +23,6 @@ export const useAuth = () => {
     refetchOnMount: false,
     refetchOnReconnect: false,
     staleTime: Infinity,
-    onError: (error: any) => {
-      // Handle CORS or network errors
-      if (error.message?.includes("Network Error") || error.code === "ERR_NETWORK") {
-        console.error("Network/CORS Error:", error);
-        Cookies.remove("token");
-        clearUser();
-        router.push("/login");
-      }
-    },
   });
 
   const registerMutation = useMutation({
@@ -67,7 +63,7 @@ export const useAuth = () => {
   };
 
   return {
-    user,
+    user: user as User | undefined, // Explicitly cast the type
     isLoading,
     isAuthenticated: !!Cookies.get("token"),
     register: registerMutation.mutate,
