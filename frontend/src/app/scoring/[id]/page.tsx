@@ -11,6 +11,7 @@ import { useMatch } from "@/hooks/useMatches";
 import { usePlayers } from "@/hooks/usePlayers";
 import { Modal } from "@/components/ui/Modal";
 import { Select } from "@/components/ui/Select";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function ScoringPage() {
   const params = useParams();
@@ -28,6 +29,7 @@ export default function ScoringPage() {
   const { match, endMatch, startInning, isEndingMatch, isStartingInning } =
     useMatch(matchId);
   const { players } = usePlayers();
+  const { user } = useAuth();
   const [ballType, setBallType] = useState<
     "normal" | "wide" | "noBall" | "wicket"
   >("normal");
@@ -171,7 +173,7 @@ export default function ScoringPage() {
 
   if (!inning || !inning._id) {
     return (
-      <ProtectedRoute allowedRoles={["owner", "scorer"]}>
+      <ProtectedRoute allowedRoles={["owner", "scorer", "player"]}>
         <Layout>
           <Card className="max-w-2xl mx-auto">
             <h1 className="text-2xl font-bold mb-4 text-center">
@@ -249,7 +251,7 @@ export default function ScoringPage() {
   }
 
   return (
-    <ProtectedRoute allowedRoles={["owner", "scorer"]}>
+    <ProtectedRoute allowedRoles={["owner", "scorer", "player"]}>
       <Layout>
         <div className="max-w-6xl mx-auto space-y-6">
           <Card>
@@ -379,7 +381,7 @@ export default function ScoringPage() {
                     </p>
                   )}
                 </div>
-                {match?.status === "live" && (
+                {match?.status === "live" && user?.role !== "player" && (
                   <Button
                     variant="secondary"
                     onClick={() => setShowBowlerModal(true)}
@@ -390,7 +392,7 @@ export default function ScoringPage() {
               </div>
             </div>
 
-            {match?.status === "live" && (
+            {match?.status === "live" && user?.role !== "player" && (
               <div className="mb-6">
                 <label className="block text-sm font-medium mb-2">
                   Ball Type
@@ -425,7 +427,7 @@ export default function ScoringPage() {
               </div>
             )}
 
-            {match?.status === "live" && (
+            {match?.status === "live" && user?.role !== "player" && (
               <div className="mb-6">
                 <label className="block text-sm font-medium mb-2">
                   Add Runs
@@ -451,7 +453,7 @@ export default function ScoringPage() {
               </div>
             )}
 
-            {match?.status === "live" && (
+            {match?.status === "live" && user?.role !== "player" && (
               <div className="grid grid-cols-3 gap-2">
                 <Button
                   variant="danger"
@@ -596,7 +598,7 @@ export default function ScoringPage() {
             </div>
           </Card>
 
-          {match?.status !== "completed" && (
+          {match?.status !== "completed" && user?.role !== "player" && (
             <Card>
               <div className="text-center">
                 <h3 className="font-semibold mb-4">Match Controls</h3>

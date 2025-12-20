@@ -115,7 +115,7 @@ export default function TeamsPage() {
   };
 
   return (
-    <ProtectedRoute allowedRoles={["owner"]}>
+    <ProtectedRoute allowedRoles={["owner", "scorer", "player"]}>
       <Layout>
         <div className="space-y-6">
           <div className="flex justify-between items-center">

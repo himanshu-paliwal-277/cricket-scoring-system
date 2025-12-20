@@ -29,7 +29,7 @@ const NavLinks = ({
       Dashboard
     </Link>
 
-    {user.role !== "player" && (
+    {user?.role !== "player" && (
       <Link
         href="/players"
         onClick={() => setOpened(false)}

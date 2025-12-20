@@ -23,7 +23,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }, [isAuthenticated, isLoading, router]);
 
   useEffect(() => {
-    if (user && allowedRoles && !allowedRoles.includes(user.role)) {
+    if (user && allowedRoles && !allowedRoles.includes(user?.role)) {
       router.push("/dashboard");
     }
   }, [user, allowedRoles, router]);
@@ -36,7 +36,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return null;
   }
 
-  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+  if (allowedRoles && user && !allowedRoles.includes(user?.role)) {
     return null;
   }
 
