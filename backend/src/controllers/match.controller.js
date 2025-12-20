@@ -65,7 +65,12 @@ export const startMatch = async (req, res) => {
       currentBowler: bowler,
     });
 
+    // match.status = "live";
+    // match.tossWinner = tossWinner;
+    // match.tossDecision = tossDecision;
+    // await match.save();
     match.status = "live";
+    match.currentInning = 1; // ✅ ADD THIS LINE
     match.tossWinner = tossWinner;
     match.tossDecision = tossDecision;
     await match.save();
@@ -87,38 +92,64 @@ export const startInning = async (req, res) => {
       return res.status(404).json({ message: "Match not found" });
     }
 
-    if (match.status !== "live" || match.currentInning !== 2) {
-      return res.status(400).json({ message: "Cannot start inning at this time" });
+    if (match.status !== "live") {
+      return res.status(400).json({ message: "Match is not live" });
     }
 
-    // Check if second inning already exists
+    // ❌ REMOVE THIS - It's blocking second inning start
+    // if (match.currentInning !== 1) {
+    //   return res.status(400).json({
+    //     message: "Second inning can only start after first inning",
+    //   });
+    // }
+
+    // ✅ ADD THIS - Check if we're trying to start second inning
+    if (match.currentInning !== 1) {
+      return res.status(400).json({
+        message: "Cannot start inning - invalid state",
+      });
+    }
+
     const existingInning = await Inning.findOne({
       matchId: match._id,
       inningNumber: 2,
     });
 
     if (existingInning) {
-      return res.status(400).json({ message: "Second inning already started" });
+      return res.status(400).json({
+        message: "Second inning already started",
+      });
     }
 
-    // Determine batting and bowling teams (opposite of first inning)
     const firstInning = await Inning.findOne({
       matchId: match._id,
       inningNumber: 1,
     });
 
-    const battingTeam = firstInning.bowlingTeam;
-    const bowlingTeam = firstInning.battingTeam;
+    if (!firstInning) {
+      return res.status(400).json({
+        message: "First inning not found",
+      });
+    }
 
-    // Create second inning
+    // ✅ Mark first inning as completed
+    firstInning.isCompleted = true;
+    await firstInning.save();
+
+    // ✅ Update match to second inning
+    match.currentInning = 2;
+    await match.save();
+
+    // ✅ Create second inning
     const inning = await Inning.create({
       matchId: match._id,
-      battingTeam,
-      bowlingTeam,
+      battingTeam: firstInning.bowlingTeam,
+      bowlingTeam: firstInning.battingTeam,
       inningNumber: 2,
       striker,
       nonStriker,
       currentBowler: bowler,
+      isCompleted: false,
     });
 
     const populatedMatch = await Match.findById(match._id).populate("teamA").populate("teamB");

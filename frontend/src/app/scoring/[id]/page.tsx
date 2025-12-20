@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Layout } from "@/components/Layout";
@@ -36,6 +36,7 @@ export default function ScoringPage() {
   const [showBowlerModal, setShowBowlerModal] = useState(false);
   const [showBatsmanModal, setShowBatsmanModal] = useState(false);
   const [showEndMatchModal, setShowEndMatchModal] = useState(false);
+  const [showChangeInningModal, setShowChangeInningModal] = useState(false);
   const [newBowlerId, setNewBowlerId] = useState("");
   const [newBatsmanId, setNewBatsmanId] = useState("");
   const [inningStriker, setInningStriker] = useState("");
@@ -72,13 +73,62 @@ export default function ScoringPage() {
         : match.teamB
       : firstInning?.battingTeam;
 
+  // Check if all players are out (based on team size)
+  const checkAllPlayersOut = () => {
+    if (!inning || !currentInningBattingTeam) return false;
+
+    const totalPlayers = currentInningBattingTeam.players?.length || 11;
+    const totalWickets = inning.totalWickets || 0;
+
+    // All out if all players of the team are dismissed
+    // For a team with n players, n wickets means all out
+    return totalWickets >= totalPlayers;
+  };
+
   const handleEndMatch = () => {
     setShowEndMatchModal(true);
   };
 
+  // Auto-trigger inning change when all players are out
+  useEffect(() => {
+    if (match?.status === "live" && inning && checkAllPlayersOut()) {
+      if (match.currentInning === 1) {
+        // Automatically show modal to start second inning when all players are out
+        setTimeout(() => {
+          setShowChangeInningModal(true);
+        }, 1000); // Small delay so users can see the final score
+      } else if (match.currentInning === 2) {
+        // Second inning all out - end match automatically
+        setTimeout(() => {
+          handleEndMatch();
+        }, 1000);
+      }
+    }
+  }, [inning?.totalWickets, match?.status, match?.currentInning]);
+
   const confirmEndMatch = () => {
     endMatch(matchId);
     setShowEndMatchModal(false);
+  };
+
+  const handleChangeInning = () => {
+    setShowChangeInningModal(true);
+  };
+
+  const confirmChangeInning = () => {
+    // Don't close modal yet - let startInning success handler do it
+    if (inningStriker && inningNonStriker && inningBowler) {
+      startInning({
+        striker: inningStriker,
+        nonStriker: inningNonStriker,
+        bowler: inningBowler,
+      });
+      // Reset form
+      setInningStriker("");
+      setInningNonStriker("");
+      setInningBowler("");
+      setShowChangeInningModal(false);
+    }
   };
 
   const handleAddBall = (
@@ -164,6 +214,9 @@ export default function ScoringPage() {
     return { balls, runs, wickets, overs, economy };
   };
 
+  // Check if user can score (owner or scorer role)
+  const canScore = user?.role === "owner" || user?.role === "scorer";
+
   if (isLoading)
     return (
       <Layout>
@@ -177,73 +230,100 @@ export default function ScoringPage() {
         <Layout>
           <Card className="max-w-2xl mx-auto">
             <h1 className="text-2xl font-bold mb-4 text-center">
-              Start {match?.currentInning === 1 ? "First" : "Second"} Inning
+              {canScore
+                ? `Start ${
+                    match?.currentInning === 1 ? "First" : "Second"
+                  } Inning`
+                : "Waiting for Inning to Start"}
             </h1>
-            <p className="text-gray-600 mb-6 text-center">
-              Select the opening batsmen and bowler for the{" "}
-              {match?.currentInning === 1 ? "first" : "second"} inning.
-            </p>
-            <div className="space-y-4">
-              <Select
-                label={`Striker (${currentInningBattingTeam?.name})`}
-                value={inningStriker}
-                onChange={(e) => setInningStriker(e.target.value)}
-                options={[
-                  { value: "", label: "Select Striker" },
-                  ...(currentInningBattingTeam?.players || []).map(
-                    (playerId: string) => {
-                      const player = players.find((p) => p._id === playerId);
-                      return {
-                        value: playerId,
-                        label: player?.userId.name || "",
-                      };
+            {canScore ? (
+              <>
+                <p className="text-gray-600 mb-6 text-center">
+                  Select the opening batsmen and bowler for the{" "}
+                  {match?.currentInning === 1 ? "first" : "second"} inning.
+                </p>
+                <div className="space-y-4">
+                  <Select
+                    label={`Striker (${currentInningBattingTeam?.name})`}
+                    value={inningStriker}
+                    onChange={(e) => setInningStriker(e.target.value)}
+                    options={[
+                      { value: "", label: "Select Striker" },
+                      ...(currentInningBattingTeam?.players || []).map(
+                        (playerId: string) => {
+                          const player = players.find(
+                            (p) => p._id === playerId
+                          );
+                          return {
+                            value: playerId,
+                            label: player?.userId.name || "",
+                          };
+                        }
+                      ),
+                    ]}
+                  />
+                  <Select
+                    label={`Non-Striker (${currentInningBattingTeam?.name})`}
+                    value={inningNonStriker}
+                    onChange={(e) => setInningNonStriker(e.target.value)}
+                    options={[
+                      { value: "", label: "Select Non-Striker" },
+                      ...(currentInningBattingTeam?.players || [])
+                        .filter((id: string) => id !== inningStriker)
+                        .map((playerId: string) => {
+                          const player = players.find(
+                            (p) => p._id === playerId
+                          );
+                          return {
+                            value: playerId,
+                            label: player?.userId.name || "",
+                          };
+                        }),
+                    ]}
+                  />
+                  <Select
+                    label={`Bowler (${currentInningBowlingTeam?.name})`}
+                    value={inningBowler}
+                    onChange={(e) => setInningBowler(e.target.value)}
+                    options={[
+                      { value: "", label: "Select Bowler" },
+                      ...(currentInningBowlingTeam?.players || []).map(
+                        (playerId: string) => {
+                          const player = players.find(
+                            (p) => p._id === playerId
+                          );
+                          return {
+                            value: playerId,
+                            label: player?.userId.name || "",
+                          };
+                        }
+                      ),
+                    ]}
+                  />
+                  <Button
+                    onClick={handleStartInning}
+                    className="w-full"
+                    isLoading={isStartingInning}
+                    disabled={
+                      !inningStriker || !inningNonStriker || !inningBowler
                     }
-                  ),
-                ]}
-              />
-              <Select
-                label={`Non-Striker (${currentInningBattingTeam?.name})`}
-                value={inningNonStriker}
-                onChange={(e) => setInningNonStriker(e.target.value)}
-                options={[
-                  { value: "", label: "Select Non-Striker" },
-                  ...(currentInningBattingTeam?.players || [])
-                    .filter((id: string) => id !== inningStriker)
-                    .map((playerId: string) => {
-                      const player = players.find((p) => p._id === playerId);
-                      return {
-                        value: playerId,
-                        label: player?.userId.name || "",
-                      };
-                    }),
-                ]}
-              />
-              <Select
-                label={`Bowler (${currentInningBowlingTeam?.name})`}
-                value={inningBowler}
-                onChange={(e) => setInningBowler(e.target.value)}
-                options={[
-                  { value: "", label: "Select Bowler" },
-                  ...(currentInningBowlingTeam?.players || []).map(
-                    (playerId: string) => {
-                      const player = players.find((p) => p._id === playerId);
-                      return {
-                        value: playerId,
-                        label: player?.userId.name || "",
-                      };
-                    }
-                  ),
-                ]}
-              />
-              <Button
-                onClick={handleStartInning}
-                className="w-full"
-                isLoading={isStartingInning}
-                disabled={!inningStriker || !inningNonStriker || !inningBowler}
-              >
-                Start {match?.currentInning === 1 ? "First" : "Second"} Inning
-              </Button>
-            </div>
+                  >
+                    Start {match?.currentInning === 1 ? "First" : "Second"}{" "}
+                    Inning
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-600 mb-4">
+                  The {match?.currentInning === 1 ? "first" : "second"} inning
+                  {`hasn't started yet.`}
+                </p>
+                <p className="text-sm text-gray-500">
+                  Please wait for the scorer to start the inning.
+                </p>
+              </div>
+            )}
           </Card>
         </Layout>
       </ProtectedRoute>
@@ -289,6 +369,12 @@ export default function ScoringPage() {
               <p className="text-lg text-gray-600">
                 Overs: {inning?.currentOver}.{inning?.currentBall}
               </p>
+              {checkAllPlayersOut() && (
+                <p className="text-red-600 font-semibold mt-2 text-xl">
+                  All Out! ({inning?.totalWickets}/
+                  {currentInningBattingTeam?.players?.length || 0})
+                </p>
+              )}
             </div>
           </Card>
 
@@ -381,7 +467,7 @@ export default function ScoringPage() {
                     </p>
                   )}
                 </div>
-                {match?.status === "live" && user?.role !== "player" && (
+                {match?.status === "live" && canScore && (
                   <Button
                     variant="secondary"
                     onClick={() => setShowBowlerModal(true)}
@@ -392,7 +478,7 @@ export default function ScoringPage() {
               </div>
             </div>
 
-            {match?.status === "live" && user?.role !== "player" && (
+            {match?.status === "live" && canScore && !checkAllPlayersOut() && (
               <div className="mb-6">
                 <label className="block text-sm font-medium mb-2">
                   Ball Type
@@ -427,7 +513,7 @@ export default function ScoringPage() {
               </div>
             )}
 
-            {match?.status === "live" && user?.role !== "player" && (
+            {match?.status === "live" && canScore && !checkAllPlayersOut() && (
               <div className="mb-6">
                 <label className="block text-sm font-medium mb-2">
                   Add Runs
@@ -453,7 +539,7 @@ export default function ScoringPage() {
               </div>
             )}
 
-            {match?.status === "live" && user?.role !== "player" && (
+            {match?.status === "live" && canScore && (
               <div className="grid grid-cols-3 gap-2">
                 <Button
                   variant="danger"
@@ -470,6 +556,7 @@ export default function ScoringPage() {
                 <Button
                   variant="secondary"
                   onClick={() => setShowBatsmanModal(true)}
+                  disabled={checkAllPlayersOut()}
                 >
                   Change Batsman
                 </Button>
@@ -598,10 +685,27 @@ export default function ScoringPage() {
             </div>
           </Card>
 
-          {match?.status !== "completed" && user?.role !== "player" && (
+          {match?.status !== "completed" && canScore && (
             <Card>
-              <div className="text-center">
+              <div className="text-center space-y-3">
                 <h3 className="font-semibold mb-4">Match Controls</h3>
+
+                {/* Change Inning Button - only show in first inning */}
+                {match?.currentInning === 1 && match?.status === "live" && (
+                  <>
+                    <Button
+                      variant="secondary"
+                      onClick={handleChangeInning}
+                      className="w-full"
+                    >
+                      Change Inning
+                    </Button>
+                    <p className="text-sm text-gray-500">
+                      Start the second inning manually
+                    </p>
+                  </>
+                )}
+
                 <Button
                   variant="danger"
                   onClick={handleEndMatch}
@@ -610,7 +714,7 @@ export default function ScoringPage() {
                 >
                   End Match
                 </Button>
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-sm text-gray-500">
                   Use this to manually end the match before completion
                 </p>
               </div>
@@ -667,6 +771,128 @@ export default function ScoringPage() {
                       <Button
                         variant="secondary"
                         onClick={() => setShowEndMatchModal(false)}
+                        className="flex-1"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </Modal>
+
+                <Modal
+                  isOpen={showChangeInningModal && user?.role !== "player"}
+                  onClose={() => setShowChangeInningModal(false)}
+                  title="Start Second Inning"
+                >
+                  <div className="space-y-4">
+                    <p className="text-gray-700">
+                      {checkAllPlayersOut()
+                        ? `All ${
+                            currentInningBattingTeam?.players?.length || 0
+                          } players are out! The inning has ended.`
+                        : "End the first inning and start the second inning."}
+                    </p>
+
+                    <div className="bg-gray-100 p-4 rounded">
+                      <p className="text-sm text-gray-600 mb-1">
+                        <strong>{inning?.battingTeam.name}</strong>
+                      </p>
+                      <p className="text-2xl font-bold">
+                        {inning?.totalRuns}/{inning?.totalWickets}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Overs: {inning?.currentOver}.{inning?.currentBall}
+                      </p>
+                      {checkAllPlayersOut() && (
+                        <p className="text-red-600 font-semibold mt-2">
+                          All Out ({inning?.totalWickets}/
+                          {currentInningBattingTeam?.players?.length || 0})
+                        </p>
+                      )}
+                    </div>
+
+                    {/* ✅ ADD PLAYER SELECTION */}
+                    <div className="space-y-4 border-t pt-4">
+                      <p className="font-semibold">
+                        Select players for second inning:
+                      </p>
+
+                      <Select
+                        label={`Striker (${currentInningBowlingTeam?.name})`}
+                        value={inningStriker}
+                        onChange={(e) => setInningStriker(e.target.value)}
+                        options={[
+                          { value: "", label: "Select Striker" },
+                          ...(currentInningBowlingTeam?.players || []).map(
+                            (playerId: string) => {
+                              const player = players.find(
+                                (p) => p._id === playerId
+                              );
+                              return {
+                                value: playerId,
+                                label: player?.userId.name || "",
+                              };
+                            }
+                          ),
+                        ]}
+                      />
+
+                      <Select
+                        label={`Non-Striker (${currentInningBowlingTeam?.name})`}
+                        value={inningNonStriker}
+                        onChange={(e) => setInningNonStriker(e.target.value)}
+                        options={[
+                          { value: "", label: "Select Non-Striker" },
+                          ...(currentInningBowlingTeam?.players || [])
+                            .filter((id: string) => id !== inningStriker)
+                            .map((playerId: string) => {
+                              const player = players.find(
+                                (p) => p._id === playerId
+                              );
+                              return {
+                                value: playerId,
+                                label: player?.userId.name || "",
+                              };
+                            }),
+                        ]}
+                      />
+
+                      <Select
+                        label={`Bowler (${currentInningBattingTeam?.name})`}
+                        value={inningBowler}
+                        onChange={(e) => setInningBowler(e.target.value)}
+                        options={[
+                          { value: "", label: "Select Bowler" },
+                          ...(currentInningBattingTeam?.players || []).map(
+                            (playerId: string) => {
+                              const player = players.find(
+                                (p) => p._id === playerId
+                              );
+                              return {
+                                value: playerId,
+                                label: player?.userId.name || "",
+                              };
+                            }
+                          ),
+                        ]}
+                      />
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button
+                        variant="primary"
+                        onClick={confirmChangeInning}
+                        className="flex-1"
+                        isLoading={isStartingInning}
+                        disabled={
+                          !inningStriker || !inningNonStriker || !inningBowler
+                        }
+                      >
+                        Start Second Inning
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        onClick={() => setShowChangeInningModal(false)}
                         className="flex-1"
                       >
                         Cancel
