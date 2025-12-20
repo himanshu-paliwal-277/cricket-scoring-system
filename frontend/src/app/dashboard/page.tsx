@@ -49,7 +49,9 @@ export default function DashboardPage() {
       <Layout>
         <div className="space-y-6">
           <div>
-            <h1 className="text-3xl font-bold">Welcome, {user?.name}!</h1>
+            <h1 className="sm:text-3xl text-2xl font-bold">
+              Welcome, {user?.name}!
+            </h1>
             <p className="text-gray-600">Role: {user?.role}</p>
           </div>
 
@@ -91,9 +93,11 @@ export default function DashboardPage() {
             </Card>
           )}
 
-          {user?.role === "owner" && (
+          {/* {user?.role === "owner" && (
             <Card>
-              <h2 className="text-2xl font-bold mb-4">Update Player Details</h2>
+              <h2 className="sm:text-2xl text-xl font-bold mb-4">
+                Update Player Details
+              </h2>
               <form onSubmit={handleUpdatePlayer} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">
@@ -149,12 +153,12 @@ export default function DashboardPage() {
                     ]}
                   />
                 </div>
-                {/* <Button type="submit" disabled={updatePlayer.isPending}>
+                <Button type="submit" disabled={updatePlayer.isPending}>
                   {updatePlayer.isPending ? "Updating..." : "Update Player"}
-                </Button> */}
+                </Button>
               </form>
             </Card>
-          )}
+          )} */}
 
           {user?.role !== "player" && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

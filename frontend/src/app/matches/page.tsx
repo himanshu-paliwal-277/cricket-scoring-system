@@ -11,11 +11,13 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { useMatches } from "@/hooks/useMatches";
 import { useTeams } from "@/hooks/useTeams";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function MatchesPage() {
   const { matches, isLoading, createMatch, isCreating } = useMatches();
   const { teams } = useTeams();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     teamA: "",
     teamB: "",
@@ -47,7 +49,9 @@ export default function MatchesPage() {
         <div className="space-y-6">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Matches</h1>
-            <Button onClick={() => setIsModalOpen(true)}>Create Match</Button>
+            {user?.role === "owner" && (
+              <Button onClick={() => setIsModalOpen(true)}>Create Match</Button>
+            )}
           </div>
 
           {isLoading ? (
@@ -63,23 +67,33 @@ export default function MatchesPage() {
                       </h3>
                       <p className="text-gray-600">{match.overs} overs</p>
                       <span
-                        className={`inline-block px-2 py-1 rounded text-sm mt-2 ${getStatusBadge(match.status)}`}
+                        className={`inline-block px-2 py-1 rounded text-sm mt-2 ${getStatusBadge(
+                          match.status
+                        )}`}
                       >
                         {match.status.replace("_", " ").toUpperCase()}
                       </span>
                       {match.resultText && (
-                        <p className="text-emerald-600 font-semibold mt-2">{match.resultText}</p>
+                        <p className="text-emerald-600 font-semibold mt-2">
+                          {match.resultText}
+                        </p>
                       )}
                     </div>
                     <div className="flex gap-2">
-                      {match.status === "not_started" && (
-                        <Link href={`/matches/${match._id}/start`}>
-                          <Button>Start</Button>
-                        </Link>
-                      )}
-                      {match.status === "live" && (
+                      {match.status === "not_started" &&
+                        user?.role !== "player" && (
+                          <Link href={`/matches/${match._id}/start`}>
+                            <Button>Start</Button>
+                          </Link>
+                        )}
+                      {match.status === "live" && user?.role !== "player" && (
                         <Link href={`/scoring/${match._id}`}>
                           <Button>Score</Button>
+                        </Link>
+                      )}
+                      {match.status === "completed" && (
+                        <Link href={`/view-scoreboard/${match._id}`}>
+                          <Button>View</Button>
                         </Link>
                       )}
                     </div>
@@ -89,15 +103,24 @@ export default function MatchesPage() {
             </div>
           )}
 
-          <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Create Match">
+          <Modal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            title="Create Match"
+          >
             <form onSubmit={handleSubmit} className="space-y-4">
               <Select
                 label="Team A"
                 value={formData.teamA}
-                onChange={(e) => setFormData({ ...formData, teamA: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, teamA: e.target.value })
+                }
                 options={[
                   { value: "", label: "Select Team A" },
-                  ...teams.map((team) => ({ value: team._id, label: team.name })),
+                  ...teams.map((team) => ({
+                    value: team._id,
+                    label: team.name,
+                  })),
                 ]}
                 required
               />
@@ -105,10 +128,15 @@ export default function MatchesPage() {
               <Select
                 label="Team B"
                 value={formData.teamB}
-                onChange={(e) => setFormData({ ...formData, teamB: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, teamB: e.target.value })
+                }
                 options={[
                   { value: "", label: "Select Team B" },
-                  ...teams.map((team) => ({ value: team._id, label: team.name })),
+                  ...teams.map((team) => ({
+                    value: team._id,
+                    label: team.name,
+                  })),
                 ]}
                 required
               />
@@ -119,7 +147,9 @@ export default function MatchesPage() {
                 min="1"
                 max="50"
                 value={formData.overs}
-                onChange={(e) => setFormData({ ...formData, overs: parseInt(e.target.value) })}
+                onChange={(e) =>
+                  setFormData({ ...formData, overs: parseInt(e.target.value) })
+                }
                 required
               />
 

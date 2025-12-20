@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+import { notifications } from "@mantine/notifications";
 import { AddBallData, scoringService } from "@/services/scoringService";
 
 export const useScoring = (matchId: string) => {
@@ -18,24 +20,27 @@ export const useScoring = (matchId: string) => {
     queryKey: ["inning", matchId],
     queryFn: () => scoringService.getCurrentInning(matchId),
     enabled: !!matchId,
-    refetchInterval: isClient ? 3000 : false, // Only refetch on client
-    retry: (failureCount, error: any) => {
-      // Don't retry on 404 - match hasn't started yet
-      if (error?.response?.status === 404) {
-        return false;
-      }
-      // Retry up to 3 times for other errors
+    retry: (failureCount, err: any) => {
+      if (err?.response?.status === 404) return false;
       return failureCount < 3;
     },
-    refetchOnWindowFocus: isClient, // Only refetch on focus on client
+    refetchOnWindowFocus: isClient,
   });
 
   const addBallMutation = useMutation({
     mutationFn: (data: AddBallData) => scoringService.addBall(data),
     onSuccess: () => {
-      // Force immediate refetch of inning data
       queryClient.invalidateQueries({ queryKey: ["inning", matchId] });
       queryClient.invalidateQueries({ queryKey: ["match", matchId] });
+
+      // notifications.show({
+      //   message: "Ball added successfully",
+      // });
+    },
+    onError: (err: any) => {
+      notifications.show({
+        message: err?.message || "Failed to add ball",
+      });
     },
   });
 
@@ -44,6 +49,15 @@ export const useScoring = (matchId: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inning", matchId] });
       queryClient.invalidateQueries({ queryKey: ["match", matchId] });
+
+      notifications.show({
+        message: "Last ball undone",
+      });
+    },
+    onError: (err: any) => {
+      notifications.show({
+        message: err?.message || "Failed to undo last ball",
+      });
     },
   });
 
@@ -51,6 +65,15 @@ export const useScoring = (matchId: string) => {
     mutationFn: (inningId: string) => scoringService.swapStrike(inningId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inning", matchId] });
+
+      // notifications.show({
+      //   message: "Strike swapped successfully",
+      // });
+    },
+    onError: (err: any) => {
+      notifications.show({
+        message: err?.message || "Failed to swap strike",
+      });
     },
   });
 
@@ -64,6 +87,15 @@ export const useScoring = (matchId: string) => {
     }) => scoringService.changeBowler(inningId, bowlerId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inning", matchId] });
+
+      // notifications.show({
+      //   message: "Bowler changed successfully",
+      // });
+    },
+    onError: (err: any) => {
+      notifications.show({
+        message: err?.message || "Failed to change bowler",
+      });
     },
   });
 
@@ -77,6 +109,15 @@ export const useScoring = (matchId: string) => {
     }) => scoringService.changeBatsman(inningId, newBatsmanId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inning", matchId] });
+
+      // notifications.show({
+      //   message: "Batsman changed successfully",
+      // });
+    },
+    onError: (err: any) => {
+      notifications.show({
+        message: err?.message || "Failed to change batsman",
+      });
     },
   });
 

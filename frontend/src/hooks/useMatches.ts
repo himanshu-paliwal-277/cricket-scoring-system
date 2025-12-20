@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { notifications } from "@mantine/notifications";
 import {
   CreateMatchData,
   matchService,
@@ -21,15 +23,30 @@ export const useMatches = () => {
     mutationFn: (data: CreateMatchData) => matchService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["matches"] });
+      notifications.show({
+        message: "Match created successfully",
+      });
+    },
+    onError: (err: any) => {
+      notifications.show({
+        message: err?.message || "Failed to create match",
+      });
     },
   });
 
   const startMutation = useMutation({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mutationFn: ({ id, data }: { id: string; data: any }) =>
       matchService.start(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["matches"] });
+      notifications.show({
+        message: "Match started successfully",
+      });
+    },
+    onError: (err: any) => {
+      notifications.show({
+        message: err?.message || "Failed to start match",
+      });
     },
   });
 
@@ -37,6 +54,9 @@ export const useMatches = () => {
     mutationFn: (id: string) => matchService.complete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["matches"] });
+      notifications.show({
+        message: "Match completed successfully",
+      });
     },
   });
 
@@ -60,7 +80,7 @@ export const useMatch = (id: string) => {
     data: match,
     isLoading,
     error,
-  } = useQuery({
+  } = useQuery<any>({
     queryKey: ["match", id],
     queryFn: () => matchService.getById(id),
     enabled: !!id,
@@ -72,6 +92,15 @@ export const useMatch = (id: string) => {
       queryClient.invalidateQueries({ queryKey: ["match", id] });
       queryClient.invalidateQueries({ queryKey: ["matches"] });
       queryClient.invalidateQueries({ queryKey: ["inning", id] });
+
+      notifications.show({
+        message: "Match ended successfully",
+      });
+    },
+    onError: (err: any) => {
+      notifications.show({
+        message: err?.message || "Failed to end match",
+      });
     },
   });
 
@@ -81,6 +110,15 @@ export const useMatch = (id: string) => {
       queryClient.invalidateQueries({ queryKey: ["match", id] });
       queryClient.invalidateQueries({ queryKey: ["matches"] });
       queryClient.invalidateQueries({ queryKey: ["inning", id] });
+
+      notifications.show({
+        message: "Inning started successfully",
+      });
+    },
+    onError: (err: any) => {
+      notifications.show({
+        message: err?.message || "Failed to start inning",
+      });
     },
   });
 

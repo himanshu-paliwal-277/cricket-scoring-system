@@ -1,4 +1,3 @@
-import Inning from "../schema/Inning.js";
 import Match from "../schema/Match.js";
 import Team from "../schema/Team.js";
 
@@ -111,6 +110,11 @@ export const updateTeam = async (req, res) => {
       return res.status(400).json({
         message: "Team is in a live match and cannot be edited",
       });
+    }
+
+    if (!liveMatch && team.isLocked) {
+      team.isLocked = false;
+      await team.save();
     }
 
     if (team.isLocked) {

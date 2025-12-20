@@ -10,11 +10,13 @@ import { Input } from "@/components/ui/Input";
 import { useTeams } from "@/hooks/useTeams";
 import { usePlayers } from "@/hooks/usePlayers";
 import { Team } from "@/services/teamService";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function TeamsPage() {
   const { teams, isLoading, updateTeam, isUpdating } = useTeams();
   const { players } = usePlayers();
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     players: [] as string[],
@@ -79,9 +81,11 @@ export default function TeamsPage() {
               {team.teamType === "team1" ? "First Team" : "Second Team"}
             </p>
           </div>
-          <Button variant="secondary" onClick={() => handleEditTeam(team)}>
-            Edit Team
-          </Button>
+          {user?.role === "owner" && (
+            <Button variant="secondary" onClick={() => handleEditTeam(team)}>
+              Edit Team
+            </Button>
+          )}
         </div>
 
         <div className="mb-4">

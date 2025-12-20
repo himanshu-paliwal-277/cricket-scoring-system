@@ -8,6 +8,7 @@ import {
   User,
 } from "@/services/authService";
 import { useAuthStore } from "@/store/authStore";
+import { notifications } from "@mantine/notifications";
 
 export const useAuth = () => {
   const router = useRouter();
@@ -48,6 +49,9 @@ export const useAuth = () => {
         setUser(data.user);
         queryClient.invalidateQueries({ queryKey: ["me"] });
         router.push("/dashboard");
+        notifications.show({
+          message: "Logged in successfully",
+        });
       }
     },
     onError: (error) => {
@@ -60,6 +64,9 @@ export const useAuth = () => {
     clearUser();
     queryClient.clear();
     router.push("/login");
+    notifications.show({
+      message: "Logged out successfully",
+    });
   };
 
   return {

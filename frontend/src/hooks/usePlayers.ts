@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { notifications } from "@mantine/notifications";
 import { CreatePlayerData, playerService } from "@/services/playerService";
 
 export const usePlayers = () => {
@@ -17,6 +19,14 @@ export const usePlayers = () => {
     mutationFn: (data: CreatePlayerData) => playerService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["players"] });
+      notifications.show({
+        message: "Player created successfully",
+      });
+    },
+    onError: (err: any) => {
+      notifications.show({
+        message: err?.message || "Failed to create player",
+      });
     },
   });
 
@@ -30,6 +40,14 @@ export const usePlayers = () => {
     }) => playerService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["players"] });
+      notifications.show({
+        message: "Player updated successfully",
+      });
+    },
+    onError: (err: any) => {
+      notifications.show({
+        message: err?.message || "Failed to update player",
+      });
     },
   });
 
@@ -37,6 +55,14 @@ export const usePlayers = () => {
     mutationFn: (id: string) => playerService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["players"] });
+      notifications.show({
+        message: "Player deleted successfully",
+      });
+    },
+    onError: (err: any) => {
+      notifications.show({
+        message: err?.message || "Failed to delete player",
+      });
     },
   });
 
@@ -72,6 +98,14 @@ export const usePlayer = (id: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["player", id] });
       queryClient.invalidateQueries({ queryKey: ["players"] });
+      notifications.show({
+        message: "Player updated successfully",
+      });
+    },
+    onError: (err: any) => {
+      notifications.show({
+        message: err?.message || "Failed to update player",
+      });
     },
   });
 

@@ -40,7 +40,8 @@ export default function ScoringPage() {
   const [inningNonStriker, setInningNonStriker] = useState("");
   const [inningBowler, setInningBowler] = useState("");
 
-  const firstInning = match?.innings?.find((i) => i.inningNumber === 1);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const firstInning = match?.innings?.find((i: any) => i.inningNumber === 1);
 
   // Determine teams for current inning
   const currentInningBattingTeam =
@@ -252,7 +253,7 @@ export default function ScoringPage() {
       <Layout>
         <div className="max-w-6xl mx-auto space-y-6">
           <Card>
-            <h1 className="text-2xl font-bold mb-4">
+            <h1 className="sm:text-2xl text-xl sm:text-left text-center font-bold mb-4">
               {match?.teamA.name} vs {match?.teamB.name}
             </h1>
             <div className="grid grid-cols-2 gap-4">
@@ -275,11 +276,11 @@ export default function ScoringPage() {
 
           {/* Current Inning Scoreboard */}
           <Card>
-            <h2 className="text-xl font-bold mb-4">
+            <h2 className="sm:text-xl text-lg sm:text-left text-center font-bold mb-4">
               Current Inning Scoreboard
             </h2>
             <div className="text-center">
-              <p className="text-3xl font-bold">
+              <p className="sm:text-3xl text-2xl font-bold">
                 {inning?.battingTeam.name}: {inning?.totalRuns}/
                 {inning?.totalWickets}
               </p>
@@ -292,11 +293,11 @@ export default function ScoringPage() {
           {/* First Inning Scoreboard (when in second inning) */}
           {match?.currentInning === 2 && firstInning && (
             <Card>
-              <h2 className="text-xl font-bold mb-4">
+              <h2 className="sm:text-xl text-lg  font-bold mb-4 sm:text-left text-center">
                 First Inning Scoreboard
               </h2>
               <div className="text-center">
-                <p className="text-2xl font-bold">
+                <p className="sm:text-2xl text-xl font-bold">
                   {firstInning.battingTeam.name}: {firstInning.totalRuns}/
                   {firstInning.totalWickets}
                 </p>
@@ -324,13 +325,13 @@ export default function ScoringPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="border-r pr-4">
+            <div className="grid grid-cols-2 sm:gap-4 mb-6">
+              <div className="border-r border-gray-600 pr-4">
                 <h3 className="font-semibold mb-2">Striker</h3>
-                <p className="text-lg">
-                  <span className="mr-5">
+                <p className="sm:text-lg flex">
+                  <div className="sm:mr-5 mr-2 truncate w-20">
                     {inning?.striker?.userId.name + "* " || "N/A"}
-                  </span>
+                  </div>
                   {inning?.striker
                     ? `${getBatsmanStats(inning.striker._id).runs}(${
                         getBatsmanStats(inning.striker._id).balls
@@ -339,11 +340,13 @@ export default function ScoringPage() {
                 </p>
               </div>
               <div>
-                <h3 className="font-semibold mb-2">Non-Striker</h3>
-                <p className="text-lg">
-                  <span className="mr-5">
+                <h3 className="font-semibold mb-2 sm:text-left text-right">
+                  Non-Striker
+                </h3>
+                <p className="flex sm:text-lg sm:justify-start justify-end">
+                  <div className="sm:mr-5 mr-2 truncate w-20">
                     {inning?.nonStriker?.userId.name || "N/A"}
-                  </span>
+                  </div>
                   {inning?.nonStriker
                     ? `${getBatsmanStats(inning.nonStriker._id).runs}(${
                         getBatsmanStats(inning.nonStriker._id).balls
@@ -368,6 +371,7 @@ export default function ScoringPage() {
                       )}
                       .{getBowlerStats(inning.currentBowler._id).balls % 6}{" "}
                       Runs: {getBowlerStats(inning.currentBowler._id).runs}{" "}
+                      <br className="sm:hidden" />
                       Economy:{" "}
                       {getBowlerStats(inning.currentBowler._id).economy}{" "}
                       Wickets:{" "}
@@ -375,89 +379,100 @@ export default function ScoringPage() {
                     </p>
                   )}
                 </div>
+                {match?.status === "live" && (
+                  <Button
+                    variant="secondary"
+                    onClick={() => setShowBowlerModal(true)}
+                  >
+                    Change
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {match?.status === "live" && (
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2">
+                  Ball Type
+                </label>
+                <div className="grid sm:grid-cols-4 grid-cols-2  gap-2">
+                  <Button
+                    variant={ballType === "normal" ? "primary" : "secondary"}
+                    onClick={() => setBallType("normal")}
+                  >
+                    Normal
+                  </Button>
+                  <Button
+                    className=""
+                    variant={ballType === "wide" ? "primary" : "secondary"}
+                    onClick={() => setBallType("wide")}
+                  >
+                    Wide
+                  </Button>
+                  <Button
+                    variant={ballType === "noBall" ? "primary" : "secondary"}
+                    onClick={() => setBallType("noBall")}
+                  >
+                    No Ball
+                  </Button>
+                  <Button
+                    variant={ballType === "wicket" ? "primary" : "secondary"}
+                    onClick={() => setBallType("wicket")}
+                  >
+                    Wicket
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {match?.status === "live" && (
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2">
+                  Add Runs
+                </label>
+                <div className="grid sm:grid-cols-4 grid-cols-3 gap-2">
+                  {[0, 1, 2, 3, 4, 6].map((runs) => (
+                    <Button
+                      key={runs}
+                      onClick={() =>
+                        handleAddBall(
+                          runs,
+                          ballType,
+                          ballType === "wicket" ? "bowled" : undefined
+                        )
+                      }
+                      isLoading={isAddingBall}
+                      className="text-2xl h-16"
+                    >
+                      {runs}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {match?.status === "live" && (
+              <div className="grid grid-cols-3 gap-2">
+                <Button
+                  variant="danger"
+                  onClick={() => inning && undoLastBall(inning._id)}
+                >
+                  Undo Last Ball
+                </Button>
                 <Button
                   variant="secondary"
-                  onClick={() => setShowBowlerModal(true)}
+                  onClick={() => inning && swapStrike(inning._id)}
                 >
-                  Change
+                  Swap Strike
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowBatsmanModal(true)}
+                >
+                  Change Batsman
                 </Button>
               </div>
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-sm font-medium mb-2">
-                Ball Type
-              </label>
-              <div className="flex gap-2">
-                <Button
-                  variant={ballType === "normal" ? "primary" : "secondary"}
-                  onClick={() => setBallType("normal")}
-                >
-                  Normal
-                </Button>
-                <Button
-                  variant={ballType === "wide" ? "primary" : "secondary"}
-                  onClick={() => setBallType("wide")}
-                >
-                  Wide
-                </Button>
-                <Button
-                  variant={ballType === "noBall" ? "primary" : "secondary"}
-                  onClick={() => setBallType("noBall")}
-                >
-                  No Ball
-                </Button>
-                <Button
-                  variant={ballType === "wicket" ? "primary" : "secondary"}
-                  onClick={() => setBallType("wicket")}
-                >
-                  Wicket
-                </Button>
-              </div>
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-sm font-medium mb-2">Add Runs</label>
-              <div className="grid grid-cols-4 gap-2">
-                {[0, 1, 2, 3, 4, 6].map((runs) => (
-                  <Button
-                    key={runs}
-                    onClick={() =>
-                      handleAddBall(
-                        runs,
-                        ballType,
-                        ballType === "wicket" ? "bowled" : undefined
-                      )
-                    }
-                    isLoading={isAddingBall}
-                    className="text-2xl h-16"
-                  >
-                    {runs}
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2">
-              <Button
-                variant="danger"
-                onClick={() => inning && undoLastBall(inning._id)}
-              >
-                Undo Last Ball
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => inning && swapStrike(inning._id)}
-              >
-                Swap Strike
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => setShowBatsmanModal(true)}
-              >
-                Change Batsman
-              </Button>
-            </div>
+            )}
           </Card>
 
           <Card>
@@ -541,7 +556,7 @@ export default function ScoringPage() {
                       <span className="font-medium text-sm w-12">
                         Over {overNumber + 1}:
                       </span>
-                      <div className="flex gap-2 flex-wrap">
+                      <div className="flex sm:gap-2 gap-1 flex-wrap">
                         {inning.balls
                           ?.filter(
                             (ball) =>
@@ -550,7 +565,7 @@ export default function ScoringPage() {
                           .map((ball) => (
                             <div
                               key={ball._id}
-                              className={`w-10 h-10 flex items-center justify-center rounded font-bold text-sm ${
+                              className={`sm:w-10 sm:h-10 w-8 h-8 flex items-center justify-center rounded font-bold text-sm ${
                                 ball.ballType === "wicket"
                                   ? "bg-red-500 text-white"
                                   : ball.ballType === "wide" ||

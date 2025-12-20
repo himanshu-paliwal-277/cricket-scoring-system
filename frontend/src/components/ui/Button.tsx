@@ -13,7 +13,8 @@ export const Button: React.FC<ButtonProps> = ({
   disabled,
   ...props
 }) => {
-  const baseClasses = "px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed";
+  const baseClasses =
+    "px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed";
 
   const variantClasses = {
     primary: "bg-emerald-600 text-white hover:bg-emerald-700",
@@ -27,7 +28,7 @@ export const Button: React.FC<ButtonProps> = ({
       disabled={disabled || isLoading}
       {...props}
     >
-      {isLoading ? "Loading..." : children}
+      {children}
     </button>
   );
 };

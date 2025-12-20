@@ -1,10 +1,16 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { notifications } from "@mantine/notifications";
 import { CreateTeamData, teamService } from "@/services/teamService";
 
 export const useTeams = () => {
   const queryClient = useQueryClient();
 
-  const { data: teams = [], isLoading, error } = useQuery({
+  const {
+    data: teams = [],
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["teams"],
     queryFn: teamService.initialize,
   });
@@ -13,6 +19,14 @@ export const useTeams = () => {
     mutationFn: (data: CreateTeamData) => teamService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["teams"] });
+      notifications.show({
+        message: "Team created successfully",
+      });
+    },
+    onError: (err: any) => {
+      notifications.show({
+        message: err?.message || "Failed to create team",
+      });
     },
   });
 
@@ -21,6 +35,14 @@ export const useTeams = () => {
       teamService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["teams"] });
+      notifications.show({
+        message: "Team updated successfully",
+      });
+    },
+    onError: (err: any) => {
+      notifications.show({
+        message: err?.message || "Failed to update team",
+      });
     },
   });
 
@@ -28,6 +50,14 @@ export const useTeams = () => {
     mutationFn: (id: string) => teamService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["teams"] });
+      notifications.show({
+        message: "Team deleted successfully",
+      });
+    },
+    onError: (err: any) => {
+      notifications.show({
+        message: err?.message || "Failed to delete team",
+      });
     },
   });
 
@@ -45,7 +75,11 @@ export const useTeams = () => {
 };
 
 export const useTeam = (id: string) => {
-  const { data: team, isLoading, error } = useQuery({
+  const {
+    data: team,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["team", id],
     queryFn: () => teamService.getById(id),
     enabled: !!id,

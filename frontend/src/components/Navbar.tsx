@@ -29,33 +29,31 @@ const NavLinks = ({
       Dashboard
     </Link>
 
-    {user?.role !== "player" && (
-      <>
-        <Link
-          href="/players"
-          onClick={() => setOpened(false)}
-          className={isActive("/players") ? "font-bold" : ""}
-        >
-          Players
-        </Link>
-
-        <Link
-          href="/teams"
-          onClick={() => setOpened(false)}
-          className={isActive("/teams") ? "font-bold" : ""}
-        >
-          Teams
-        </Link>
-
-        <Link
-          href="/matches"
-          onClick={() => setOpened(false)}
-          className={isActive("/matches") ? "font-bold" : ""}
-        >
-          Matches
-        </Link>
-      </>
+    {user.role !== "player" && (
+      <Link
+        href="/players"
+        onClick={() => setOpened(false)}
+        className={isActive("/players") ? "font-bold" : ""}
+      >
+        Players
+      </Link>
     )}
+
+    <Link
+      href="/teams"
+      onClick={() => setOpened(false)}
+      className={isActive("/teams") ? "font-bold" : ""}
+    >
+      Teams
+    </Link>
+
+    <Link
+      href="/matches"
+      onClick={() => setOpened(false)}
+      className={isActive("/matches") ? "font-bold" : ""}
+    >
+      Matches
+    </Link>
   </div>
 );
 
@@ -105,7 +103,7 @@ export const Navbar = () => {
       <Drawer
         opened={opened}
         onClose={() => setOpened(false)}
-        title="Menu"
+        // title="Menu"
         padding="md"
         size="75%"
         hiddenFrom="md"

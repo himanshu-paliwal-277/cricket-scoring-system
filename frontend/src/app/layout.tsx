@@ -4,6 +4,8 @@ import { Providers } from "@/providers/Providers";
 import "./globals.css";
 import { MantineProvider } from "@mantine/core";
 import "@mantine/core/styles.css";
+import "@mantine/notifications/styles.css";
+import { Notifications } from "@mantine/notifications";
 
 export const metadata: Metadata = {
   title: "Cricket Scoring System",
@@ -41,7 +43,11 @@ export default function RootLayout({
       </head>
       <body>
         <Providers>
-          <MantineProvider>{children}</MantineProvider>
+          <MantineProvider>
+            {children}
+
+            <Notifications />
+          </MantineProvider>
         </Providers>
         <Script
           id="register-sw"
