@@ -104,11 +104,11 @@ export const startInning = async (req, res) => {
     // }
 
     // ✅ ADD THIS - Check if we're trying to start second inning
-    if (match.currentInning !== 1) {
-      return res.status(400).json({
-        message: "Cannot start inning - invalid state",
-      });
-    }
+    // if (match.currentInning !== 1) {
+    //   return res.status(400).json({
+    //     message: "Cannot start inning - invalid state",
+    //   });
+    // }
 
     const existingInning = await Inning.findOne({
       matchId: match._id,
