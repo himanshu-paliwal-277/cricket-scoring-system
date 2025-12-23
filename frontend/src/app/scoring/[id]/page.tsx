@@ -31,7 +31,7 @@ export default function ScoringPage() {
   const { match, endMatch, startInning, isEndingMatch, isStartingInning } =
     useMatch(matchId);
   const { players } = usePlayers();
-  const { user } = useAuth();
+  const { user, isLoading: isLoadingUser } = useAuth();
   const [ballType, setBallType] = useState<
     "normal" | "wide" | "noBall" | "wicket"
   >("normal");
@@ -266,7 +266,8 @@ export default function ScoringPage() {
   };
 
   // Check if user can score (owner or scorer role)
-  const canScore = user?.role === "owner" || user?.role === "scorer";
+  // While user is loading, assume they can score to avoid hiding buttons on first render
+  const canScore = isLoadingUser || user?.role === "owner" || user?.role === "scorer";
 
   if (isLoading)
     return (

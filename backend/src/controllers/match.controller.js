@@ -1,6 +1,7 @@
 import Ball from "../schema/Ball.js";
 import Inning from "../schema/Inning.js";
 import Match from "../schema/Match.js";
+import Player from "../schema/Player.js";
 import Team from "../schema/Team.js";
 
 export const createMatch = async (req, res) => {
@@ -302,7 +303,10 @@ export const endMatch = async (req, res) => {
     if (innings.length === 1) {
       // Only first innings completed - team batting first wins by walkover
       match.winner = innings[0].battingTeam._id;
-      match.resultText = `${innings[0].battingTeam.name} won (opponent did not bat)`;
+      const winningTeamName = innings[0].battingTeam._id.toString() === match.teamA.toString()
+        ? match.teamASnapshot.name
+        : match.teamBSnapshot.name;
+      match.resultText = `${winningTeamName} won (opponent did not bat)`;
     } else if (innings.length === 2) {
       const firstInning = innings[0];
       const secondInning = innings[1];
@@ -310,11 +314,17 @@ export const endMatch = async (req, res) => {
       if (secondInning.totalRuns > firstInning.totalRuns) {
         match.winner = secondInning.battingTeam._id;
         const wicketsRemaining = 10 - secondInning.totalWickets;
-        match.resultText = `${secondInning.battingTeam.name} won by ${wicketsRemaining} wickets`;
+        const winningTeamName = secondInning.battingTeam._id.toString() === match.teamA.toString()
+          ? match.teamASnapshot.name
+          : match.teamBSnapshot.name;
+        match.resultText = `${winningTeamName} won by ${wicketsRemaining} wickets`;
       } else if (firstInning.totalRuns > secondInning.totalRuns) {
         match.winner = firstInning.battingTeam._id;
         const runsDifference = firstInning.totalRuns - secondInning.totalRuns;
-        match.resultText = `${firstInning.battingTeam.name} won by ${runsDifference} runs`;
+        const winningTeamName = firstInning.battingTeam._id.toString() === match.teamA.toString()
+          ? match.teamASnapshot.name
+          : match.teamBSnapshot.name;
+        match.resultText = `${winningTeamName} won by ${runsDifference} runs`;
       } else {
         match.resultText = "Match tied";
       }
@@ -354,6 +364,49 @@ export const endMatch = async (req, res) => {
     }
 
     await match.save();
+
+    // Update player career stats from innings
+    const playersUpdated = new Set();
+
+    for (const inning of innings) {
+      // Update batting stats
+      for (const stat of inning.battingStats) {
+        const playerId = stat.playerId.toString();
+
+        await Player.findByIdAndUpdate(playerId, {
+          $inc: {
+            totalRuns: stat.runs,
+            totalBallsFaced: stat.balls,
+            totalFours: stat.fours,
+            totalSixes: stat.sixes,
+          },
+          $max: { highestScore: stat.runs }
+        });
+
+        playersUpdated.add(playerId);
+      }
+
+      // Update bowling stats
+      for (const stat of inning.bowlingStats) {
+        const playerId = stat.playerId.toString();
+
+        await Player.findByIdAndUpdate(playerId, {
+          $inc: {
+            totalWickets: stat.wickets,
+            totalBallsBowled: stat.balls,
+          }
+        });
+
+        playersUpdated.add(playerId);
+      }
+    }
+
+    // Increment matchesPlayed for all players who participated
+    for (const playerId of playersUpdated) {
+      await Player.findByIdAndUpdate(playerId, {
+        $inc: { matchesPlayed: 1 }
+      });
+    }
 
     const populatedMatch = await Match.findById(match._id)
       .populate("teamA teamB winner playerOfTheMatch");
