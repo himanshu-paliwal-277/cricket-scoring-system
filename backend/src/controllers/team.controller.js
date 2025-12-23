@@ -73,6 +73,11 @@ export const initializeTeams = async (req, res) => {
         populate: { path: "userId", select: "name email" },
       })
       .populate("createdBy", "name email")
+      .populate({
+        path: "captain",
+        populate: { path: "userId", select: "name email" },
+      })
+      // .populate("captain", "name email")
       .sort({ teamType: 1 });
 
     res.json(populatedTeams);
