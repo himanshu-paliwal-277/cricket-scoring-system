@@ -1,22 +1,43 @@
 import Match from "../schema/Match.js";
+import Player from "../schema/Player.js";
 import Team from "../schema/Team.js";
 
 export const createTeam = async (req, res) => {
   try {
-    const { name, players } = req.body;
+    const { players, captain } = req.body;
 
     if (!players || players.length < 2) {
       return res.status(400).json({ message: "Team must have at least 2 players" });
     }
 
+    if (!captain) {
+      return res.status(400).json({ message: "Captain is required" });
+    }
+
+    if (!players.includes(captain)) {
+      return res.status(400).json({ message: "Captain must be in the team" });
+    }
+
+    // Get captain details to generate team name
+    const captainPlayer = await Player.findById(captain).populate("userId", "name");
+    const teamName = `${captainPlayer.userId.name} - Team`;
+
     const team = await Team.create({
-      name,
+      name: teamName,
       players,
+      captain,
       createdBy: req.user._id,
     });
 
     const populatedTeam = await Team.findById(team._id)
-      .populate("players")
+      .populate({
+        path: "players",
+        populate: { path: "userId", select: "name email" },
+      })
+      .populate({
+        path: "captain",
+        populate: { path: "userId", select: "name email" },
+      })
       .populate("createdBy", "name email");
 
     res.status(201).json(populatedTeam);
@@ -66,6 +87,10 @@ export const getAllTeams = async (req, res) => {
     const teams = await Team.find()
       .populate({
         path: "players",
+        populate: { path: "userId", select: "name email" },
+      })
+      .populate({
+        path: "captain",
         populate: { path: "userId", select: "name email" },
       })
       .populate("createdBy", "name email")
@@ -121,7 +146,7 @@ export const updateTeam = async (req, res) => {
       return res.status(400).json({ message: "Team is locked, cannot edit" });
     }
 
-    const { name, players } = req.body;
+    const { players, captain } = req.body;
 
     // Get the other team to check for player conflicts
     const otherTeamType = team.teamType === "team1" ? "team2" : "team1";
@@ -140,13 +165,27 @@ export const updateTeam = async (req, res) => {
       }
     }
 
-    team.name = name || team.name;
+    if (captain && players && !players.includes(captain)) {
+      return res.status(400).json({ message: "Captain must be in the team" });
+    }
+
     team.players = players !== undefined ? players : team.players;
+    team.captain = captain !== undefined ? captain : team.captain;
+
+    // Auto-generate team name based on captain
+    if (captain) {
+      const captainPlayer = await Player.findById(captain).populate("userId", "name");
+      team.name = `${captainPlayer.userId.name} - Team`;
+    }
 
     await team.save();
     const updatedTeam = await Team.findById(team._id)
       .populate({
         path: "players",
+        populate: { path: "userId", select: "name email" },
+      })
+      .populate({
+        path: "captain",
         populate: { path: "userId", select: "name email" },
       })
       .populate("createdBy", "name email");

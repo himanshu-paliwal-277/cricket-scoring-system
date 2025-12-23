@@ -5,10 +5,10 @@ import Team from "../schema/Team.js";
 
 export const createMatch = async (req, res) => {
   try {
-    const { teamA, teamB, overs, scorerId, teamACaptain, teamBCaptain } = req.body;
+    const { teamA, teamB, overs, scorerId } = req.body;
 
-    const teamAData = await Team.findById(teamA).populate('players');
-    const teamBData = await Team.findById(teamB).populate('players');
+    const teamAData = await Team.findById(teamA).populate('players').populate('captain');
+    const teamBData = await Team.findById(teamB).populate('players').populate('captain');
 
     const match = await Match.create({
       teamA,
@@ -16,12 +16,12 @@ export const createMatch = async (req, res) => {
       teamASnapshot: {
         name: teamAData.name,
         players: teamAData.players.map(p => p._id),
-        captain: teamACaptain
+        captain: teamAData.captain?._id
       },
       teamBSnapshot: {
         name: teamBData.name,
         players: teamBData.players.map(p => p._id),
-        captain: teamBCaptain
+        captain: teamBData.captain?._id
       },
       overs,
       scorerId,
@@ -33,7 +33,14 @@ export const createMatch = async (req, res) => {
       .populate("teamB")
       .populate("scorerId", "name email")
       .populate("createdBy", "name email")
-      .populate("teamASnapshot.captain teamBSnapshot.captain");
+      .populate({
+        path: "teamASnapshot.captain",
+        populate: { path: "userId", select: "name email" }
+      })
+      .populate({
+        path: "teamBSnapshot.captain",
+        populate: { path: "userId", select: "name email" }
+      });
 
     res.status(201).json(populatedMatch);
   } catch (error) {

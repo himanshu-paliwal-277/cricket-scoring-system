@@ -6,7 +6,6 @@ import { Layout } from "@/components/Layout";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
-import { Input } from "@/components/ui/Input";
 import { useTeams } from "@/hooks/useTeams";
 import { usePlayers } from "@/hooks/usePlayers";
 import { Team } from "@/services/teamService";
@@ -18,8 +17,8 @@ export default function TeamsPage() {
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
   const { user } = useAuth();
   const [formData, setFormData] = useState({
-    name: "",
     players: [] as string[],
+    captain: "",
   });
 
   // Initialize teams on component mount
@@ -32,9 +31,11 @@ export default function TeamsPage() {
 
   const handleEditTeam = (team: Team) => {
     setEditingTeam(team);
+    const captainId =
+      typeof team.captain === "string" ? team.captain : team.captain?._id || "";
     setFormData({
-      name: team.name,
       players: team.players.map((p) => p._id),
+      captain: captainId,
     });
   };
 
@@ -56,7 +57,7 @@ export default function TeamsPage() {
       {
         onSuccess: () => {
           setEditingTeam(null);
-          setFormData({ name: "", players: [] });
+          setFormData({ players: [], captain: "" });
         },
       }
     );
@@ -80,6 +81,13 @@ export default function TeamsPage() {
             <p className="text-sm text-gray-500">
               {team.teamType === "team1" ? "First Team" : "Second Team"}
             </p>
+            {team.captain &&
+              typeof team.captain === "object" &&
+              team.captain.userId && (
+                <p className="text-sm font-semibold text-blue-600 mt-1">
+                  Captain: {team.captain.userId.name}
+                </p>
+              )}
           </div>
           {user?.role === "owner" && (
             <Button variant="secondary" onClick={() => handleEditTeam(team)}>
@@ -155,20 +163,11 @@ export default function TeamsPage() {
             isOpen={!!editingTeam}
             onClose={() => {
               setEditingTeam(null);
-              setFormData({ name: "", players: [] });
+              setFormData({ players: [], captain: "" });
             }}
             title={`Edit ${editingTeam?.name}`}
           >
             <form onSubmit={handleSubmit} className="space-y-4">
-              <Input
-                label="Team Name"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                required
-              />
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Select Players
@@ -205,6 +204,37 @@ export default function TeamsPage() {
                 </p>
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Captain
+                </label>
+                <select
+                  value={formData.captain}
+                  onChange={(e) =>
+                    setFormData({ ...formData, captain: e.target.value })
+                  }
+                  className="w-full border rounded px-3 py-2"
+                  required
+                >
+                  <option value="">Select Captain</option>
+                  {formData.players.map((playerId) => {
+                    const player = players.find((p) => p._id === playerId);
+                    return (
+                      <option key={playerId} value={playerId}>
+                        {player?.userId.name}
+                      </option>
+                    );
+                  })}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Team name will be auto-generated as:{" "}
+                  {formData.captain &&
+                    players.find((p) => p._id === formData.captain)?.userId
+                      .name}{" "}
+                  - Team
+                </p>
+              </div>
+
               <div className="flex gap-2">
                 <Button type="submit" className="flex-1" isLoading={isUpdating}>
                   Save Changes
@@ -215,7 +245,7 @@ export default function TeamsPage() {
                   className="flex-1"
                   onClick={() => {
                     setEditingTeam(null);
-                    setFormData({ name: "", players: [] });
+                    setFormData({ players: [], captain: "" });
                   }}
                 >
                   Cancel

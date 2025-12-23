@@ -54,6 +54,14 @@ const NavLinks = ({
     >
       Matches
     </Link>
+
+    <Link
+      href="/stats"
+      onClick={() => setOpened(false)}
+      className={isActive("/stats") ? "font-bold" : ""}
+    >
+      Stats
+    </Link>
   </div>
 );
 
