@@ -161,7 +161,7 @@ export default function ScoringPage() {
   const handleWicketConfirm = (data: {
     wicketType: string;
     newBatsmanId: string;
-    fielder?: string;
+    fielderId?: string;
   }) => {
     if (!inning) return;
 
@@ -170,7 +170,7 @@ export default function ScoringPage() {
       runs: 0,
       ballType: "wicket",
       wicketType: data.wicketType,
-      fielder: data.fielder,
+      fielder: data.fielderId,
     });
 
     changeBatsman({
@@ -413,7 +413,7 @@ export default function ScoringPage() {
             <h2 className="sm:text-xl text-lg sm:text-left text-center font-bold mb-4">
               Current Inning Scoreboard
             </h2>
-            <div className="text-center">
+            <div className="text-center mb-6">
               <p className="sm:text-3xl text-2xl font-bold">
                 {inning?.battingTeam.name}: {inning?.totalRuns}/
                 {inning?.totalWickets}
@@ -428,6 +428,183 @@ export default function ScoringPage() {
                 </p>
               )}
             </div>
+
+            {/* Live Batting Scorecard */}
+            {inning?.battingStats && inning.battingStats.length > 0 && (
+              <div className="overflow-x-auto mb-6">
+                <h3 className="font-semibold mb-3">Batting</h3>
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-300">
+                      <th className="text-left py-2">Batsman</th>
+                      <th className="text-right py-2">R</th>
+                      <th className="text-right py-2">B</th>
+                      <th className="text-right py-2">4s</th>
+                      <th className="text-right py-2">6s</th>
+                      <th className="text-right py-2">SR</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {inning.battingStats.map((stat: any) => {
+                      const isStriker = stat.playerId._id === inning.striker?._id;
+                      const isNonStriker = stat.playerId._id === inning.nonStriker?._id;
+                      return (
+                        <tr key={stat.playerId._id} className="border-b border-gray-200">
+                          <td className="py-2">
+                            <div className="flex flex-col">
+                              <span className={isStriker || isNonStriker ? "font-semibold" : ""}>
+                                {stat.playerId.userId?.name || "Unknown"}{isStriker ? " *" : ""}
+                              </span>
+                              {stat.isOut && (
+                                <span className="text-xs text-gray-600">
+                                  {stat.dismissalType === "bowled" && `b ${stat.dismissedBy?.userId?.name || ""}`}
+                                  {stat.dismissalType === "caught" && `c ${stat.fielder?.userId?.name || ""} b ${stat.dismissedBy?.userId?.name || ""}`}
+                                  {stat.dismissalType === "stumped" && `st ${stat.fielder?.userId?.name || ""} b ${stat.dismissedBy?.userId?.name || ""}`}
+                                  {stat.dismissalType === "lbw" && `lbw b ${stat.dismissedBy?.userId?.name || ""}`}
+                                  {stat.dismissalType === "runOut" && "run out"}
+                                  {stat.dismissalType === "hitWicket" && "hit wicket"}
+                                </span>
+                              )}
+                              {!stat.isOut && !isStriker && !isNonStriker && (
+                                <span className="text-xs text-gray-600">not out</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="text-right py-2">{stat.runs}</td>
+                          <td className="text-right py-2">{stat.balls}</td>
+                          <td className="text-right py-2">{stat.fours}</td>
+                          <td className="text-right py-2">{stat.sixes}</td>
+                          <td className="text-right py-2">{stat.strikeRate.toFixed(2)}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Live Bowling Scorecard */}
+            {inning?.bowlingStats && inning.bowlingStats.length > 0 && (
+              <div className="overflow-x-auto mb-6">
+                <h3 className="font-semibold mb-3">Bowling</h3>
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-300">
+                      <th className="text-left py-2">Bowler</th>
+                      <th className="text-right py-2">O</th>
+                      <th className="text-right py-2">M</th>
+                      <th className="text-right py-2">R</th>
+                      <th className="text-right py-2">W</th>
+                      <th className="text-right py-2">Econ</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {inning.bowlingStats.map((stat: any) => {
+                      const isCurrent = stat.playerId._id === inning.currentBowler?._id;
+                      return (
+                        <tr key={stat.playerId._id} className="border-b border-gray-200">
+                          <td className="py-2">
+                            <span className={isCurrent ? "font-semibold" : ""}>
+                              {stat.playerId.userId?.name || "Unknown"}{isCurrent ? " *" : ""}
+                            </span>
+                          </td>
+                          <td className="text-right py-2">{stat.overs.toFixed(1)}</td>
+                          <td className="text-right py-2">{stat.maidens}</td>
+                          <td className="text-right py-2">{stat.runsConceded}</td>
+                          <td className="text-right py-2">{stat.wickets}</td>
+                          <td className="text-right py-2">{stat.economy.toFixed(2)}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Fall of Wickets */}
+            {inning?.battingStats && inning.battingStats.filter((s: any) => s.isOut).length > 0 && (
+              <div className="mb-6">
+                <h3 className="font-semibold mb-3">Fall of Wickets</h3>
+                <div className="flex flex-wrap gap-3 text-sm">
+                  {inning.battingStats
+                    .map((stat: any, index: number) => {
+                      if (!stat.isOut) return null;
+
+                      // Calculate score at wicket (approximate from current stats)
+                      const wicketNumber = inning.battingStats.filter((s: any, i: number) => i <= index && s.isOut).length;
+                      const runsAtWicket = inning.battingStats
+                        .filter((s: any, i: number) => i <= index)
+                        .reduce((sum: number, s: any) => sum + s.runs, 0);
+
+                      return {
+                        ...stat,
+                        wicketNumber,
+                        runsAtWicket,
+                        index
+                      };
+                    })
+                    .filter((item: any) => item !== null)
+                    .map((item: any) => (
+                      <span key={item.index} className="text-gray-700">
+                        {item.runsAtWicket}/{item.wicketNumber} ({item.playerId.userId?.name}, {item.balls} balls)
+                      </span>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {/* Partnerships */}
+            {inning?.battingStats && inning.battingStats.length >= 2 && (
+              <div className="mb-4">
+                <h3 className="font-semibold mb-3">Partnerships</h3>
+                <div className="space-y-2 text-sm">
+                  {(() => {
+                    const partnerships: any[] = [];
+                    let currentPartnership = { player1: inning.battingStats[0], player2: inning.battingStats[1], runs: 0 };
+
+                    // Calculate partnerships based on batting order
+                    for (let i = 0; i < inning.battingStats.length; i++) {
+                      const stat = inning.battingStats[i];
+                      if (i < 2) {
+                        currentPartnership.runs += stat.runs;
+                      }
+
+                      if (stat.isOut && i >= 1) {
+                        partnerships.push({ ...currentPartnership });
+                        if (i + 1 < inning.battingStats.length) {
+                          const nextPlayer = inning.battingStats[i + 1];
+                          const continuingPlayer = i === 0 ? inning.battingStats[1] : inning.battingStats[i - 1];
+                          currentPartnership = { player1: continuingPlayer, player2: nextPlayer, runs: 0 };
+                        }
+                      }
+                    }
+
+                    // Add current partnership if match is ongoing
+                    if (inning.striker && inning.nonStriker) {
+                      const striker = inning.battingStats.find((s: any) => s.playerId._id === inning.striker._id);
+                      const nonStriker = inning.battingStats.find((s: any) => s.playerId._id === inning.nonStriker._id);
+                      if (striker && nonStriker) {
+                        const currentRuns = striker.runs + nonStriker.runs - partnerships.reduce((sum, p) => sum + p.runs, 0);
+                        if (currentRuns > 0 || partnerships.length === 0) {
+                          partnerships.push({ player1: striker, player2: nonStriker, runs: Math.max(0, currentRuns), current: true });
+                        }
+                      }
+                    }
+
+                    return partnerships.map((p, idx) => (
+                      <div key={idx} className="flex justify-between items-center border-b border-gray-200 pb-2">
+                        <span className="text-gray-700">
+                          {p.player1.playerId.userId?.name} - {p.player2.playerId.userId?.name}
+                        </span>
+                        <span className={`font-semibold ${p.current ? "text-blue-600" : ""}`}>
+                          {p.runs} runs{p.current ? " *" : ""}
+                        </span>
+                      </div>
+                    ));
+                  })()}
+                </div>
+              </div>
+            )}
           </Card>
 
           {/* First Inning Scoreboard (when in second inning) */}
@@ -994,11 +1171,17 @@ export default function ScoringPage() {
                       options={[
                         { value: "", label: "Select Batsman" },
                         ...battingTeamPlayers
-                          .filter(
-                            (id: string) =>
-                              id !== inning?.striker?._id &&
-                              id !== inning?.nonStriker?._id
-                          )
+                          .filter((id: string) => {
+                            // Filter out current batsmen
+                            if (id === inning?.striker?._id || id === inning?.nonStriker?._id) {
+                              return false;
+                            }
+                            // Filter out dismissed batsmen
+                            const dismissedPlayer = inning?.battingStats?.find(
+                              (stat: any) => stat.playerId._id === id && stat.isOut
+                            );
+                            return !dismissedPlayer;
+                          })
                           .map((playerId: string) => {
                             const player = players.find(
                               (p) => p._id === playerId

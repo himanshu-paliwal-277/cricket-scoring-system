@@ -26,6 +26,29 @@ export interface Ball {
   isValid: boolean;
 }
 
+export interface BattingStats {
+  playerId: Player;
+  runs: number;
+  balls: number;
+  fours: number;
+  sixes: number;
+  strikeRate: number;
+  isOut: boolean;
+  dismissalType: string;
+  dismissedBy?: Player;
+  fielder?: Player;
+}
+
+export interface BowlingStats {
+  playerId: Player;
+  overs: number;
+  balls: number;
+  runsConceded: number;
+  wickets: number;
+  maidens: number;
+  economy: number;
+}
+
 export interface Inning {
   _id: string;
   matchId: string;
@@ -47,6 +70,8 @@ export interface Inning {
   };
   isCompleted: boolean;
   balls?: Ball[];
+  battingStats?: BattingStats[];
+  bowlingStats?: BowlingStats[];
 }
 
 export interface AddBallData {
@@ -54,6 +79,7 @@ export interface AddBallData {
   runs: number;
   ballType: "normal" | "wide" | "noBall" | "wicket" | "bye" | "legBye";
   wicketType?: string;
+  fielder?: string;
 }
 
 export const scoringService = {

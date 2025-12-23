@@ -255,6 +255,22 @@ export const getCurrentInning = async (req, res) => {
         path: "currentBowler",
         populate: { path: "userId", select: "name email" },
       })
+      .populate({
+        path: "battingStats.playerId",
+        populate: { path: "userId", select: "name email" }
+      })
+      .populate({
+        path: "battingStats.dismissedBy",
+        populate: { path: "userId", select: "name email" }
+      })
+      .populate({
+        path: "battingStats.fielder",
+        populate: { path: "userId", select: "name email" }
+      })
+      .populate({
+        path: "bowlingStats.playerId",
+        populate: { path: "userId", select: "name email" }
+      })
       .populate("battingTeam bowlingTeam");
 
     console.log("Current Inning Found:", inning);

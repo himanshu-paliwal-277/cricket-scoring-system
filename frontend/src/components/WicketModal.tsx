@@ -33,7 +33,7 @@ export function WicketModal({
     onConfirm({
       wicketType,
       newBatsmanId,
-      fielder: fielderId || undefined,
+      fielderId: fielderId || undefined,
     });
     setWicketType("bowled");
     setNewBatsmanId("");
