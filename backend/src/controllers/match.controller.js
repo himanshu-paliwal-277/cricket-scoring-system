@@ -5,11 +5,24 @@ import Team from "../schema/Team.js";
 
 export const createMatch = async (req, res) => {
   try {
-    const { teamA, teamB, overs, scorerId } = req.body;
+    const { teamA, teamB, overs, scorerId, teamACaptain, teamBCaptain } = req.body;
+
+    const teamAData = await Team.findById(teamA).populate('players');
+    const teamBData = await Team.findById(teamB).populate('players');
 
     const match = await Match.create({
       teamA,
       teamB,
+      teamASnapshot: {
+        name: teamAData.name,
+        players: teamAData.players.map(p => p._id),
+        captain: teamACaptain
+      },
+      teamBSnapshot: {
+        name: teamBData.name,
+        players: teamBData.players.map(p => p._id),
+        captain: teamBCaptain
+      },
       overs,
       scorerId,
       createdBy: req.user._id,
@@ -19,7 +32,8 @@ export const createMatch = async (req, res) => {
       .populate("teamA")
       .populate("teamB")
       .populate("scorerId", "name email")
-      .populate("createdBy", "name email");
+      .populate("createdBy", "name email")
+      .populate("teamASnapshot.captain teamBSnapshot.captain");
 
     res.status(201).json(populatedMatch);
   } catch (error) {
@@ -299,9 +313,43 @@ export const endMatch = async (req, res) => {
       }
     }
 
+    // Calculate Player of the Match
+    if (match.winner && innings.length === 2) {
+      const winnerTeamId = match.winner.toString();
+      let maxPoints = 0;
+      let playerOfTheMatch = null;
+
+      for (const inning of innings) {
+        for (const stat of inning.battingStats) {
+          const isBattingForWinner = inning.battingTeam.toString() === winnerTeamId;
+          if (isBattingForWinner) {
+            const points = stat.runs + (stat.fours * 1) + (stat.sixes * 2);
+            if (points > maxPoints) {
+              maxPoints = points;
+              playerOfTheMatch = stat.playerId;
+            }
+          }
+        }
+
+        for (const stat of inning.bowlingStats) {
+          const isBowlingForWinner = inning.bowlingTeam.toString() === winnerTeamId;
+          if (isBowlingForWinner) {
+            const points = (stat.wickets * 25) + (stat.maidens * 10);
+            if (points > maxPoints) {
+              maxPoints = points;
+              playerOfTheMatch = stat.playerId;
+            }
+          }
+        }
+      }
+
+      match.playerOfTheMatch = playerOfTheMatch;
+    }
+
     await match.save();
 
-    const populatedMatch = await Match.findById(match._id).populate("teamA teamB winner");
+    const populatedMatch = await Match.findById(match._id)
+      .populate("teamA teamB winner playerOfTheMatch");
 
     res.json({
       message: "Match ended successfully",

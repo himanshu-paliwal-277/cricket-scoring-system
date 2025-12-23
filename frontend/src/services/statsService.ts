@@ -1,0 +1,82 @@
+import AxiosInstance from "@/utils/axiosInstance";
+
+export interface BattingStats {
+  playerId: {
+    _id: string;
+    userId: { name: string; email: string };
+  };
+  runs: number;
+  balls: number;
+  fours: number;
+  sixes: number;
+  strikeRate: number;
+  isOut: boolean;
+  dismissalType: string;
+  dismissedBy?: {
+    _id: string;
+    userId: { name: string };
+  };
+  fielder?: {
+    _id: string;
+    userId: { name: string };
+  };
+}
+
+export interface BowlingStats {
+  playerId: {
+    _id: string;
+    userId: { name: string; email: string };
+  };
+  overs: number;
+  balls: number;
+  runsConceded: number;
+  wickets: number;
+  maidens: number;
+  economy: number;
+}
+
+export interface InningScorecard {
+  _id: string;
+  inningNumber: number;
+  battingTeam: { _id: string; name: string };
+  bowlingTeam: { _id: string; name: string };
+  totalRuns: number;
+  totalWickets: number;
+  currentOver: number;
+  battingStats: BattingStats[];
+  bowlingStats: BowlingStats[];
+}
+
+export const statsService = {
+  async getMatchScorecard(matchId: string): Promise<InningScorecard[]> {
+    const { data } = await AxiosInstance.get(`/stats/scorecard/${matchId}`);
+    return data;
+  },
+
+  async getMostRuns() {
+    const { data } = await AxiosInstance.get("/stats/most-runs");
+    return data;
+  },
+
+  async getMostWickets() {
+    const { data } = await AxiosInstance.get("/stats/most-wickets");
+    return data;
+  },
+
+  async getMostBoundaries() {
+    const { data } = await AxiosInstance.get("/stats/most-boundaries");
+    return data;
+  },
+
+  async getAvailableBatsmen(inningId: string) {
+    const { data } = await AxiosInstance.get(
+      `/stats/available-batsmen/${inningId}`
+    );
+    return data;
+  },
+
+  async getPlayerStats() {
+    const { data } = await AxiosInstance.get("/stats/players");
+    return data;
+  },
+};

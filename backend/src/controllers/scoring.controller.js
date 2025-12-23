@@ -4,7 +4,7 @@ import Match from "../schema/Match.js";
 
 export const addBall = async (req, res) => {
   try {
-    const { inningId, runs, ballType, wicketType } = req.body;
+    const { inningId, runs, ballType, wicketType, fielder } = req.body;
 
     const inning = await Inning.findById(inningId)
       .populate('battingTeam bowlingTeam');
@@ -29,28 +29,102 @@ export const addBall = async (req, res) => {
       runs,
       ballType,
       wicketType: wicketType || "none",
+      fielder: fielder || null,
     });
 
     // Update inning stats
     inning.totalRuns += runs;
 
+    // Update batting stats
+    let batsmanStats = inning.battingStats.find(s => s.playerId.toString() === inning.striker.toString());
+    if (!batsmanStats) {
+      inning.battingStats.push({
+        playerId: inning.striker,
+        runs: 0,
+        balls: 0,
+        fours: 0,
+        sixes: 0,
+        strikeRate: 0,
+        isOut: false,
+        dismissalType: "none"
+      });
+      batsmanStats = inning.battingStats[inning.battingStats.length - 1];
+    }
+
+    // Update bowling stats
+    let bowlerStats = inning.bowlingStats.find(s => s.playerId.toString() === inning.currentBowler.toString());
+    if (!bowlerStats) {
+      inning.bowlingStats.push({
+        playerId: inning.currentBowler,
+        overs: 0,
+        balls: 0,
+        runsConceded: 0,
+        wickets: 0,
+        maidens: 0,
+        economy: 0
+      });
+      bowlerStats = inning.bowlingStats[inning.bowlingStats.length - 1];
+    }
+
+    // Update runs
+    if (ballType !== "bye" && ballType !== "legBye") {
+      batsmanStats.runs += runs;
+    }
+
+    // Count boundaries
+    if (runs === 4 && ballType === "normal") batsmanStats.fours += 1;
+    if (runs === 6 && ballType === "normal") batsmanStats.sixes += 1;
+
     // Handle extras
     if (ballType === "wide" || ballType === "noBall") {
       if (ballType === "wide") inning.extras.wides += 1;
       if (ballType === "noBall") inning.extras.noBalls += 1;
-      // Extras don't count as a ball
-    } else {
-      // Regular ball, increment ball count
+      bowlerStats.runsConceded += runs;
+    } else if (ballType === "bye") {
+      inning.extras.byes += runs;
+      batsmanStats.balls += 1;
+      bowlerStats.balls += 1;
       inning.currentBall += 1;
+    } else if (ballType === "legBye") {
+      inning.extras.legByes += runs;
+      batsmanStats.balls += 1;
+      bowlerStats.balls += 1;
+      inning.currentBall += 1;
+    } else {
+      batsmanStats.balls += 1;
+      bowlerStats.balls += 1;
+      bowlerStats.runsConceded += runs;
+      inning.currentBall += 1;
+    }
+
+    // Calculate strike rate
+    if (batsmanStats.balls > 0) {
+      batsmanStats.strikeRate = parseFloat(((batsmanStats.runs / batsmanStats.balls) * 100).toFixed(2));
+    }
+
+    // Calculate economy
+    if (bowlerStats.balls > 0) {
+      bowlerStats.overs = parseFloat((bowlerStats.balls / 6).toFixed(1));
+      bowlerStats.economy = parseFloat(((bowlerStats.runsConceded / bowlerStats.balls) * 6).toFixed(2));
     }
 
     // Handle wicket
     if (ballType === "wicket") {
       inning.totalWickets += 1;
-      // Don't swap on wicket - new batsman comes to striker end
+      batsmanStats.isOut = true;
+      batsmanStats.dismissalType = wicketType;
+
+      if (wicketType !== "runOut") {
+        batsmanStats.dismissedBy = inning.currentBowler;
+        bowlerStats.wickets += 1;
+      }
+
+      if (fielder && (wicketType === "caught" || wicketType === "stumped")) {
+        batsmanStats.fielder = fielder;
+      }
     } else {
       // Swap striker for odd runs (only on valid balls, not wickets)
-      if (runs % 2 !== 0) {
+      if (runs % 2 !== 0 && ballType !== "wide" && ballType !== "noBall") {
         [inning.striker, inning.nonStriker] = [inning.nonStriker, inning.striker];
       }
     }

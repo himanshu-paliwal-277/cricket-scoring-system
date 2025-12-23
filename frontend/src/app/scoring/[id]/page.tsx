@@ -12,6 +12,8 @@ import { usePlayers } from "@/hooks/usePlayers";
 import { Modal } from "@/components/ui/Modal";
 import { Select } from "@/components/ui/Select";
 import { useAuth } from "@/hooks/useAuth";
+import { WicketModal } from "@/components/WicketModal";
+import { statsService } from "@/services/statsService";
 
 export default function ScoringPage() {
   const params = useParams();
@@ -37,11 +39,13 @@ export default function ScoringPage() {
   const [showBatsmanModal, setShowBatsmanModal] = useState(false);
   const [showEndMatchModal, setShowEndMatchModal] = useState(false);
   const [showChangeInningModal, setShowChangeInningModal] = useState(false);
+  const [showWicketModal, setShowWicketModal] = useState(false);
   const [newBowlerId, setNewBowlerId] = useState("");
   const [newBatsmanId, setNewBatsmanId] = useState("");
   const [inningStriker, setInningStriker] = useState("");
   const [inningNonStriker, setInningNonStriker] = useState("");
   const [inningBowler, setInningBowler] = useState("");
+  const [availableBatsmen, setAvailableBatsmen] = useState<any[]>([]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const firstInning = match?.innings?.find((i: any) => i.inningNumber === 1);
@@ -134,17 +138,64 @@ export default function ScoringPage() {
   const handleAddBall = (
     runs: number,
     type: "normal" | "wide" | "noBall" | "wicket" | "bye" | "legBye" = "normal",
-    wicketType?: string
+    wicketType?: string,
+    fielder?: string
   ) => {
     if (!inning) return;
+
+    if (type === "wicket") {
+      setShowWicketModal(true);
+      return;
+    }
+
     addBall({
       inningId: inning._id,
       runs,
       ballType: type,
       wicketType,
+      fielder,
     });
     setBallType("normal");
   };
+
+  const handleWicketConfirm = (data: {
+    wicketType: string;
+    newBatsmanId: string;
+    fielder?: string;
+  }) => {
+    if (!inning) return;
+
+    addBall({
+      inningId: inning._id,
+      runs: 0,
+      ballType: "wicket",
+      wicketType: data.wicketType,
+      fielder: data.fielder,
+    });
+
+    changeBatsman({
+      inningId: inning._id,
+      newBatsmanId: data.newBatsmanId,
+    });
+
+    setShowWicketModal(false);
+    setBallType("normal");
+  };
+
+  const handleWideClick = () => {
+    if (!inning) return;
+    addBall({
+      inningId: inning._id,
+      runs: 1,
+      ballType: "wide",
+    });
+  };
+
+  useEffect(() => {
+    if (showWicketModal && inning) {
+      statsService.getAvailableBatsmen(inning._id).then(setAvailableBatsmen);
+    }
+  }, [showWicketModal, inning]);
 
   const handleChangeBowler = () => {
     if (newBowlerId && inning) {
@@ -481,21 +532,15 @@ export default function ScoringPage() {
             {match?.status === "live" && canScore && !checkAllPlayersOut() && (
               <div className="mb-6">
                 <label className="block text-sm font-medium mb-2">
-                  Ball Type
+                  Quick Actions
                 </label>
-                <div className="grid sm:grid-cols-4 grid-cols-2  gap-2">
+                <div className="grid sm:grid-cols-4 grid-cols-2 gap-2">
                   <Button
-                    variant={ballType === "normal" ? "primary" : "secondary"}
-                    onClick={() => setBallType("normal")}
+                    variant="secondary"
+                    onClick={handleWideClick}
+                    isLoading={isAddingBall}
                   >
-                    Normal
-                  </Button>
-                  <Button
-                    className=""
-                    variant={ballType === "wide" ? "primary" : "secondary"}
-                    onClick={() => setBallType("wide")}
-                  >
-                    Wide
+                    Wide (+1)
                   </Button>
                   <Button
                     variant={ballType === "noBall" ? "primary" : "secondary"}
@@ -504,10 +549,17 @@ export default function ScoringPage() {
                     No Ball
                   </Button>
                   <Button
-                    variant={ballType === "wicket" ? "primary" : "secondary"}
-                    onClick={() => setBallType("wicket")}
+                    variant="danger"
+                    onClick={() => handleAddBall(0, "wicket")}
+                    isLoading={isAddingBall}
                   >
                     Wicket
+                  </Button>
+                  <Button
+                    variant={ballType === "normal" ? "primary" : "secondary"}
+                    onClick={() => setBallType("normal")}
+                  >
+                    Normal
                   </Button>
                 </div>
               </div>
@@ -516,19 +568,13 @@ export default function ScoringPage() {
             {match?.status === "live" && canScore && !checkAllPlayersOut() && (
               <div className="mb-6">
                 <label className="block text-sm font-medium mb-2">
-                  Add Runs
+                  Add Runs {ballType !== "normal" && `(${ballType})`}
                 </label>
                 <div className="grid sm:grid-cols-4 grid-cols-3 gap-2">
                   {[0, 1, 2, 3, 4, 6].map((runs) => (
                     <Button
                       key={runs}
-                      onClick={() =>
-                        handleAddBall(
-                          runs,
-                          ballType,
-                          ballType === "wicket" ? "bowled" : undefined
-                        )
-                      }
+                      onClick={() => handleAddBall(runs, ballType)}
                       isLoading={isAddingBall}
                       className="text-2xl h-16"
                     >
@@ -968,6 +1014,18 @@ export default function ScoringPage() {
                     </Button>
                   </div>
                 </Modal>
+
+                <WicketModal
+                  isOpen={showWicketModal}
+                  onClose={() => setShowWicketModal(false)}
+                  onConfirm={handleWicketConfirm}
+                  availableBatsmen={availableBatsmen}
+                  bowlingTeamPlayers={
+                    bowlingTeamPlayers
+                      .map((id: string) => players.find((p) => p._id === id))
+                      .filter(Boolean) || []
+                  }
+                />
               </>
             );
           })()}

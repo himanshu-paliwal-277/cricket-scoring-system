@@ -39,6 +39,10 @@ const ballSchema = new mongoose.Schema(
       enum: ["bowled", "caught", "lbw", "stumped", "runOut", "hitWicket", "none"],
       default: "none",
     },
+    fielder: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Player",
+    },
     isValid: {
       type: Boolean,
       default: true,

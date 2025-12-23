@@ -55,6 +55,31 @@ const inningSchema = new mongoose.Schema(
       byes: { type: Number, default: 0 },
       legByes: { type: Number, default: 0 },
     },
+    battingStats: [
+      {
+        playerId: { type: mongoose.Schema.Types.ObjectId, ref: "Player", required: true },
+        runs: { type: Number, default: 0 },
+        balls: { type: Number, default: 0 },
+        fours: { type: Number, default: 0 },
+        sixes: { type: Number, default: 0 },
+        strikeRate: { type: Number, default: 0 },
+        isOut: { type: Boolean, default: false },
+        dismissalType: { type: String, enum: ["bowled", "caught", "lbw", "stumped", "runOut", "hitWicket", "none"], default: "none" },
+        dismissedBy: { type: mongoose.Schema.Types.ObjectId, ref: "Player" },
+        fielder: { type: mongoose.Schema.Types.ObjectId, ref: "Player" }
+      }
+    ],
+    bowlingStats: [
+      {
+        playerId: { type: mongoose.Schema.Types.ObjectId, ref: "Player", required: true },
+        overs: { type: Number, default: 0 },
+        balls: { type: Number, default: 0 },
+        runsConceded: { type: Number, default: 0 },
+        wickets: { type: Number, default: 0 },
+        maidens: { type: Number, default: 0 },
+        economy: { type: Number, default: 0 }
+      }
+    ],
     isCompleted: {
       type: Boolean,
       default: false,

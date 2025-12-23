@@ -4,6 +4,7 @@ import authRouter from "./auth.routes.js";
 import matchRouter from "./match.routes.js";
 import playerRouter from "./player.routes.js";
 import scoringRouter from "./scoring.routes.js";
+import statsRouter from "./stats.routes.js";
 import teamRouter from "./team.routes.js";
 
 const router = express.Router();
@@ -13,5 +14,6 @@ router.use("/players", playerRouter);
 router.use("/teams", teamRouter);
 router.use("/matches", matchRouter);
 router.use("/scoring", scoringRouter);
+router.use("/stats", statsRouter);
 
 export default router;

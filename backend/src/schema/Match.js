@@ -12,6 +12,16 @@ const matchSchema = new mongoose.Schema(
       ref: "Team",
       required: true,
     },
+    teamASnapshot: {
+      name: String,
+      players: [{ type: mongoose.Schema.Types.ObjectId, ref: "Player" }],
+      captain: { type: mongoose.Schema.Types.ObjectId, ref: "Player" }
+    },
+    teamBSnapshot: {
+      name: String,
+      players: [{ type: mongoose.Schema.Types.ObjectId, ref: "Player" }],
+      captain: { type: mongoose.Schema.Types.ObjectId, ref: "Player" }
+    },
     overs: {
       type: Number,
       required: true,
@@ -49,6 +59,10 @@ const matchSchema = new mongoose.Schema(
     },
     resultText: {
       type: String,
+    },
+    playerOfTheMatch: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Player",
     },
   },
   { timestamps: true }
