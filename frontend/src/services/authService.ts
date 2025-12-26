@@ -12,11 +12,29 @@ export interface LoginData {
   password: string;
 }
 
+export interface PlayerProfile {
+  _id: string;
+  userId: string;
+  battingStyle: string;
+  bowlingStyle: string;
+  totalRuns: number;
+  totalWickets: number;
+  matchesPlayed: number;
+  highestScore: number;
+  totalBallsFaced: number;
+  totalBallsBowled: number;
+  totalFours: number;
+  totalSixes: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface User {
   id: string;
   name: string;
   email: string;
   role: string;
+  playerProfile?: PlayerProfile;
 }
 
 export interface AuthResponse {

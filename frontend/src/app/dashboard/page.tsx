@@ -46,52 +46,103 @@ export default function DashboardPage() {
   return (
     <Layout>
       <div className="space-y-6">
-          <div>
-            <h1 className="sm:text-3xl text-2xl font-bold">
-              Welcome, {user?.name}!
-            </h1>
-            <p className="text-gray-600">Role: {user?.role}</p>
-          </div>
+        <div>
+          <h1 className="sm:text-3xl text-2xl font-bold">
+            Welcome, {user?.name}!
+          </h1>
+          <p className="text-gray-600">Role: {user?.role}</p>
+        </div>
 
-          {user?.role === "player" && (
-            <Card>
-              <h2 className="text-2xl font-bold mb-4">Your Statistics</h2>
-              {statsLoading ? (
-                <p>Loading stats...</p>
-              ) : playerStats ? (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-blue-600">
-                      {playerStats.totalRuns}
+        {user?.role === "player" && user?.playerProfile && (
+          <Card>
+            <h2 className="text-2xl font-bold mb-4">Your Cricket Statistics</h2>
+            {statsLoading ? (
+              <p>Loading stats...</p>
+            ) : user.playerProfile ? (
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+                  <div className="bg-blue-50 p-4 rounded-lg text-center">
+                    <p className="text-3xl font-bold text-blue-600">
+                      {user.playerProfile.matchesPlayed}
+                    </p>
+                    <p className="text-sm text-gray-600">Matches</p>
+                  </div>
+                  <div className="bg-green-50 p-4 rounded-lg text-center">
+                    <p className="text-3xl font-bold text-green-600">
+                      {user.playerProfile.totalRuns}
                     </p>
                     <p className="text-sm text-gray-600">Total Runs</p>
                   </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-green-600">
-                      {playerStats.totalWickets}
+                  <div className="bg-purple-50 p-4 rounded-lg text-center">
+                    <p className="text-3xl font-bold text-purple-600">
+                      {user.playerProfile.highestScore}
                     </p>
-                    <p className="text-sm text-gray-600">Total Wickets</p>
+                    <p className="text-sm text-gray-600">Highest Score</p>
                   </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-purple-600">
-                      {playerStats.matchesPlayed}
+                  <div className="bg-orange-50 p-4 rounded-lg text-center">
+                    <p className="text-3xl font-bold text-orange-600">
+                      {user.playerProfile.totalBallsFaced > 0
+                        ? (
+                            (user.playerProfile.totalRuns /
+                              user.playerProfile.totalBallsFaced) *
+                            100
+                          ).toFixed(2)
+                        : "0.00"}
                     </p>
-                    <p className="text-sm text-gray-600">Matches Played</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-orange-600">
-                      {playerStats.average || 0}
-                    </p>
-                    <p className="text-sm text-gray-600">Batting Average</p>
+                    <p className="text-sm text-gray-600">Strike Rate</p>
                   </div>
                 </div>
-              ) : (
-                <p className="text-gray-600">No stats available</p>
-              )}
-            </Card>
-          )}
 
-          {/* {user?.role === "owner" && (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  <div className="bg-red-50 p-4 rounded-lg text-center">
+                    <p className="text-3xl font-bold text-red-600">
+                      {user.playerProfile.totalWickets}
+                    </p>
+                    <p className="text-sm text-gray-600">Wickets</p>
+                  </div>
+                  <div className="bg-indigo-50 p-4 rounded-lg text-center">
+                    <p className="text-3xl font-bold text-indigo-600">
+                      {user.playerProfile.totalFours}
+                    </p>
+                    <p className="text-sm text-gray-600">Fours</p>
+                  </div>
+                  <div className="bg-pink-50 p-4 rounded-lg text-center">
+                    <p className="text-3xl font-bold text-pink-600">
+                      {user.playerProfile.totalSixes}
+                    </p>
+                    <p className="text-sm text-gray-600">Sixes</p>
+                  </div>
+                  <div className="bg-teal-50 p-4 rounded-lg text-center">
+                    <p className="text-3xl font-bold text-teal-600">
+                      {user.playerProfile.totalFours +
+                        user.playerProfile.totalSixes}
+                    </p>
+                    <p className="text-sm text-gray-600">Boundaries</p>
+                  </div>
+                </div>
+
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <p className="text-sm text-gray-600 mb-1">Batting Style</p>
+                    <p className="text-lg font-semibold capitalize">
+                      {user.playerProfile.battingStyle.replace("-", " ")}
+                    </p>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <p className="text-sm text-gray-600 mb-1">Bowling Style</p>
+                    <p className="text-lg font-semibold capitalize">
+                      {user.playerProfile.bowlingStyle.replace("-", " ")}
+                    </p>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <p className="text-gray-600">No stats available</p>
+            )}
+          </Card>
+        )}
+
+        {/* {user?.role === "owner" && (
             <Card>
               <h2 className="sm:text-2xl text-xl font-bold mb-4">
                 Update Player Details
@@ -158,87 +209,87 @@ export default function DashboardPage() {
             </Card>
           )} */}
 
-          {user?.role !== "player" && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Link href="/players">
-                <Card className="hover:shadow-lg transition cursor-pointer">
-                  <h3 className="text-xl font-semibold mb-2">Players</h3>
-                  <p className="text-gray-600">Manage player profiles</p>
-                </Card>
-              </Link>
+        {user?.role !== "player" && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Link href="/players">
+              <Card className="hover:shadow-lg transition cursor-pointer">
+                <h3 className="text-xl font-semibold mb-2">Players</h3>
+                <p className="text-gray-600">Manage player profiles</p>
+              </Card>
+            </Link>
 
-              <Link href="/teams">
-                <Card className="hover:shadow-lg transition cursor-pointer">
-                  <h3 className="text-xl font-semibold mb-2">Teams</h3>
-                  <p className="text-gray-600">Create and manage teams</p>
-                </Card>
-              </Link>
+            <Link href="/teams">
+              <Card className="hover:shadow-lg transition cursor-pointer">
+                <h3 className="text-xl font-semibold mb-2">Teams</h3>
+                <p className="text-gray-600">Create and manage teams</p>
+              </Card>
+            </Link>
 
-              <Link href="/matches">
-                <Card className="hover:shadow-lg transition cursor-pointer">
-                  <h3 className="text-xl font-semibold mb-2">Matches</h3>
-                  <p className="text-gray-600">Schedule and score matches</p>
+            <Link href="/matches">
+              <Card className="hover:shadow-lg transition cursor-pointer">
+                <h3 className="text-xl font-semibold mb-2">Matches</h3>
+                <p className="text-gray-600">Schedule and score matches</p>
+              </Card>
+            </Link>
+          </div>
+        )}
+
+        <div>
+          <h2 className="text-2xl font-bold mb-4">Live Matches</h2>
+          {isLoading ? (
+            <p>Loading...</p>
+          ) : liveMatches.length > 0 ? (
+            <div className="grid gap-4">
+              {liveMatches.map((match) => (
+                <Card key={match._id}>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h3 className="text-xl font-semibold">
+                        {match?.teamA?.name} vs {match?.teamB?.name}
+                      </h3>
+                      <p className="text-green-600 font-semibold">LIVE</p>
+                    </div>
+                    <Link href={`/scoring/${match._id}`}>
+                      <Button>View Score</Button>
+                    </Link>
+                  </div>
                 </Card>
-              </Link>
+              ))}
             </div>
+          ) : (
+            <p className="text-gray-600">No live matches</p>
           )}
-
-          <div>
-            <h2 className="text-2xl font-bold mb-4">Live Matches</h2>
-            {isLoading ? (
-              <p>Loading...</p>
-            ) : liveMatches.length > 0 ? (
-              <div className="grid gap-4">
-                {liveMatches.map((match) => (
-                  <Card key={match._id}>
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h3 className="text-xl font-semibold">
-                          {match?.teamA?.name} vs {match?.teamB?.name}
-                        </h3>
-                        <p className="text-green-600 font-semibold">LIVE</p>
-                      </div>
-                      <Link href={`/scoring/${match._id}`}>
-                        <Button>View Score</Button>
-                      </Link>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-600">No live matches</p>
-            )}
-          </div>
-
-          <div>
-            <h2 className="text-2xl font-bold mb-4">Upcoming Matches</h2>
-            {isLoading ? (
-              <p>Loading...</p>
-            ) : upcomingMatches.length > 0 ? (
-              <div className="grid gap-4">
-                {upcomingMatches.map((match) => (
-                  <Card key={match._id}>
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h3 className="text-xl font-semibold">
-                          {match.teamA.name} vs {match.teamB.name}
-                        </h3>
-                        <p className="text-gray-600">{match.overs} overs</p>
-                      </div>
-                      {user?.role !== "player" && (
-                        <Link href={`/matches/${match._id}/start`}>
-                          <Button>Start Match</Button>
-                        </Link>
-                      )}
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-600">No upcoming matches</p>
-            )}
-          </div>
         </div>
+
+        <div>
+          <h2 className="text-2xl font-bold mb-4">Upcoming Matches</h2>
+          {isLoading ? (
+            <p>Loading...</p>
+          ) : upcomingMatches.length > 0 ? (
+            <div className="grid gap-4">
+              {upcomingMatches.map((match) => (
+                <Card key={match._id}>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h3 className="text-xl font-semibold">
+                        {match.teamA.name} vs {match.teamB.name}
+                      </h3>
+                      <p className="text-gray-600">{match.overs} overs</p>
+                    </div>
+                    {user?.role !== "player" && (
+                      <Link href={`/matches/${match._id}/start`}>
+                        <Button>Start Match</Button>
+                      </Link>
+                    )}
+                  </div>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-600">No upcoming matches</p>
+          )}
+        </div>
+      </div>
     </Layout>
   );
 }
