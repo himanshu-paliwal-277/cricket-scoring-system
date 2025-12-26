@@ -13,9 +13,9 @@ import { authenticate, authorize } from "../../middleware/auth.js";
 
 const router = express.Router();
 
-router.get("/", authenticate, getAllMatches);
-router.get("/:id", authenticate, getMatchById);
-router.get("/:id/current-inning", authenticate, getCurrentInning);
+router.get("/", getAllMatches);
+router.get("/:id", getMatchById);
+router.get("/:id/current-inning", getCurrentInning);
 router.post("/", authenticate, authorize("owner"), createMatch);
 router.post("/:id/start", authenticate, authorize("owner", "scorer"), startMatch);
 router.post("/:id/start-inning", authenticate, authorize("owner", "scorer"), startInning);

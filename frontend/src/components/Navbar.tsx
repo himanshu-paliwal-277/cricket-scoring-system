@@ -29,7 +29,7 @@ const NavLinks = ({
       Dashboard
     </Link>
 
-    {user?.role !== "player" && (
+    {user && user?.role !== "player" && (
       <Link
         href="/players"
         onClick={() => setOpened(false)}
@@ -39,13 +39,15 @@ const NavLinks = ({
       </Link>
     )}
 
-    <Link
-      href="/teams"
-      onClick={() => setOpened(false)}
-      className={isActive("/teams") ? "font-bold" : ""}
-    >
-      Teams
-    </Link>
+    {user && (
+      <Link
+        href="/teams"
+        onClick={() => setOpened(false)}
+        className={isActive("/teams") ? "font-bold" : ""}
+      >
+        Teams
+      </Link>
+    )}
 
     <Link
       href="/matches"
@@ -75,7 +77,7 @@ export const Navbar = () => {
   return (
     <>
       {/* Navbar */}
-      <nav className="py-4 bg-green-600 px-4 flex items-center justify-between text-white">
+      <nav className="py-4 bg-emerald-600 px-4 flex items-center justify-between text-white">
         <Link href="/dashboard" className="text-lg font-bold">
           Cricket Scoring
         </Link>
@@ -84,17 +86,32 @@ export const Navbar = () => {
         <div className="hidden md:flex items-center gap-8">
           <NavLinks isActive={isActive} user={user} setOpened={setOpened} />
 
-          <div className="flex items-center gap-4">
-            <span className="text-sm">{user?.name}</span>
-            <Button
-              size="xs"
-              color="dark"
-              leftSection={<LogOut size={14} />}
-              onClick={logout}
-            >
-              Logout
-            </Button>
-          </div>
+          {user ? (
+            <div className="flex items-center gap-4">
+              <span className="text-sm">{user.name}</span>
+              <Button
+                size="xs"
+                color="dark"
+                leftSection={<LogOut size={14} />}
+                onClick={logout}
+              >
+                Logout
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Link href="/login">
+                <Button size="xs" variant="white">
+                  Login
+                </Button>
+              </Link>
+              <Link href="/register">
+                <Button size="xs" color="dark">
+                  Register
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -123,18 +140,33 @@ export const Navbar = () => {
           setOpened={setOpened}
         />
 
-        <div className="mt-8">
-          <p className="text-sm mb-3">{user?.name}</p>
+        {user ? (
+          <div className="mt-8">
+            <p className="text-sm mb-3">{user.name}</p>
 
-          <Button
-            fullWidth
-            color="red"
-            leftSection={<LogOut size={16} />}
-            onClick={logout}
-          >
-            Logout
-          </Button>
-        </div>
+            <Button
+              fullWidth
+              color="red"
+              leftSection={<LogOut size={16} />}
+              onClick={logout}
+            >
+              Logout
+            </Button>
+          </div>
+        ) : (
+          <div className="mt-8 flex flex-col gap-3">
+            <Link href="/login" onClick={() => setOpened(false)}>
+              <Button fullWidth variant="outline">
+                Login
+              </Button>
+            </Link>
+            <Link href="/register" onClick={() => setOpened(false)}>
+              <Button fullWidth color="dark">
+                Register
+              </Button>
+            </Link>
+          </div>
+        )}
       </Drawer>
     </>
   );

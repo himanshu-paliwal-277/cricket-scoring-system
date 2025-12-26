@@ -46,14 +46,68 @@ export default function DashboardPage() {
   return (
     <Layout>
       <div className="space-y-6">
-        <div>
-          <h1 className="sm:text-3xl text-2xl font-bold">
-            Welcome, {user?.name}!
-          </h1>
-          <p className="text-gray-600">Role: {user?.role}</p>
-        </div>
+        {!user && (
+          <div className="text-center py-12 space-y-6">
+            <div className="space-y-3">
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-800">
+                Welcome to Cricket Scoring
+              </h1>
+              <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
+                Track matches, manage teams, and view comprehensive cricket statistics all in one place
+              </p>
+            </div>
 
-        {user?.role === "player" && user?.playerProfile && (
+            <div className="flex justify-center gap-4 pt-4">
+              <Link href="/login">
+                <Button size="lg" variant="default">
+                  Login to Get Started
+                </Button>
+              </Link>
+              <Link href="/register">
+                <Button size="lg" variant="outline">
+                  Create Account
+                </Button>
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto pt-12">
+              <Card className="text-center p-6 hover:shadow-lg transition">
+                <div className="text-4xl mb-3">📊</div>
+                <h3 className="text-lg font-semibold mb-2">Live Scoring</h3>
+                <p className="text-gray-600 text-sm">
+                  Score matches in real-time with detailed ball-by-ball tracking
+                </p>
+              </Card>
+
+              <Card className="text-center p-6 hover:shadow-lg transition">
+                <div className="text-4xl mb-3">👥</div>
+                <h3 className="text-lg font-semibold mb-2">Team Management</h3>
+                <p className="text-gray-600 text-sm">
+                  Create and manage teams, track player statistics and performance
+                </p>
+              </Card>
+
+              <Card className="text-center p-6 hover:shadow-lg transition">
+                <div className="text-4xl mb-3">🏆</div>
+                <h3 className="text-lg font-semibold mb-2">Detailed Stats</h3>
+                <p className="text-gray-600 text-sm">
+                  View comprehensive statistics including runs, wickets, and strike rates
+                </p>
+              </Card>
+            </div>
+          </div>
+        )}
+
+        {user && (
+          <div>
+            <h1 className="sm:text-3xl text-2xl font-bold">
+              Welcome, {user?.name}!
+            </h1>
+            <p className="text-gray-600">Role: {user?.role}</p>
+          </div>
+        )}
+
+        {user && user?.role === "player" && user?.playerProfile && (
           <Card>
             <h2 className="text-2xl font-bold mb-4">Your Cricket Statistics</h2>
             {statsLoading ? (
@@ -209,7 +263,7 @@ export default function DashboardPage() {
             </Card>
           )} */}
 
-        {user?.role !== "player" && (
+        {user && user?.role !== "player" && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Link href="/players">
               <Card className="hover:shadow-lg transition cursor-pointer">
