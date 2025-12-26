@@ -66,45 +66,55 @@ export const addBall = async (req, res) => {
       bowlerStats = inning.bowlingStats[inning.bowlingStats.length - 1];
     }
 
-    // Update runs
-    if (ballType !== "bye" && ballType !== "legBye") {
-      batsmanStats.runs += runs;
-    }
-
-    // Count boundaries
-    if (runs === 4 && ballType === "normal") batsmanStats.fours += 1;
-    if (runs === 6 && ballType === "normal") batsmanStats.sixes += 1;
-
-    // Handle extras
-    if (ballType === "wide" || ballType === "noBall") {
-      if (ballType === "wide") inning.extras.wides += 1;
-      if (ballType === "noBall") inning.extras.noBalls += 1;
+    // Handle extras and update stats
+    if (ballType === "wide") {
+      inning.extras.wides += 1;
       bowlerStats.runsConceded += runs;
+      // Wide balls don't count as balls faced by batsman
+      // Runs from wides don't go to batsman
+    } else if (ballType === "noBall") {
+      inning.extras.noBalls += 1;
+      bowlerStats.runsConceded += runs;
+      // No ball doesn't count as ball faced
+      // But runs scored by batsman on no ball go to batsman
+      if (runs > 0) {
+        batsmanStats.runs += runs;
+      }
     } else if (ballType === "bye") {
       inning.extras.byes += runs;
       batsmanStats.balls += 1;
       bowlerStats.balls += 1;
       inning.currentBall += 1;
+      // Byes don't go to batsman runs
     } else if (ballType === "legBye") {
       inning.extras.legByes += runs;
       batsmanStats.balls += 1;
       bowlerStats.balls += 1;
       inning.currentBall += 1;
+      // Leg byes don't go to batsman runs
     } else {
+      // Normal ball or wicket
+      batsmanStats.runs += runs;
       batsmanStats.balls += 1;
       bowlerStats.balls += 1;
       bowlerStats.runsConceded += runs;
       inning.currentBall += 1;
     }
+
+    // Count boundaries (only on normal balls)
+    if (runs === 4 && ballType === "normal") batsmanStats.fours += 1;
+    if (runs === 6 && ballType === "normal") batsmanStats.sixes += 1;
 
     // Calculate strike rate
     if (batsmanStats.balls > 0) {
       batsmanStats.strikeRate = parseFloat(((batsmanStats.runs / batsmanStats.balls) * 100).toFixed(2));
     }
 
-    // Calculate economy
+    // Calculate economy and overs
     if (bowlerStats.balls > 0) {
-      bowlerStats.overs = parseFloat((bowlerStats.balls / 6).toFixed(1));
+      const completedOvers = Math.floor(bowlerStats.balls / 6);
+      const remainingBalls = bowlerStats.balls % 6;
+      bowlerStats.overs = parseFloat(`${completedOvers}.${remainingBalls}`);
       bowlerStats.economy = parseFloat(((bowlerStats.runsConceded / bowlerStats.balls) * 6).toFixed(2));
     }
 

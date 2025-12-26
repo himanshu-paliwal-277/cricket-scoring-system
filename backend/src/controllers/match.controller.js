@@ -8,21 +8,21 @@ export const createMatch = async (req, res) => {
   try {
     const { teamA, teamB, overs, scorerId } = req.body;
 
-    const teamAData = await Team.findById(teamA).populate('players').populate('captain');
-    const teamBData = await Team.findById(teamB).populate('players').populate('captain');
+    const teamAData = await Team.findById(teamA).populate("players").populate("captain");
+    const teamBData = await Team.findById(teamB).populate("players").populate("captain");
 
     const match = await Match.create({
       teamA,
       teamB,
       teamASnapshot: {
         name: teamAData.name,
-        players: teamAData.players.map(p => p._id),
-        captain: teamAData.captain?._id
+        players: teamAData.players.map((p) => p._id),
+        captain: teamAData.captain?._id,
       },
       teamBSnapshot: {
         name: teamBData.name,
-        players: teamBData.players.map(p => p._id),
-        captain: teamBData.captain?._id
+        players: teamBData.players.map((p) => p._id),
+        captain: teamBData.captain?._id,
       },
       overs,
       scorerId,
@@ -36,11 +36,11 @@ export const createMatch = async (req, res) => {
       .populate("createdBy", "name email")
       .populate({
         path: "teamASnapshot.captain",
-        populate: { path: "userId", select: "name email" }
+        populate: { path: "userId", select: "name email" },
       })
       .populate({
         path: "teamBSnapshot.captain",
-        populate: { path: "userId", select: "name email" }
+        populate: { path: "userId", select: "name email" },
       });
 
     res.status(201).json(populatedMatch);
@@ -202,7 +202,11 @@ export const getMatchById = async (req, res) => {
       .populate("teamB")
       .populate("tossWinner")
       .populate("winner")
-      .populate("scorerId", "name email");
+      .populate("scorerId", "name email")
+      .populate({
+        path: "playerOfTheMatch",
+        populate: { path: "userId", select: "name email" },
+      });
 
     if (!match) {
       return res.status(404).json({ message: "Match not found" });
@@ -257,19 +261,19 @@ export const getCurrentInning = async (req, res) => {
       })
       .populate({
         path: "battingStats.playerId",
-        populate: { path: "userId", select: "name email" }
+        populate: { path: "userId", select: "name email" },
       })
       .populate({
         path: "battingStats.dismissedBy",
-        populate: { path: "userId", select: "name email" }
+        populate: { path: "userId", select: "name email" },
       })
       .populate({
         path: "battingStats.fielder",
-        populate: { path: "userId", select: "name email" }
+        populate: { path: "userId", select: "name email" },
       })
       .populate({
         path: "bowlingStats.playerId",
-        populate: { path: "userId", select: "name email" }
+        populate: { path: "userId", select: "name email" },
       })
       .populate("battingTeam bowlingTeam");
 
@@ -319,9 +323,10 @@ export const endMatch = async (req, res) => {
     if (innings.length === 1) {
       // Only first innings completed - team batting first wins by walkover
       match.winner = innings[0].battingTeam._id;
-      const winningTeamName = innings[0].battingTeam._id.toString() === match.teamA.toString()
-        ? match.teamASnapshot.name
-        : match.teamBSnapshot.name;
+      const winningTeamName =
+        innings[0].battingTeam._id.toString() === match.teamA.toString()
+          ? match.teamASnapshot.name
+          : match.teamBSnapshot.name;
       match.resultText = `${winningTeamName} won (opponent did not bat)`;
     } else if (innings.length === 2) {
       const firstInning = innings[0];
@@ -330,16 +335,18 @@ export const endMatch = async (req, res) => {
       if (secondInning.totalRuns > firstInning.totalRuns) {
         match.winner = secondInning.battingTeam._id;
         const wicketsRemaining = 10 - secondInning.totalWickets;
-        const winningTeamName = secondInning.battingTeam._id.toString() === match.teamA.toString()
-          ? match.teamASnapshot.name
-          : match.teamBSnapshot.name;
+        const winningTeamName =
+          secondInning.battingTeam._id.toString() === match.teamA.toString()
+            ? match.teamASnapshot.name
+            : match.teamBSnapshot.name;
         match.resultText = `${winningTeamName} won by ${wicketsRemaining} wickets`;
       } else if (firstInning.totalRuns > secondInning.totalRuns) {
         match.winner = firstInning.battingTeam._id;
         const runsDifference = firstInning.totalRuns - secondInning.totalRuns;
-        const winningTeamName = firstInning.battingTeam._id.toString() === match.teamA.toString()
-          ? match.teamASnapshot.name
-          : match.teamBSnapshot.name;
+        const winningTeamName =
+          firstInning.battingTeam._id.toString() === match.teamA.toString()
+            ? match.teamASnapshot.name
+            : match.teamBSnapshot.name;
         match.resultText = `${winningTeamName} won by ${runsDifference} runs`;
       } else {
         match.resultText = "Match tied";
@@ -356,7 +363,7 @@ export const endMatch = async (req, res) => {
         for (const stat of inning.battingStats) {
           const isBattingForWinner = inning.battingTeam.toString() === winnerTeamId;
           if (isBattingForWinner) {
-            const points = stat.runs + (stat.fours * 1) + (stat.sixes * 2);
+            const points = stat.runs + stat.fours * 1 + stat.sixes * 2;
             if (points > maxPoints) {
               maxPoints = points;
               playerOfTheMatch = stat.playerId;
@@ -367,7 +374,7 @@ export const endMatch = async (req, res) => {
         for (const stat of inning.bowlingStats) {
           const isBowlingForWinner = inning.bowlingTeam.toString() === winnerTeamId;
           if (isBowlingForWinner) {
-            const points = (stat.wickets * 25) + (stat.maidens * 10);
+            const points = stat.wickets * 25 + stat.maidens * 10;
             if (points > maxPoints) {
               maxPoints = points;
               playerOfTheMatch = stat.playerId;
@@ -396,7 +403,7 @@ export const endMatch = async (req, res) => {
             totalFours: stat.fours,
             totalSixes: stat.sixes,
           },
-          $max: { highestScore: stat.runs }
+          $max: { highestScore: stat.runs },
         });
 
         playersUpdated.add(playerId);
@@ -410,7 +417,7 @@ export const endMatch = async (req, res) => {
           $inc: {
             totalWickets: stat.wickets,
             totalBallsBowled: stat.balls,
-          }
+          },
         });
 
         playersUpdated.add(playerId);
@@ -420,12 +427,13 @@ export const endMatch = async (req, res) => {
     // Increment matchesPlayed for all players who participated
     for (const playerId of playersUpdated) {
       await Player.findByIdAndUpdate(playerId, {
-        $inc: { matchesPlayed: 1 }
+        $inc: { matchesPlayed: 1 },
       });
     }
 
-    const populatedMatch = await Match.findById(match._id)
-      .populate("teamA teamB winner playerOfTheMatch");
+    const populatedMatch = await Match.findById(match._id).populate(
+      "teamA teamB winner playerOfTheMatch"
+    );
 
     res.json({
       message: "Match ended successfully",

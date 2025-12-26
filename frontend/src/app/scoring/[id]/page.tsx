@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -14,6 +15,7 @@ import { Select } from "@/components/ui/Select";
 import { useAuth } from "@/hooks/useAuth";
 import { WicketModal } from "@/components/WicketModal";
 import { statsService } from "@/services/statsService";
+import { truncateString } from "@/utils/truncateString";
 
 export default function ScoringPage() {
   const params = useParams();
@@ -47,7 +49,6 @@ export default function ScoringPage() {
   const [inningBowler, setInningBowler] = useState("");
   const [availableBatsmen, setAvailableBatsmen] = useState<any[]>([]);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const firstInning = match?.innings?.find((i: any) => i.inningNumber === 1);
 
   // Determine teams for current inning
@@ -267,7 +268,8 @@ export default function ScoringPage() {
 
   // Check if user can score (owner or scorer role)
   // While user is loading, assume they can score to avoid hiding buttons on first render
-  const canScore = isLoadingUser || user?.role === "owner" || user?.role === "scorer";
+  const canScore =
+    isLoadingUser || user?.role === "owner" || user?.role === "scorer";
 
   if (isLoading)
     return (
@@ -446,27 +448,52 @@ export default function ScoringPage() {
                   </thead>
                   <tbody>
                     {inning.battingStats.map((stat: any) => {
-                      const isStriker = stat.playerId._id === inning.striker?._id;
-                      const isNonStriker = stat.playerId._id === inning.nonStriker?._id;
+                      const isStriker =
+                        stat.playerId._id === inning.striker?._id;
+                      const isNonStriker =
+                        stat.playerId._id === inning.nonStriker?._id;
                       return (
-                        <tr key={stat.playerId._id} className="border-b border-gray-200">
+                        <tr
+                          key={stat.playerId._id}
+                          className="border-b border-gray-200"
+                        >
                           <td className="py-2">
                             <div className="flex flex-col">
-                              <span className={isStriker || isNonStriker ? "font-semibold" : ""}>
-                                {stat.playerId.userId?.name || "Unknown"}{isStriker ? " *" : ""}
+                              <span
+                                className={
+                                  isStriker || isNonStriker
+                                    ? "font-semibold"
+                                    : ""
+                                }
+                              >
+                                {stat.playerId.userId?.name || "Unknown"}
+                                {isStriker ? " *" : ""}
                               </span>
                               {stat.isOut && (
                                 <span className="text-xs text-gray-600">
-                                  {stat.dismissalType === "bowled" && `b ${stat.dismissedBy?.userId?.name || ""}`}
-                                  {stat.dismissalType === "caught" && `c ${stat.fielder?.userId?.name || ""} b ${stat.dismissedBy?.userId?.name || ""}`}
-                                  {stat.dismissalType === "stumped" && `st ${stat.fielder?.userId?.name || ""} b ${stat.dismissedBy?.userId?.name || ""}`}
-                                  {stat.dismissalType === "lbw" && `lbw b ${stat.dismissedBy?.userId?.name || ""}`}
+                                  {stat.dismissalType === "bowled" &&
+                                    `b ${stat.dismissedBy?.userId?.name || ""}`}
+                                  {stat.dismissalType === "caught" &&
+                                    `c ${stat.fielder?.userId?.name || ""} b ${
+                                      stat.dismissedBy?.userId?.name || ""
+                                    }`}
+                                  {stat.dismissalType === "stumped" &&
+                                    `st ${stat.fielder?.userId?.name || ""} b ${
+                                      stat.dismissedBy?.userId?.name || ""
+                                    }`}
+                                  {stat.dismissalType === "lbw" &&
+                                    `lbw b ${
+                                      stat.dismissedBy?.userId?.name || ""
+                                    }`}
                                   {stat.dismissalType === "runOut" && "run out"}
-                                  {stat.dismissalType === "hitWicket" && "hit wicket"}
+                                  {stat.dismissalType === "hitWicket" &&
+                                    "hit wicket"}
                                 </span>
                               )}
                               {!stat.isOut && !isStriker && !isNonStriker && (
-                                <span className="text-xs text-gray-600">not out</span>
+                                <span className="text-xs text-gray-600">
+                                  not out
+                                </span>
                               )}
                             </div>
                           </td>
@@ -474,7 +501,9 @@ export default function ScoringPage() {
                           <td className="text-right py-2">{stat.balls}</td>
                           <td className="text-right py-2">{stat.fours}</td>
                           <td className="text-right py-2">{stat.sixes}</td>
-                          <td className="text-right py-2">{stat.strikeRate.toFixed(2)}</td>
+                          <td className="text-right py-2">
+                            {stat.strikeRate.toFixed(2)}
+                          </td>
                         </tr>
                       );
                     })}
@@ -500,19 +529,30 @@ export default function ScoringPage() {
                   </thead>
                   <tbody>
                     {inning.bowlingStats.map((stat: any) => {
-                      const isCurrent = stat.playerId._id === inning.currentBowler?._id;
+                      const isCurrent =
+                        stat.playerId._id === inning.currentBowler?._id;
                       return (
-                        <tr key={stat.playerId._id} className="border-b border-gray-200">
+                        <tr
+                          key={stat.playerId._id}
+                          className="border-b border-gray-200"
+                        >
                           <td className="py-2">
                             <span className={isCurrent ? "font-semibold" : ""}>
-                              {stat.playerId.userId?.name || "Unknown"}{isCurrent ? " *" : ""}
+                              {stat.playerId.userId?.name || "Unknown"}
+                              {isCurrent ? " *" : ""}
                             </span>
                           </td>
-                          <td className="text-right py-2">{stat.overs.toFixed(1)}</td>
+                          <td className="text-right py-2">
+                            {stat.overs.toFixed(1)}
+                          </td>
                           <td className="text-right py-2">{stat.maidens}</td>
-                          <td className="text-right py-2">{stat.runsConceded}</td>
+                          <td className="text-right py-2">
+                            {stat.runsConceded}
+                          </td>
                           <td className="text-right py-2">{stat.wickets}</td>
-                          <td className="text-right py-2">{stat.economy.toFixed(2)}</td>
+                          <td className="text-right py-2">
+                            {stat.economy.toFixed(2)}
+                          </td>
                         </tr>
                       );
                     })}
@@ -522,36 +562,40 @@ export default function ScoringPage() {
             )}
 
             {/* Fall of Wickets */}
-            {inning?.battingStats && inning.battingStats.filter((s: any) => s.isOut).length > 0 && (
-              <div className="mb-6">
-                <h3 className="font-semibold mb-3">Fall of Wickets</h3>
-                <div className="flex flex-wrap gap-3 text-sm">
-                  {inning.battingStats
-                    .map((stat: any, index: number) => {
-                      if (!stat.isOut) return null;
+            {inning?.battingStats &&
+              inning.battingStats.filter((s: any) => s.isOut).length > 0 && (
+                <div className="mb-6">
+                  <h3 className="font-semibold mb-3">Fall of Wickets</h3>
+                  <div className="flex flex-wrap gap-3 text-sm">
+                    {inning.battingStats
+                      .map((stat: any, index: number) => {
+                        if (!stat.isOut) return null;
 
-                      // Calculate score at wicket (approximate from current stats)
-                      const wicketNumber = inning.battingStats.filter((s: any, i: number) => i <= index && s.isOut).length;
-                      const runsAtWicket = inning.battingStats
-                        .filter((s: any, i: number) => i <= index)
-                        .reduce((sum: number, s: any) => sum + s.runs, 0);
+                        // Calculate score at wicket (approximate from current stats)
+                        const wicketNumber = inning.battingStats.filter(
+                          (s: any, i: number) => i <= index && s.isOut
+                        ).length;
+                        const runsAtWicket = inning.battingStats
+                          .filter((s: any, i: number) => i <= index)
+                          .reduce((sum: number, s: any) => sum + s.runs, 0);
 
-                      return {
-                        ...stat,
-                        wicketNumber,
-                        runsAtWicket,
-                        index
-                      };
-                    })
-                    .filter((item: any) => item !== null)
-                    .map((item: any) => (
-                      <span key={item.index} className="text-gray-700">
-                        {item.runsAtWicket}/{item.wicketNumber} ({item.playerId.userId?.name}, {item.balls} balls)
-                      </span>
-                    ))}
+                        return {
+                          ...stat,
+                          wicketNumber,
+                          runsAtWicket,
+                          index,
+                        };
+                      })
+                      .filter((item: any) => item !== null)
+                      .map((item: any) => (
+                        <span key={item.index} className="text-gray-700">
+                          {item.runsAtWicket}/{item.wicketNumber} (
+                          {item.playerId.userId?.name}, {item.balls} balls)
+                        </span>
+                      ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* Partnerships */}
             {inning?.battingStats && inning.battingStats.length >= 2 && (
@@ -560,7 +604,11 @@ export default function ScoringPage() {
                 <div className="space-y-2 text-sm">
                   {(() => {
                     const partnerships: any[] = [];
-                    let currentPartnership = { player1: inning.battingStats[0], player2: inning.battingStats[1], runs: 0 };
+                    let currentPartnership = {
+                      player1: inning.battingStats[0],
+                      player2: inning.battingStats[1],
+                      runs: 0,
+                    };
 
                     // Calculate partnerships based on batting order
                     for (let i = 0; i < inning.battingStats.length; i++) {
@@ -573,30 +621,57 @@ export default function ScoringPage() {
                         partnerships.push({ ...currentPartnership });
                         if (i + 1 < inning.battingStats.length) {
                           const nextPlayer = inning.battingStats[i + 1];
-                          const continuingPlayer = i === 0 ? inning.battingStats[1] : inning.battingStats[i - 1];
-                          currentPartnership = { player1: continuingPlayer, player2: nextPlayer, runs: 0 };
+                          const continuingPlayer =
+                            i === 0
+                              ? inning.battingStats[1]
+                              : inning.battingStats[i - 1];
+                          currentPartnership = {
+                            player1: continuingPlayer,
+                            player2: nextPlayer,
+                            runs: 0,
+                          };
                         }
                       }
                     }
 
                     // Add current partnership if match is ongoing
                     if (inning.striker && inning.nonStriker) {
-                      const striker = inning.battingStats.find((s: any) => s.playerId._id === inning.striker._id);
-                      const nonStriker = inning.battingStats.find((s: any) => s.playerId._id === inning.nonStriker._id);
+                      const striker = inning.battingStats.find(
+                        (s: any) => s.playerId._id === inning.striker._id
+                      );
+                      const nonStriker = inning.battingStats.find(
+                        (s: any) => s.playerId._id === inning.nonStriker._id
+                      );
                       if (striker && nonStriker) {
-                        const currentRuns = striker.runs + nonStriker.runs - partnerships.reduce((sum, p) => sum + p.runs, 0);
+                        const currentRuns =
+                          striker.runs +
+                          nonStriker.runs -
+                          partnerships.reduce((sum, p) => sum + p.runs, 0);
                         if (currentRuns > 0 || partnerships.length === 0) {
-                          partnerships.push({ player1: striker, player2: nonStriker, runs: Math.max(0, currentRuns), current: true });
+                          partnerships.push({
+                            player1: striker,
+                            player2: nonStriker,
+                            runs: Math.max(0, currentRuns),
+                            current: true,
+                          });
                         }
                       }
                     }
 
                     return partnerships.map((p, idx) => (
-                      <div key={idx} className="flex justify-between items-center border-b border-gray-200 pb-2">
+                      <div
+                        key={idx}
+                        className="flex justify-between items-center border-b border-gray-200 pb-2"
+                      >
                         <span className="text-gray-700">
-                          {p.player1.playerId.userId?.name} - {p.player2.playerId.userId?.name}
+                          {p.player1.playerId.userId?.name} -{" "}
+                          {p.player2.playerId.userId?.name}
                         </span>
-                        <span className={`font-semibold ${p.current ? "text-blue-600" : ""}`}>
+                        <span
+                          className={`font-semibold ${
+                            p.current ? "text-blue-600" : ""
+                          }`}
+                        >
                           {p.runs} runs{p.current ? " *" : ""}
                         </span>
                       </div>
@@ -646,8 +721,9 @@ export default function ScoringPage() {
               <div className="border-r border-gray-600 pr-4">
                 <h3 className="font-semibold mb-2">Striker</h3>
                 <p className="sm:text-lg flex">
-                  <div className="sm:mr-5 mr-2 truncate w-20">
-                    {inning?.striker?.userId.name + "* " || "N/A"}
+                  <div className="sm:mr-5 mr-2">
+                    {truncateString(inning?.striker?.userId.name, 16) + "* " ||
+                      "N/A"}
                   </div>
                   {inning?.striker
                     ? `${getBatsmanStats(inning.striker._id).runs}(${
@@ -661,8 +737,9 @@ export default function ScoringPage() {
                   Non-Striker
                 </h3>
                 <p className="flex sm:text-lg sm:justify-start justify-end">
-                  <div className="sm:mr-5 mr-2 truncate w-20">
-                    {inning?.nonStriker?.userId.name || "N/A"}
+                  <div className="sm:mr-5 mr-2 ">
+                    {truncateString(inning?.nonStriker?.userId.name, 16) ||
+                      "N/A"}
                   </div>
                   {inning?.nonStriker
                     ? `${getBatsmanStats(inning.nonStriker._id).runs}(${
@@ -1173,12 +1250,16 @@ export default function ScoringPage() {
                         ...battingTeamPlayers
                           .filter((id: string) => {
                             // Filter out current batsmen
-                            if (id === inning?.striker?._id || id === inning?.nonStriker?._id) {
+                            if (
+                              id === inning?.striker?._id ||
+                              id === inning?.nonStriker?._id
+                            ) {
                               return false;
                             }
                             // Filter out dismissed batsmen
                             const dismissedPlayer = inning?.battingStats?.find(
-                              (stat: any) => stat.playerId._id === id && stat.isOut
+                              (stat: any) =>
+                                stat.playerId._id === id && stat.isOut
                             );
                             return !dismissedPlayer;
                           })
