@@ -12,6 +12,7 @@ interface WicketModalProps {
     wicketType: string;
     newBatsmanId: string;
     fielderId?: string;
+    runOutRuns?: number;
   }) => void;
   availableBatsmen: Array<{ _id: string; userId: { name: string } }>;
   bowlingTeamPlayers: Array<{ _id: string; userId: { name: string } }>;
@@ -27,20 +28,26 @@ export function WicketModal({
   const [wicketType, setWicketType] = useState<string>("bowled");
   const [newBatsmanId, setNewBatsmanId] = useState<string>("");
   const [fielderId, setFielderId] = useState<string>("");
+  const [runOutRuns, setRunOutRuns] = useState<number>(0);
 
   const handleConfirm = () => {
-    if (!newBatsmanId) return;
+    // Allow confirmation without new batsman if none available (all out)
+    if (availableBatsmen.length > 0 && !newBatsmanId) return;
+
     onConfirm({
       wicketType,
-      newBatsmanId,
+      newBatsmanId: newBatsmanId || "", // Empty string if final wicket
       fielderId: fielderId || undefined,
+      runOutRuns: wicketType === "runOut" ? runOutRuns : undefined,
     });
     setWicketType("bowled");
     setNewBatsmanId("");
     setFielderId("");
+    setRunOutRuns(0);
   };
 
   const needsFielder = wicketType === "caught" || wicketType === "stumped";
+  const isRunOut = wicketType === "runOut";
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Wicket!">
@@ -74,24 +81,48 @@ export function WicketModal({
           />
         )}
 
-        <Select
-          label="New Batsman"
-          value={newBatsmanId}
-          onChange={(e) => setNewBatsmanId(e.target.value)}
-          options={[
-            { value: "", label: "Select New Batsman" },
-            ...availableBatsmen.map((p) => ({
-              value: p._id,
-              label: p.userId.name,
-            })),
-          ]}
-        />
+        {isRunOut && (
+          <Select
+            label="Runs on Run Out"
+            value={runOutRuns.toString()}
+            onChange={(e) => setRunOutRuns(parseInt(e.target.value))}
+            options={[
+              { value: "0", label: "0 runs" },
+              { value: "1", label: "1 run" },
+              { value: "2", label: "2 runs" },
+              { value: "3", label: "3 runs" },
+            ]}
+          />
+        )}
+
+        {availableBatsmen.length > 0 ? (
+          <Select
+            label="New Batsman"
+            value={newBatsmanId}
+            onChange={(e) => setNewBatsmanId(e.target.value)}
+            options={[
+              { value: "", label: "Select New Batsman" },
+              ...availableBatsmen.map((p) => ({
+                value: p._id,
+                label: p.userId.name,
+              })),
+            ]}
+          />
+        ) : (
+          <div className="p-3 bg-gray-100 rounded text-sm text-gray-700">
+            All out! No more batsmen available.
+          </div>
+        )}
 
         <div className="flex gap-2">
           <Button onClick={onClose} variant="secondary" className="flex-1">
             Cancel
           </Button>
-          <Button onClick={handleConfirm} className="flex-1" disabled={!newBatsmanId}>
+          <Button
+            onClick={handleConfirm}
+            className="flex-1"
+            disabled={availableBatsmen.length > 0 && !newBatsmanId}
+          >
             Confirm
           </Button>
         </div>

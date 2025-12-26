@@ -76,7 +76,7 @@ export const startMatch = async (req, res) => {
     const bowlingTeam =
       battingTeam.toString() === match.teamA.toString() ? match.teamB : match.teamA;
 
-    // Create first inning
+    // Create first inning with initial batting and bowling stats
     const inning = await Inning.create({
       matchId: match._id,
       battingTeam,
@@ -85,6 +85,39 @@ export const startMatch = async (req, res) => {
       striker,
       nonStriker,
       currentBowler: bowler,
+      battingStats: [
+        {
+          playerId: striker,
+          runs: 0,
+          balls: 0,
+          fours: 0,
+          sixes: 0,
+          strikeRate: 0,
+          isOut: false,
+          dismissalType: "none"
+        },
+        {
+          playerId: nonStriker,
+          runs: 0,
+          balls: 0,
+          fours: 0,
+          sixes: 0,
+          strikeRate: 0,
+          isOut: false,
+          dismissalType: "none"
+        }
+      ],
+      bowlingStats: [
+        {
+          playerId: bowler,
+          overs: 0,
+          balls: 0,
+          runsConceded: 0,
+          wickets: 0,
+          maidens: 0,
+          economy: 0
+        }
+      ]
     });
 
     // match.status = "live";
@@ -162,7 +195,7 @@ export const startInning = async (req, res) => {
     match.currentInning = 2;
     await match.save();
 
-    // ✅ Create second inning
+    // ✅ Create second inning with initial stats
     const inning = await Inning.create({
       matchId: match._id,
       battingTeam: firstInning.bowlingTeam,
@@ -172,6 +205,39 @@ export const startInning = async (req, res) => {
       nonStriker,
       currentBowler: bowler,
       isCompleted: false,
+      battingStats: [
+        {
+          playerId: striker,
+          runs: 0,
+          balls: 0,
+          fours: 0,
+          sixes: 0,
+          strikeRate: 0,
+          isOut: false,
+          dismissalType: "none"
+        },
+        {
+          playerId: nonStriker,
+          runs: 0,
+          balls: 0,
+          fours: 0,
+          sixes: 0,
+          strikeRate: 0,
+          isOut: false,
+          dismissalType: "none"
+        }
+      ],
+      bowlingStats: [
+        {
+          playerId: bowler,
+          overs: 0,
+          balls: 0,
+          runsConceded: 0,
+          wickets: 0,
+          maidens: 0,
+          economy: 0
+        }
+      ]
     });
 
     const populatedMatch = await Match.findById(match._id).populate("teamA").populate("teamB");
@@ -205,6 +271,14 @@ export const getMatchById = async (req, res) => {
       .populate("scorerId", "name email")
       .populate({
         path: "playerOfTheMatch",
+        populate: { path: "userId", select: "name email" },
+      })
+      .populate({
+        path: "teamASnapshot.captain",
+        populate: { path: "userId", select: "name email" },
+      })
+      .populate({
+        path: "teamBSnapshot.captain",
         populate: { path: "userId", select: "name email" },
       });
 

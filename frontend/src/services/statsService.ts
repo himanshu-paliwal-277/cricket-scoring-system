@@ -35,6 +35,15 @@ export interface BowlingStats {
   economy: number;
 }
 
+export interface Ball {
+  _id: string;
+  overNumber: number;
+  ballNumber: number;
+  runs: number;
+  ballType: string;
+  isValid: boolean;
+}
+
 export interface InningScorecard {
   _id: string;
   inningNumber: number;
@@ -45,6 +54,7 @@ export interface InningScorecard {
   currentOver: number;
   battingStats: BattingStats[];
   bowlingStats: BowlingStats[];
+  balls?: Ball[];
 }
 
 export const statsService = {

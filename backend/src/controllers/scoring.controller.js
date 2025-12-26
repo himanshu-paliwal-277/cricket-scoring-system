@@ -132,6 +132,11 @@ export const addBall = async (req, res) => {
       if (fielder && (wicketType === "caught" || wicketType === "stumped")) {
         batsmanStats.fielder = fielder;
       }
+
+      // For run out, rotate strike based on runs scored (if odd)
+      if (wicketType === "runOut" && runs % 2 !== 0) {
+        [inning.striker, inning.nonStriker] = [inning.nonStriker, inning.striker];
+      }
     } else {
       // Swap striker for odd runs (not on wides or wickets)
       // On no-balls, strike DOES rotate if batsman scores odd runs
@@ -369,6 +374,24 @@ export const updateBatsmen = async (req, res) => {
         // Fallback: replace striker
         inning.striker = newBatsmanId;
       }
+
+      // Add new batsman to batting stats if not already present
+      const newBatsmanStats = inning.battingStats.find(
+        s => s.playerId.toString() === newBatsmanId.toString()
+      );
+
+      if (!newBatsmanStats) {
+        inning.battingStats.push({
+          playerId: newBatsmanId,
+          runs: 0,
+          balls: 0,
+          fours: 0,
+          sixes: 0,
+          strikeRate: 0,
+          isOut: false,
+          dismissalType: "none"
+        });
+      }
     } else {
       // Manual batsman change - update provided values
       if (striker) inning.striker = striker;
@@ -418,11 +441,34 @@ export const updateBowler = async (req, res) => {
   try {
     const { inningId, bowler } = req.body;
 
-    const inning = await Inning.findByIdAndUpdate(
-      inningId,
-      { currentBowler: bowler },
-      { new: true }
-    )
+    const inning = await Inning.findById(inningId);
+    if (!inning) {
+      return res.status(404).json({ message: "Inning not found" });
+    }
+
+    // Update current bowler
+    inning.currentBowler = bowler;
+
+    // Add bowler to bowling stats if not already present
+    const bowlerStats = inning.bowlingStats.find(
+      s => s.playerId.toString() === bowler.toString()
+    );
+
+    if (!bowlerStats) {
+      inning.bowlingStats.push({
+        playerId: bowler,
+        overs: 0,
+        balls: 0,
+        runsConceded: 0,
+        wickets: 0,
+        maidens: 0,
+        economy: 0
+      });
+    }
+
+    await inning.save();
+
+    const populatedInning = await Inning.findById(inningId)
       .populate({
         path: "striker",
         populate: { path: "userId", select: "name email" }
@@ -435,9 +481,13 @@ export const updateBowler = async (req, res) => {
         path: "currentBowler",
         populate: { path: "userId", select: "name email" }
       })
+      .populate({
+        path: "bowlingStats.playerId",
+        populate: { path: "userId", select: "name email" }
+      })
       .populate("battingTeam bowlingTeam");
 
-    res.json(inning);
+    res.json(populatedInning);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

@@ -1,3 +1,4 @@
+import Ball from "../schema/Ball.js";
 import Inning from "../schema/Inning.js";
 import Player from "../schema/Player.js";
 
@@ -79,7 +80,19 @@ export const getMatchScorecard = async (req, res) => {
       })
       .sort({ inningNumber: 1 });
 
-    res.json(innings);
+    // Fetch balls for each inning
+    const inningsWithBalls = await Promise.all(
+      innings.map(async (inning) => {
+        const balls = await Ball.find({ inningId: inning._id })
+          .sort({ createdAt: 1 });
+        return {
+          ...inning.toObject(),
+          balls,
+        };
+      })
+    );
+
+    res.json(inningsWithBalls);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -110,10 +123,26 @@ export const getAvailableBatsmen = async (req, res) => {
       populate: { path: "userId", select: "name email" }
     });
 
-    // Filter out: dismissed players AND current batsmen
-    const availableBatsmen = battingTeam.players.filter(
-      p => !outPlayerIds.includes(p._id.toString()) && !currentBatsmenIds.includes(p._id.toString())
-    );
+    const totalPlayers = battingTeam.players.length;
+    const wicketsFallen = inning.totalWickets || 0;
+    const notOutCount = totalPlayers - outPlayerIds.length;
+
+    // Last man standing scenario: if only 1 player is not out (excluding current batsmen)
+    // and that player is currently batting, include them in available batsmen
+    const isLastManScenario = notOutCount === 1 && wicketsFallen >= totalPlayers - 2;
+
+    let availableBatsmen;
+    if (isLastManScenario) {
+      // Show the not-out player even if they're currently batting
+      availableBatsmen = battingTeam.players.filter(
+        p => !outPlayerIds.includes(p._id.toString())
+      );
+    } else {
+      // Normal scenario: Filter out dismissed players AND current batsmen
+      availableBatsmen = battingTeam.players.filter(
+        p => !outPlayerIds.includes(p._id.toString()) && !currentBatsmenIds.includes(p._id.toString())
+      );
+    }
 
     res.json(availableBatsmen);
   } catch (error) {

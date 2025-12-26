@@ -43,6 +43,55 @@ export default function MatchesPage() {
     return badges[status as keyof typeof badges] || badges.not_started;
   };
 
+  // Group matches by date
+  const groupMatchesByDate = (matches: any[]) => {
+    const groups: { [key: string]: any[] } = {};
+
+    matches.forEach((match) => {
+      const date = new Date(match.createdAt);
+      const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
+
+      if (!groups[dateKey]) {
+        groups[dateKey] = [];
+      }
+      groups[dateKey].push(match);
+    });
+
+    return groups;
+  };
+
+  // Format date label (Today, Yesterday, or date)
+  const formatDateLabel = (dateKey: string) => {
+    const date = new Date(dateKey);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    // Reset time parts for comparison
+    today.setHours(0, 0, 0, 0);
+    yesterday.setHours(0, 0, 0, 0);
+    date.setHours(0, 0, 0, 0);
+
+    if (date.getTime() === today.getTime()) {
+      return "Today";
+    } else if (date.getTime() === yesterday.getTime()) {
+      return "Yesterday";
+    } else {
+      // Format: "December 25, 2025 - Sunday"
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        weekday: 'long'
+      });
+    }
+  };
+
+  const groupedMatches = matches ? groupMatchesByDate(matches) : {};
+  const sortedDateKeys = Object.keys(groupedMatches).sort((a, b) =>
+    new Date(b).getTime() - new Date(a).getTime()
+  );
+
   return (
     <ProtectedRoute allowedRoles={["owner", "scorer", "player"]}>
       <Layout>
@@ -57,49 +106,71 @@ export default function MatchesPage() {
           {isLoading ? (
             <p>Loading...</p>
           ) : (
-            <div className="grid gap-4">
-              {matches.map((match) => (
-                <Card key={match._id}>
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <h3 className="text-xl font-semibold mb-2">
-                        {match.teamA.name} vs {match.teamB.name}
-                      </h3>
-                      <p className="text-gray-600">{match.overs} overs</p>
-                      <span
-                        className={`inline-block px-2 py-1 rounded text-sm mt-2 ${getStatusBadge(
-                          match.status
-                        )}`}
-                      >
-                        {match.status.replace("_", " ").toUpperCase()}
-                      </span>
-                      {match.resultText && (
-                        <p className="text-emerald-600 font-semibold mt-2">
-                          {match.resultText}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex gap-2">
-                      {match.status === "not_started" &&
-                        user?.role !== "player" && (
-                          <Link href={`/matches/${match._id}/start`}>
-                            <Button>Start</Button>
-                          </Link>
-                        )}
-                      {match.status === "live" && user?.role !== "player" && (
-                        <Link href={`/scoring/${match._id}`}>
-                          <Button>Score</Button>
-                        </Link>
-                      )}
-                      {match.status === "completed" && (
-                        <Link href={`/view-scoreboard/${match._id}`}>
-                          <Button>View</Button>
-                        </Link>
-                      )}
-                    </div>
+            <div className="space-y-8">
+              {sortedDateKeys.map((dateKey) => (
+                <div key={dateKey}>
+                  {/* Date Header */}
+                  <div className="sticky top-0 z-10 bg-gray-100 rounded-lg px-4 py-2 mb-4">
+                    <h2 className="text-sm font-semibold text-gray-700 text-center">
+                      {formatDateLabel(dateKey)}
+                    </h2>
                   </div>
-                </Card>
+
+                  {/* Matches for this date */}
+                  <div className="grid gap-4">
+                    {groupedMatches[dateKey].map((match) => (
+                      <Card key={match._id}>
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <h3 className="text-xl font-semibold mb-2">
+                              {match.teamA.name} vs {match.teamB.name}
+                            </h3>
+                            <p className="text-gray-600">{match.overs} overs</p>
+                            <span
+                              className={`inline-block px-2 py-1 rounded text-sm mt-2 ${getStatusBadge(
+                                match.status
+                              )}`}
+                            >
+                              {match.status.replace("_", " ").toUpperCase()}
+                            </span>
+                            {match.resultText && (
+                              <p className="text-emerald-600 font-semibold mt-2">
+                                {match.resultText}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex gap-2">
+                            {match.status === "not_started" &&
+                              user?.role !== "player" && (
+                                <Link href={`/matches/${match._id}/start`}>
+                                  <Button>Start</Button>
+                                </Link>
+                              )}
+                            {match.status === "live" && user?.role !== "player" && (
+                              <Link href={`/scoring/${match._id}`}>
+                                <Button>Score</Button>
+                              </Link>
+                            )}
+                            {match.status === "completed" && (
+                              <Link href={`/view-scoreboard/${match._id}`}>
+                                <Button>View</Button>
+                              </Link>
+                            )}
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
               ))}
+
+              {sortedDateKeys.length === 0 && (
+                <Card>
+                  <p className="text-center text-gray-500 py-8">
+                    No matches found. Create your first match!
+                  </p>
+                </Card>
+              )}
             </div>
           )}
 
