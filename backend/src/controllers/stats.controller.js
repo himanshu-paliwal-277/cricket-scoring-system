@@ -94,17 +94,25 @@ export const getAvailableBatsmen = async (req, res) => {
       return res.status(404).json({ message: "Inning not found" });
     }
 
+    // Get IDs of players who are out
     const outPlayerIds = inning.battingStats
       .filter(s => s.isOut)
       .map(s => s.playerId.toString());
+
+    // Get IDs of current batsmen (striker and non-striker)
+    const currentBatsmenIds = [
+      inning.striker?.toString(),
+      inning.nonStriker?.toString()
+    ].filter(Boolean);
 
     const battingTeam = await inning.battingTeam.populate({
       path: "players",
       populate: { path: "userId", select: "name email" }
     });
 
+    // Filter out: dismissed players AND current batsmen
     const availableBatsmen = battingTeam.players.filter(
-      p => !outPlayerIds.includes(p._id.toString())
+      p => !outPlayerIds.includes(p._id.toString()) && !currentBatsmenIds.includes(p._id.toString())
     );
 
     res.json(availableBatsmen);

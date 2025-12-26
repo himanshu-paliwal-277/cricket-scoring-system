@@ -85,9 +85,10 @@ export default function ScoringPage() {
     const totalPlayers = currentInningBattingTeam.players?.length || 11;
     const totalWickets = inning.totalWickets || 0;
 
-    // All out if all players of the team are dismissed
-    // For a team with n players, n wickets means all out
-    return totalWickets >= totalPlayers;
+    // All out when wickets = totalPlayers - 1
+    // (because you need at least 2 batsmen, so last man can't bat alone)
+    // For 5 players: max 4 wickets, for 11 players: max 10 wickets
+    return totalWickets >= totalPlayers - 1;
   };
 
   const handleEndMatch = () => {
@@ -404,7 +405,7 @@ export default function ScoringPage() {
               <div>
                 <p className="text-gray-600">Inning: {inning?.inningNumber}</p>
                 <p className="text-gray-600">
-                  Overs: {inning?.currentOver}.{inning?.currentBall}
+                  Overs: {inning?.currentOver}.{inning?.currentBall} / {match?.overs}
                 </p>
               </div>
             </div>
@@ -421,7 +422,7 @@ export default function ScoringPage() {
                 {inning?.totalWickets}
               </p>
               <p className="text-lg text-gray-600">
-                Overs: {inning?.currentOver}.{inning?.currentBall}
+                Overs: {inning?.currentOver}.{inning?.currentBall} / {match?.overs}
               </p>
               {checkAllPlayersOut() && (
                 <p className="text-red-600 font-semibold mt-2 text-xl">
@@ -598,63 +599,40 @@ export default function ScoringPage() {
               )}
 
             {/* Partnerships */}
-            {inning?.battingStats && inning.battingStats.length >= 2 && (
+            {inning?.battingStats && inning.battingStats.length >= 1 && (
               <div className="mb-4">
                 <h3 className="font-semibold mb-3">Partnerships</h3>
                 <div className="space-y-2 text-sm">
                   {(() => {
+                    // Simple approach: Show current partnership if ongoing
+                    // For completed partnerships, calculate from total score progression
                     const partnerships: any[] = [];
-                    let currentPartnership = {
-                      player1: inning.battingStats[0],
-                      player2: inning.battingStats[1],
-                      runs: 0,
-                    };
 
-                    // Calculate partnerships based on batting order
-                    for (let i = 0; i < inning.battingStats.length; i++) {
-                      const stat = inning.battingStats[i];
-                      if (i < 2) {
-                        currentPartnership.runs += stat.runs;
-                      }
-
-                      if (stat.isOut && i >= 1) {
-                        partnerships.push({ ...currentPartnership });
-                        if (i + 1 < inning.battingStats.length) {
-                          const nextPlayer = inning.battingStats[i + 1];
-                          const continuingPlayer =
-                            i === 0
-                              ? inning.battingStats[1]
-                              : inning.battingStats[i - 1];
-                          currentPartnership = {
-                            player1: continuingPlayer,
-                            player2: nextPlayer,
-                            runs: 0,
-                          };
-                        }
-                      }
-                    }
-
-                    // Add current partnership if match is ongoing
-                    if (inning.striker && inning.nonStriker) {
-                      const striker = inning.battingStats.find(
+                    // If there's a current partnership ongoing
+                    if (inning.striker && inning.nonStriker && !inning.isCompleted) {
+                      const striker = inning.battingStats?.find(
                         (s: any) => s.playerId._id === inning.striker._id
                       );
-                      const nonStriker = inning.battingStats.find(
+                      const nonStriker = inning.battingStats?.find(
                         (s: any) => s.playerId._id === inning.nonStriker._id
                       );
+
                       if (striker && nonStriker) {
-                        const currentRuns =
-                          striker.runs +
-                          nonStriker.runs -
-                          partnerships.reduce((sum, p) => sum + p.runs, 0);
-                        if (currentRuns > 0 || partnerships.length === 0) {
-                          partnerships.push({
-                            player1: striker,
-                            player2: nonStriker,
-                            runs: Math.max(0, currentRuns),
-                            current: true,
-                          });
-                        }
+                        // For current partnership, use total score (includes extras)
+                        // minus runs from batsmen who got out
+                        const outBatsmenRuns = (inning.battingStats || [])
+                          .filter((s: any) => s.isOut)
+                          .reduce((sum: number, s: any) => sum + s.runs, 0);
+
+                        const currentPartnershipRuns = (inning.totalRuns || 0) - outBatsmenRuns;
+
+                        partnerships.push({
+                          player1: striker,
+                          player2: nonStriker,
+                          runs: Math.max(0, currentPartnershipRuns),
+                          wicket: (inning.totalWickets || 0) + 1,
+                          current: true,
+                        });
                       }
                     }
 

@@ -131,7 +131,7 @@ export const scoringService = {
       `/scoring/batsmen`,
       {
         inningId,
-        striker: newBatsmanId,
+        newBatsmanId,
       }
     );
     return response.data;

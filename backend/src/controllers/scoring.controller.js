@@ -133,8 +133,9 @@ export const addBall = async (req, res) => {
         batsmanStats.fielder = fielder;
       }
     } else {
-      // Swap striker for odd runs (only on valid balls, not wickets)
-      if (runs % 2 !== 0 && ballType !== "wide" && ballType !== "noBall") {
+      // Swap striker for odd runs (not on wides or wickets)
+      // On no-balls, strike DOES rotate if batsman scores odd runs
+      if (runs % 2 !== 0 && ballType !== "wide") {
         [inning.striker, inning.nonStriker] = [inning.nonStriker, inning.striker];
       }
     }
@@ -148,7 +149,14 @@ export const addBall = async (req, res) => {
     }
 
     // Check inning completion
-    if (inning.currentOver >= match.overs || inning.totalWickets >= 10) {
+    // All out when wickets = team size - 1 (need 2 batsmen, last man can't bat alone)
+    const isBattingTeamA = match.teamA._id.toString() === inning.battingTeam.toString();
+    const teamSize = isBattingTeamA
+      ? (match.teamASnapshot?.players?.length || 11)
+      : (match.teamBSnapshot?.players?.length || 11);
+    const maxWickets = teamSize - 1;
+
+    if (inning.currentOver >= match.overs || inning.totalWickets >= maxWickets) {
       inning.isCompleted = true;
 
       if (match.currentInning === 1) {
@@ -165,13 +173,21 @@ export const addBall = async (req, res) => {
         const firstInning = await Inning.findOne({ matchId: match._id, inningNumber: 1 });
 
         if (inning.totalRuns > firstInning.totalRuns) {
-          match.winner = inning.battingTeam;
+          match.winner = inning.battingTeam._id;
           const wicketsRemaining = 10 - inning.totalWickets;
-          match.resultText = `${inning.battingTeam.name} won by ${wicketsRemaining} wickets`;
+          const winningTeamName =
+            inning.battingTeam._id.toString() === match.teamA._id.toString()
+              ? match.teamASnapshot.name
+              : match.teamBSnapshot.name;
+          match.resultText = `${winningTeamName} won by ${wicketsRemaining} wickets`;
         } else if (firstInning.totalRuns > inning.totalRuns) {
-          match.winner = firstInning.battingTeam;
+          match.winner = firstInning.battingTeam._id;
           const runsDifference = firstInning.totalRuns - inning.totalRuns;
-          match.resultText = `${firstInning.battingTeam.name} won by ${runsDifference} runs`;
+          const winningTeamName =
+            firstInning.battingTeam._id.toString() === match.teamA._id.toString()
+              ? match.teamASnapshot.name
+              : match.teamBSnapshot.name;
+          match.resultText = `${winningTeamName} won by ${runsDifference} runs`;
         } else {
           match.resultText = "Match tied";
         }
@@ -183,10 +199,14 @@ export const addBall = async (req, res) => {
       if (inning.totalRuns > firstInning.totalRuns) {
         inning.isCompleted = true;
         match.status = "completed";
-        match.winner = inning.battingTeam;
+        match.winner = inning.battingTeam._id;
         const wicketsRemaining = 10 - inning.totalWickets;
         const ballsRemaining = (match.overs * 6) - (inning.currentOver * 6 + inning.currentBall);
-        match.resultText = `${inning.battingTeam.name} won by ${wicketsRemaining} wickets (${ballsRemaining} balls remaining)`;
+        const winningTeamName =
+          inning.battingTeam._id.toString() === match.teamA._id.toString()
+            ? match.teamASnapshot.name
+            : match.teamBSnapshot.name;
+        match.resultText = `${winningTeamName} won by ${wicketsRemaining} wickets (${ballsRemaining} balls remaining)`;
         await match.save();
       }
     }
@@ -322,13 +342,42 @@ export const swapStrike = async (req, res) => {
 
 export const updateBatsmen = async (req, res) => {
   try {
-    const { inningId, striker, nonStriker } = req.body;
+    const { inningId, striker, nonStriker, newBatsmanId } = req.body;
 
-    const inning = await Inning.findByIdAndUpdate(
-      inningId,
-      { striker, nonStriker },
-      { new: true }
-    )
+    const inning = await Inning.findById(inningId);
+    if (!inning) {
+      return res.status(404).json({ message: "Inning not found" });
+    }
+
+    // If newBatsmanId is provided (wicket scenario), determine who to replace
+    if (newBatsmanId) {
+      // Find who got out - check the last batsman who is marked as out
+      const outBatsman = inning.battingStats.find(
+        (stat) => stat.isOut &&
+        (stat.playerId.toString() === inning.striker.toString() ||
+         stat.playerId.toString() === inning.nonStriker.toString())
+      );
+
+      if (outBatsman) {
+        // Replace the out batsman with new batsman
+        if (outBatsman.playerId.toString() === inning.striker.toString()) {
+          inning.striker = newBatsmanId;
+        } else {
+          inning.nonStriker = newBatsmanId;
+        }
+      } else {
+        // Fallback: replace striker
+        inning.striker = newBatsmanId;
+      }
+    } else {
+      // Manual batsman change - update provided values
+      if (striker) inning.striker = striker;
+      if (nonStriker) inning.nonStriker = nonStriker;
+    }
+
+    await inning.save();
+
+    const populatedInning = await Inning.findById(inningId)
       .populate({
         path: "striker",
         populate: { path: "userId", select: "name email" }
@@ -341,9 +390,25 @@ export const updateBatsmen = async (req, res) => {
         path: "currentBowler",
         populate: { path: "userId", select: "name email" }
       })
+      .populate({
+        path: "battingStats.playerId",
+        populate: { path: "userId", select: "name email" }
+      })
+      .populate({
+        path: "battingStats.dismissedBy",
+        populate: { path: "userId", select: "name email" }
+      })
+      .populate({
+        path: "battingStats.fielder",
+        populate: { path: "userId", select: "name email" }
+      })
+      .populate({
+        path: "bowlingStats.playerId",
+        populate: { path: "userId", select: "name email" }
+      })
       .populate("battingTeam bowlingTeam");
 
-    res.json(inning);
+    res.json(populatedInning);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

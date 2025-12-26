@@ -242,10 +242,11 @@ export const getCurrentInning = async (req, res) => {
       }
     }
 
+    // If match is completed, fetch the inning even if it's marked completed
     const inning = await Inning.findOne({
       matchId: match._id,
       inningNumber: match.currentInning,
-      isCompleted: false,
+      ...(match.status !== "completed" && { isCompleted: false }),
     })
       .populate({
         path: "striker",
@@ -336,7 +337,7 @@ export const endMatch = async (req, res) => {
         match.winner = secondInning.battingTeam._id;
         const wicketsRemaining = 10 - secondInning.totalWickets;
         const winningTeamName =
-          secondInning.battingTeam._id.toString() === match.teamA.toString()
+          secondInning.battingTeam._id.toString() === match.teamA._id.toString()
             ? match.teamASnapshot.name
             : match.teamBSnapshot.name;
         match.resultText = `${winningTeamName} won by ${wicketsRemaining} wickets`;
@@ -344,7 +345,7 @@ export const endMatch = async (req, res) => {
         match.winner = firstInning.battingTeam._id;
         const runsDifference = firstInning.totalRuns - secondInning.totalRuns;
         const winningTeamName =
-          firstInning.battingTeam._id.toString() === match.teamA.toString()
+          firstInning.battingTeam._id.toString() === match.teamA._id.toString()
             ? match.teamASnapshot.name
             : match.teamBSnapshot.name;
         match.resultText = `${winningTeamName} won by ${runsDifference} runs`;
