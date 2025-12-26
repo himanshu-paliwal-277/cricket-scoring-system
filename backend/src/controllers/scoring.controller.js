@@ -1,6 +1,7 @@
 import Ball from "../schema/Ball.js";
 import Inning from "../schema/Inning.js";
 import Match from "../schema/Match.js";
+import { updatePlayerStatsAfterMatch } from "./match.controller.js";
 
 export const addBall = async (req, res) => {
   try {
@@ -228,6 +229,9 @@ export const addBall = async (req, res) => {
           match.resultText = "Match tied";
         }
         await match.save();
+
+        // Update player stats after match completion
+        await updatePlayerStatsAfterMatch(match._id);
       }
     } else if (match.currentInning === 2) {
       // Check if chasing team has won before completing overs/wickets
@@ -244,6 +248,9 @@ export const addBall = async (req, res) => {
             : match.teamBSnapshot.name;
         match.resultText = `${winningTeamName} won by ${wicketsRemaining} wickets (${ballsRemaining} balls remaining)`;
         await match.save();
+
+        // Update player stats after match completion
+        await updatePlayerStatsAfterMatch(match._id);
       }
     }
 

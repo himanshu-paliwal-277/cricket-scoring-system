@@ -2,6 +2,62 @@ import Ball from "../schema/Ball.js";
 import Inning from "../schema/Inning.js";
 import Match from "../schema/Match.js";
 import Player from "../schema/Player.js";
+
+// Helper function to update player career stats after match completion
+export const updatePlayerStatsAfterMatch = async (matchId) => {
+  const innings = await Inning.find({ matchId }).sort({ inningNumber: 1 });
+  const match = await Match.findById(matchId).populate("teamA teamB");
+
+  if (!match || innings.length === 0) return;
+
+  const playersUpdated = new Set();
+
+  for (const inning of innings) {
+    // Update batting stats
+    for (const stat of inning.battingStats) {
+      const playerId = stat.playerId.toString();
+
+      await Player.findByIdAndUpdate(playerId, {
+        $inc: {
+          totalRuns: stat.runs,
+          totalBallsFaced: stat.balls,
+          totalFours: stat.fours,
+          totalSixes: stat.sixes,
+        },
+        $max: { highestScore: stat.runs },
+      });
+
+      playersUpdated.add(playerId);
+    }
+
+    // Update bowling stats
+    for (const stat of inning.bowlingStats) {
+      const playerId = stat.playerId.toString();
+
+      await Player.findByIdAndUpdate(playerId, {
+        $inc: {
+          totalWickets: stat.wickets,
+          totalBallsBowled: stat.balls,
+        },
+      });
+
+      playersUpdated.add(playerId);
+    }
+  }
+
+  // Get all players from both teams
+  const allPlayerIds = [
+    ...match.teamASnapshot.players,
+    ...match.teamBSnapshot.players
+  ];
+
+  // Increment matchesPlayed for ALL players in the match (even if they didn't bat/bowl)
+  for (const playerId of allPlayerIds) {
+    await Player.findByIdAndUpdate(playerId, {
+      $inc: { matchesPlayed: 1 },
+    });
+  }
+};
 import Team from "../schema/Team.js";
 
 export const createMatch = async (req, res) => {
@@ -464,47 +520,7 @@ export const endMatch = async (req, res) => {
     await match.save();
 
     // Update player career stats from innings
-    const playersUpdated = new Set();
-
-    for (const inning of innings) {
-      // Update batting stats
-      for (const stat of inning.battingStats) {
-        const playerId = stat.playerId.toString();
-
-        await Player.findByIdAndUpdate(playerId, {
-          $inc: {
-            totalRuns: stat.runs,
-            totalBallsFaced: stat.balls,
-            totalFours: stat.fours,
-            totalSixes: stat.sixes,
-          },
-          $max: { highestScore: stat.runs },
-        });
-
-        playersUpdated.add(playerId);
-      }
-
-      // Update bowling stats
-      for (const stat of inning.bowlingStats) {
-        const playerId = stat.playerId.toString();
-
-        await Player.findByIdAndUpdate(playerId, {
-          $inc: {
-            totalWickets: stat.wickets,
-            totalBallsBowled: stat.balls,
-          },
-        });
-
-        playersUpdated.add(playerId);
-      }
-    }
-
-    // Increment matchesPlayed for all players who participated
-    for (const playerId of playersUpdated) {
-      await Player.findByIdAndUpdate(playerId, {
-        $inc: { matchesPlayed: 1 },
-      });
-    }
+    await updatePlayerStatsAfterMatch(match._id);
 
     const populatedMatch = await Match.findById(match._id).populate(
       "teamA teamB winner playerOfTheMatch"
