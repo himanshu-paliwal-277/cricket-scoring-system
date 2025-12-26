@@ -1,5 +1,6 @@
 import Player from "../schema/Player.js";
 import User from "../schema/User.js";
+import bcrypt from "bcryptjs";
 
 export const getAllPlayers = async (req, res) => {
   try {
@@ -24,19 +25,55 @@ export const getPlayerById = async (req, res) => {
 
 export const createPlayer = async (req, res) => {
   try {
-    const { userId, battingStyle, bowlingStyle } = req.body;
+    const { userId, name, email, password, battingStyle, bowlingStyle } = req.body;
 
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    // If userId is provided, use the old flow
+    if (userId) {
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const existingPlayer = await Player.findOne({ userId });
+      if (existingPlayer) {
+        return res.status(400).json({ message: "Player profile already exists" });
+      }
+
+      const player = await Player.create({ userId, battingStyle, bowlingStyle });
+      const populatedPlayer = await Player.findById(player._id).populate("userId", "name email");
+
+      return res.status(201).json(populatedPlayer);
     }
 
-    const existingPlayer = await Player.findOne({ userId });
-    if (existingPlayer) {
-      return res.status(400).json({ message: "Player profile already exists" });
+    // New flow: Create user and player together (like signup)
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: "Name, email, and password are required" });
     }
 
-    const player = await Player.create({ userId, battingStyle, bowlingStyle });
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "User with this email already exists" });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create user with player role
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      role: "player",
+    });
+
+    // Create player profile
+    const player = await Player.create({
+      userId: user._id,
+      battingStyle,
+      bowlingStyle,
+    });
+
     const populatedPlayer = await Player.findById(player._id).populate("userId", "name email");
 
     res.status(201).json(populatedPlayer);

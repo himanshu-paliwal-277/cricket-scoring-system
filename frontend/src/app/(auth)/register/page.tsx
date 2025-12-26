@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
 import { Card } from "@/components/ui/Card";
 
 export default function RegisterPage() {
@@ -56,17 +55,6 @@ export default function RegisterPage() {
             value={formData.password}
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             required
-          />
-
-          <Select
-            label="Role"
-            value={formData.role}
-            onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-            options={[
-              { value: "player", label: "Player" },
-              { value: "scorer", label: "Scorer" },
-              { value: "owner", label: "Owner" },
-            ]}
           />
 
           <Button type="submit" className="w-full" isLoading={registerLoading}>

@@ -3,7 +3,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Layout } from "@/components/Layout";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -94,9 +93,8 @@ export default function MatchesPage() {
   );
 
   return (
-    <ProtectedRoute allowedRoles={["owner", "scorer", "player"]}>
-      <Layout>
-        <div className="space-y-6">
+    <Layout>
+      <div className="space-y-6">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Matches</h1>
             {user?.role === "owner" && (
@@ -231,7 +229,6 @@ export default function MatchesPage() {
             </form>
           </Modal>
         </div>
-      </Layout>
-    </ProtectedRoute>
+    </Layout>
   );
 }

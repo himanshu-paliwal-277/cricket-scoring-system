@@ -14,7 +14,9 @@ export default function PlayersPage() {
   const { players, isLoading, createPlayer, isCreating, deletePlayer } = usePlayers();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
-    userId: "",
+    name: "",
+    email: "",
+    password: "",
     battingStyle: "right-hand",
     bowlingStyle: "right-arm-fast",
   });
@@ -24,7 +26,7 @@ export default function PlayersPage() {
     createPlayer(formData, {
       onSuccess: () => {
         setIsModalOpen(false);
-        setFormData({ userId: "", battingStyle: "right-hand", bowlingStyle: "right-arm-fast" });
+        setFormData({ name: "", email: "", password: "", battingStyle: "right-hand", bowlingStyle: "right-arm-fast" });
       },
     });
   };
@@ -68,10 +70,28 @@ export default function PlayersPage() {
           <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add Player">
             <form onSubmit={handleSubmit} className="space-y-4">
               <Input
-                label="User ID"
-                value={formData.userId}
-                onChange={(e) => setFormData({ ...formData, userId: e.target.value })}
-                placeholder="Enter user ID"
+                label="Name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="Player name"
+                required
+              />
+
+              <Input
+                label="Email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="player@example.com"
+                required
+              />
+
+              <Input
+                label="Password"
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                placeholder="Create password"
                 required
               />
 

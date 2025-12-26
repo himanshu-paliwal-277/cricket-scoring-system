@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Layout } from "@/components/Layout";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -45,9 +44,8 @@ export default function DashboardPage() {
   };
 
   return (
-    <ProtectedRoute>
-      <Layout>
-        <div className="space-y-6">
+    <Layout>
+      <div className="space-y-6">
           <div>
             <h1 className="sm:text-3xl text-2xl font-bold">
               Welcome, {user?.name}!
@@ -241,7 +239,6 @@ export default function DashboardPage() {
             )}
           </div>
         </div>
-      </Layout>
-    </ProtectedRoute>
+    </Layout>
   );
 }
