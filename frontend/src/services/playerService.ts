@@ -18,7 +18,10 @@ export interface Player {
 }
 
 export interface CreatePlayerData {
-  userId: string;
+  userId?: string;
+  name?: string;
+  email?: string;
+  password?: string;
   battingStyle: string;
   bowlingStyle: string;
 }
