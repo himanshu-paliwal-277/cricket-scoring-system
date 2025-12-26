@@ -185,12 +185,12 @@ export const addBall = async (req, res) => {
     }
 
     // Check inning completion
-    // All out when wickets = team size - 1 (need 2 batsmen, last man can't bat alone)
+    // All out when all players are dismissed (last man can bat from both ends)
     const isBattingTeamA = match.teamA._id.toString() === inning.battingTeam.toString();
     const teamSize = isBattingTeamA
       ? (match.teamASnapshot?.players?.length || 11)
       : (match.teamBSnapshot?.players?.length || 11);
-    const maxWickets = teamSize - 1;
+    const maxWickets = teamSize; // All players can get out
 
     if (inning.currentOver >= match.overs || inning.totalWickets >= maxWickets) {
       inning.isCompleted = true;
@@ -210,7 +210,7 @@ export const addBall = async (req, res) => {
 
         if (inning.totalRuns > firstInning.totalRuns) {
           match.winner = inning.battingTeam._id;
-          const wicketsRemaining = 10 - inning.totalWickets;
+          const wicketsRemaining = teamSize - inning.totalWickets;
           const winningTeamName =
             inning.battingTeam._id.toString() === match.teamA._id.toString()
               ? match.teamASnapshot.name
@@ -236,7 +236,7 @@ export const addBall = async (req, res) => {
         inning.isCompleted = true;
         match.status = "completed";
         match.winner = inning.battingTeam._id;
-        const wicketsRemaining = 10 - inning.totalWickets;
+        const wicketsRemaining = teamSize - inning.totalWickets;
         const ballsRemaining = (match.overs * 6) - (inning.currentOver * 6 + inning.currentBall);
         const winningTeamName =
           inning.battingTeam._id.toString() === match.teamA._id.toString()

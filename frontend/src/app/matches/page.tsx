@@ -22,7 +22,7 @@ export default function MatchesPage() {
   const [formData, setFormData] = useState({
     teamA: "",
     teamB: "",
-    overs: 20,
+    overs: 6,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -30,7 +30,7 @@ export default function MatchesPage() {
     createMatch(formData, {
       onSuccess: () => {
         setIsModalOpen(false);
-        setFormData({ teamA: "", teamB: "", overs: 20 });
+        setFormData({ teamA: "", teamB: "", overs: 6 });
       },
     });
   };

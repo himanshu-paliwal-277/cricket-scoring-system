@@ -85,10 +85,10 @@ export default function ScoringPage() {
     const totalPlayers = currentInningBattingTeam.players?.length || 11;
     const totalWickets = inning.totalWickets || 0;
 
-    // All out when wickets = totalPlayers - 1
-    // (because you need at least 2 batsmen, so last man can't bat alone)
-    // For 5 players: max 4 wickets, for 11 players: max 10 wickets
-    return totalWickets >= totalPlayers - 1;
+    // All out when all players are dismissed
+    // Last man can bat from both ends, so all out = totalPlayers wickets
+    // For 5 players: max 5 wickets, for 11 players: max 11 wickets
+    return totalWickets >= totalPlayers;
   };
 
   const handleEndMatch = () => {
@@ -169,9 +169,10 @@ export default function ScoringPage() {
     if (!inning) return;
 
     // For run out, use the runs scored; otherwise 0
-    const runs = data.wicketType === "runOut" && data.runOutRuns !== undefined
-      ? data.runOutRuns
-      : 0;
+    const runs =
+      data.wicketType === "runOut" && data.runOutRuns !== undefined
+        ? data.runOutRuns
+        : 0;
 
     // Send wicket ball with new batsman ID in a single request
     addBall({
@@ -241,7 +242,11 @@ export default function ScoringPage() {
           balls += 1;
         }
         // Count runs from normal balls, wickets, and no-balls (but not wides, byes, or legByes)
-        if (ball.ballType === "normal" || ball.ballType === "wicket" || ball.ballType === "noBall") {
+        if (
+          ball.ballType === "normal" ||
+          ball.ballType === "wicket" ||
+          ball.ballType === "noBall"
+        ) {
           runs += ball.runs;
         }
       }
@@ -410,7 +415,8 @@ export default function ScoringPage() {
               <div>
                 <p className="text-gray-600">Inning: {inning?.inningNumber}</p>
                 <p className="text-gray-600">
-                  Overs: {inning?.currentOver}.{inning?.currentBall} / {match?.overs}
+                  Overs: {inning?.currentOver}.{inning?.currentBall} /{" "}
+                  {match?.overs}
                 </p>
               </div>
             </div>
@@ -427,7 +433,8 @@ export default function ScoringPage() {
                 {inning?.totalWickets}
               </p>
               <p className="text-lg text-gray-600">
-                Overs: {inning?.currentOver}.{inning?.currentBall} / {match?.overs}
+                Overs: {inning?.currentOver}.{inning?.currentBall} /{" "}
+                {match?.overs}
               </p>
               {checkAllPlayersOut() && (
                 <p className="text-red-600 font-semibold mt-2 text-xl">
@@ -436,24 +443,28 @@ export default function ScoringPage() {
                 </p>
               )}
               {/* Show required runs for second inning when <= 30 runs needed */}
-              {match?.currentInning === 2 && inning && firstInning && !inning.isCompleted && (
+              {match?.currentInning === 2 &&
+                inning &&
+                firstInning &&
+                !inning.isCompleted &&
                 (() => {
                   const target = (firstInning.totalRuns || 0) + 1;
                   const runsNeeded = target - (inning.totalRuns || 0);
                   const totalBalls = (match?.overs || 0) * 6;
-                  const ballsPlayed = (inning.currentOver || 0) * 6 + (inning.currentBall || 0);
+                  const ballsPlayed =
+                    (inning.currentOver || 0) * 6 + (inning.currentBall || 0);
                   const ballsRemaining = totalBalls - ballsPlayed;
 
                   if (runsNeeded > 0 && runsNeeded <= 30) {
                     return (
                       <p className="text-blue-600 font-semibold mt-2 text-lg">
-                        Need {runsNeeded} run{runsNeeded !== 1 ? 's' : ''} in {ballsRemaining} ball{ballsRemaining !== 1 ? 's' : ''}
+                        Need {runsNeeded} run{runsNeeded !== 1 ? "s" : ""} in{" "}
+                        {ballsRemaining} ball{ballsRemaining !== 1 ? "s" : ""}
                       </p>
                     );
                   }
                   return null;
-                })()
-              )}
+                })()}
             </div>
 
             {/* Live Batting Scorecard */}
@@ -591,31 +602,61 @@ export default function ScoringPage() {
               inning.battingStats.filter((s: any) => s.isOut).length > 0 && (
                 <div className="mb-6">
                   <h3 className="font-semibold mb-3">Fall of Wickets</h3>
-                  <div className="flex flex-wrap gap-3 text-sm">
-                    {inning.battingStats
-                      .map((stat: any, index: number) => {
-                        if (!stat.isOut) return null;
+                  <div className="flex flex-wrap gap-3 text-sm items-center">
+                    {(() => {
+                      // Calculate score at each wicket using ball-by-ball data
+                      const wickets: any[] = [];
 
-                        // Calculate wicket number (how many wickets have fallen up to this point)
-                        const wicketNumber = inning.battingStats.filter(
-                          (s: any, i: number) => i <= index && s.isOut
-                        ).length;
+                      inning.battingStats.forEach((stat: any) => {
+                        if (stat.isOut && inning.balls) {
+                          // Find the ball where this player got out
+                          const wicketBall = inning.balls.find(
+                            (ball: any) =>
+                              ball.ballType === "wicket" &&
+                              ball.batsman._id === stat.playerId._id
+                          );
 
-                        // We need ball-by-ball data to get exact score at wicket
-                        // For now, this is an approximation
-                        return {
-                          stat,
-                          wicketNumber,
-                          index,
-                        };
-                      })
-                      .filter((item: any) => item !== null)
-                      .map((item: any, idx: number) => (
-                        <span key={item.index} className="text-gray-700">
-                          {item.wicketNumber}-{item.stat.playerId.userId?.name} (
-                          {item.stat.runs} runs, {item.stat.balls} balls)
-                        </span>
-                      ))}
+                          if (wicketBall) {
+                            // Calculate score at this wicket
+                            const ballsUpToWicket = inning.balls.filter(
+                              (b: any) =>
+                                b.overNumber < wicketBall.overNumber ||
+                                (b.overNumber === wicketBall.overNumber &&
+                                  b.ballNumber <= wicketBall.ballNumber)
+                            );
+
+                            const scoreAtWicket = ballsUpToWicket.reduce(
+                              (total: number, ball: any) =>
+                                total + (ball.runs || 0),
+                              0
+                            );
+
+                            const oversAtWicket = `${wicketBall.overNumber}.${wicketBall.ballNumber}`;
+
+                            wickets.push({
+                              playerName: stat.playerId.userId?.name,
+                              playerRuns: stat.runs,
+                              playerBalls: stat.balls,
+                              teamScore: scoreAtWicket,
+                              overs: oversAtWicket,
+                              wicketNumber: wickets.length + 1,
+                            });
+                          }
+                        }
+                      });
+
+                      return wickets.map((w, idx) => (
+                        <>
+                          <div key={idx} className="text-gray-700">
+                            {w.teamScore}/{w.wicketNumber} ({w.playerName},{" "}
+                            {w.playerRuns} runs, {w.overs} ov)
+                          </div>
+                          {idx !== wickets.length - 1 && (
+                            <div className="w-1 h-1 mt-1 rounded-full bg-black" />
+                          )}
+                        </>
+                      ));
+                    })()}
                   </div>
                 </div>
               )}
@@ -631,7 +672,11 @@ export default function ScoringPage() {
                     const partnerships: any[] = [];
 
                     // If there's a current partnership ongoing
-                    if (inning.striker && inning.nonStriker && !inning.isCompleted) {
+                    if (
+                      inning.striker &&
+                      inning.nonStriker &&
+                      !inning.isCompleted
+                    ) {
                       const striker = inning.battingStats?.find(
                         (s: any) => s.playerId._id === inning.striker._id
                       );
@@ -646,7 +691,8 @@ export default function ScoringPage() {
                           .filter((s: any) => s.isOut)
                           .reduce((sum: number, s: any) => sum + s.runs, 0);
 
-                        const currentPartnershipRuns = (inning.totalRuns || 0) - outBatsmenRuns;
+                        const currentPartnershipRuns =
+                          (inning.totalRuns || 0) - outBatsmenRuns;
 
                         partnerships.push({
                           player1: striker,
@@ -955,10 +1001,10 @@ export default function ScoringPage() {
                 )
                   .sort((a, b) => b - a) // Show latest overs first
                   .map((overNumber) => {
-                    const overBalls = inning.balls?.filter(
-                      (ball) =>
-                        ball.overNumber === overNumber && ball.isValid
-                    ) || [];
+                    const overBalls =
+                      inning.balls?.filter(
+                        (ball) => ball.overNumber === overNumber && ball.isValid
+                      ) || [];
                     const overRuns = overBalls.reduce(
                       (total, ball) => total + (ball.runs || 0),
                       0
@@ -1051,11 +1097,15 @@ export default function ScoringPage() {
                   {match.resultText || "Match has ended"}
                 </p>
                 {match.winner && (
-                  <p className="text-gray-600 mb-3">Winner: {match.winner.name}</p>
+                  <p className="text-gray-600 mb-3">
+                    Winner: {match.winner.name}
+                  </p>
                 )}
                 {match.playerOfTheMatch && (
                   <div className="mt-4 pt-4 border-t border-gray-200">
-                    <p className="text-sm text-gray-500 mb-1">Player of the Match</p>
+                    <p className="text-sm text-gray-500 mb-1">
+                      Player of the Match
+                    </p>
                     <p className="text-lg font-semibold text-blue-600">
                       {match.playerOfTheMatch.userId?.name || "N/A"}
                     </p>
