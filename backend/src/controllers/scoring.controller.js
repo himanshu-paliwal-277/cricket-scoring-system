@@ -4,7 +4,7 @@ import Match from "../schema/Match.js";
 
 export const addBall = async (req, res) => {
   try {
-    const { inningId, runs, ballType, wicketType, fielder } = req.body;
+    const { inningId, runs, ballType, wicketType, fielder, newBatsmanId } = req.body;
 
     const inning = await Inning.findById(inningId)
       .populate('battingTeam bowlingTeam');
@@ -131,6 +131,37 @@ export const addBall = async (req, res) => {
 
       if (fielder && (wicketType === "caught" || wicketType === "stumped")) {
         batsmanStats.fielder = fielder;
+      }
+
+      // Handle new batsman coming in after wicket
+      if (newBatsmanId) {
+        // Determine which batsman got out
+        const outBatsmanId = batsmanStats.playerId.toString();
+
+        // Replace the out batsman with new batsman
+        if (inning.striker.toString() === outBatsmanId) {
+          inning.striker = newBatsmanId;
+        } else if (inning.nonStriker.toString() === outBatsmanId) {
+          inning.nonStriker = newBatsmanId;
+        }
+
+        // Add new batsman to batting stats if not already present
+        const newBatsmanExists = inning.battingStats.find(
+          s => s.playerId.toString() === newBatsmanId.toString()
+        );
+
+        if (!newBatsmanExists) {
+          inning.battingStats.push({
+            playerId: newBatsmanId,
+            runs: 0,
+            balls: 0,
+            fours: 0,
+            sixes: 0,
+            strikeRate: 0,
+            isOut: false,
+            dismissalType: "none"
+          });
+        }
       }
 
       // For run out, rotate strike based on runs scored (if odd)

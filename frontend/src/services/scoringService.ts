@@ -80,6 +80,7 @@ export interface AddBallData {
   ballType: "normal" | "wide" | "noBall" | "wicket" | "bye" | "legBye";
   wicketType?: string;
   fielder?: string;
+  newBatsmanId?: string;
 }
 
 export const scoringService = {

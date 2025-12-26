@@ -173,21 +173,15 @@ export default function ScoringPage() {
       ? data.runOutRuns
       : 0;
 
+    // Send wicket ball with new batsman ID in a single request
     addBall({
       inningId: inning._id,
       runs,
       ballType: "wicket",
       wicketType: data.wicketType,
       fielder: data.fielderId,
+      newBatsmanId: data.newBatsmanId || undefined,
     });
-
-    // Only change batsman if there's a new batsman (not final wicket)
-    if (data.newBatsmanId) {
-      changeBatsman({
-        inningId: inning._id,
-        newBatsmanId: data.newBatsmanId,
-      });
-    }
 
     setShowWicketModal(false);
     setBallType("normal");
@@ -263,8 +257,8 @@ export default function ScoringPage() {
     let wickets = 0;
     inning.balls.forEach((ball) => {
       if (ball.bowler._id === playerId) {
-        // Count only valid balls (normal balls and wickets, not wides or no-balls)
-        if (ball.isValid && (ball.ballType === "normal" || ball.ballType === "wicket" || ball.ballType === "bye" || ball.ballType === "legBye")) {
+        // Count only valid balls (normal balls, wickets, byes, legByes - not wides or no-balls)
+        if (ball.ballType !== "wide" && ball.ballType !== "noBall") {
           balls += 1;
         }
         runs += ball.runs;
@@ -441,6 +435,25 @@ export default function ScoringPage() {
                   {currentInningBattingTeam?.players?.length || 0})
                 </p>
               )}
+              {/* Show required runs for second inning when <= 30 runs needed */}
+              {match?.currentInning === 2 && inning && firstInning && !inning.isCompleted && (
+                (() => {
+                  const target = (firstInning.totalRuns || 0) + 1;
+                  const runsNeeded = target - (inning.totalRuns || 0);
+                  const totalBalls = (match?.overs || 0) * 6;
+                  const ballsPlayed = (inning.currentOver || 0) * 6 + (inning.currentBall || 0);
+                  const ballsRemaining = totalBalls - ballsPlayed;
+
+                  if (runsNeeded > 0 && runsNeeded <= 30) {
+                    return (
+                      <p className="text-blue-600 font-semibold mt-2 text-lg">
+                        Need {runsNeeded} run{runsNeeded !== 1 ? 's' : ''} in {ballsRemaining} ball{ballsRemaining !== 1 ? 's' : ''}
+                      </p>
+                    );
+                  }
+                  return null;
+                })()
+              )}
             </div>
 
             {/* Live Batting Scorecard */}
@@ -502,7 +515,7 @@ export default function ScoringPage() {
                                     "hit wicket"}
                                 </span>
                               )}
-                              {!stat.isOut && !isStriker && !isNonStriker && (
+                              {!stat.isOut && (
                                 <span className="text-xs text-gray-600">
                                   not out
                                 </span>

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -194,7 +195,6 @@ export default function ScoreboardPage() {
                   </thead>
                   <tbody>
                     {currentInning.battingStats
-                      .filter((stat) => stat.balls > 0 || stat.isOut)
                       .map((stat, index) => (
                         <tr
                           key={index}

@@ -125,18 +125,20 @@ export const getAvailableBatsmen = async (req, res) => {
 
     const totalPlayers = battingTeam.players.length;
     const wicketsFallen = inning.totalWickets || 0;
-    const notOutCount = totalPlayers - outPlayerIds.length;
+    const notOutPlayers = battingTeam.players.filter(
+      p => !outPlayerIds.includes(p._id.toString())
+    );
+    const notOutCount = notOutPlayers.length;
 
-    // Last man standing scenario: if only 1 player is not out (excluding current batsmen)
-    // and that player is currently batting, include them in available batsmen
-    const isLastManScenario = notOutCount === 1 && wicketsFallen >= totalPlayers - 2;
+    // Last man standing scenario: if only 1 player is not out
+    // This player should be available in the selection even if currently batting
+    // so they can bat from both ends (striker and non-striker)
+    const isLastManScenario = notOutCount === 1;
 
     let availableBatsmen;
     if (isLastManScenario) {
       // Show the not-out player even if they're currently batting
-      availableBatsmen = battingTeam.players.filter(
-        p => !outPlayerIds.includes(p._id.toString())
-      );
+      availableBatsmen = notOutPlayers;
     } else {
       // Normal scenario: Filter out dismissed players AND current batsmen
       availableBatsmen = battingTeam.players.filter(
