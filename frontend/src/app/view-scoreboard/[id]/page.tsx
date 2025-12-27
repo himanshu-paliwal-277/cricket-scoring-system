@@ -65,7 +65,7 @@ export default function ScoreboardPage() {
   if (isLoading || matchLoading) {
     return (
       <Layout>
-        <div className="flex justify-center items-center min-h-screen">
+        <div className="flex justify-center items-center min-h-[calc(100dvh - 60px)]">
           <p className="text-lg">Loading scorecard...</p>
         </div>
       </Layout>
@@ -259,7 +259,7 @@ export default function ScoreboardPage() {
               <div className="overflow-x-auto">
                 <table className="sm:w-full w-[320px] sm:text-md text-sm">
                   <thead>
-                    <tr className="border-b bg-gray-50">
+                    <tr className="border-b border-gray-400 bg-gray-50">
                       <th className="text-left py-3 px-2 font-semibold">
                         Bowler
                       </th>
@@ -274,7 +274,10 @@ export default function ScoreboardPage() {
                   </thead>
                   <tbody>
                     {currentInning.bowlingStats.map((stat, index) => (
-                      <tr key={index} className="border-b hover:bg-gray-50">
+                      <tr
+                        key={index}
+                        className="border-b border-gray-300 hover:bg-gray-50"
+                      >
                         <td className="py-3 px-2 font-medium">
                           {stat.playerId.userId.name}
                         </td>
@@ -379,7 +382,7 @@ export default function ScoreboardPage() {
                           className="flex items-center gap-4"
                         >
                           <span className="font-medium text-sm sm:w-16">
-                            <span className="sm:block hidden">Over</span>{" "}
+                            <span className="sm:inline hidden">Over</span>{" "}
                             {overNumber + 1}:
                           </span>
                           <div className="flex sm:gap-2 gap-1 flex-wrap flex-1">

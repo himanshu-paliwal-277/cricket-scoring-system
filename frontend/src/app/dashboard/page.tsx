@@ -329,7 +329,7 @@ export default function DashboardPage() {
                       </h3>
                       <p className="text-gray-600">{match.overs} overs</p>
                     </div>
-                    {user?.role !== "player" && (
+                    {user && user?.role !== "player" && (
                       <Link href={`/matches/${match._id}/start`}>
                         <Button>Start Match</Button>
                       </Link>

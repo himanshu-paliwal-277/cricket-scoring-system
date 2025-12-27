@@ -2,15 +2,15 @@ import express from "express";
 
 import {
   getAvailableBatsmen,
+  getHighestScores,
   getMatchScorecard,
   getMostBoundaries,
-  getMostRuns,
-  getMostWickets,
-  getMostFours,
-  getMostSixes,
-  getHighestScores,
   getMostFifties,
+  getMostFours,
+  getMostRuns,
+  getMostSixes,
   getMostTwentyFives,
+  getMostWickets,
   getPlayerStats} from "../../controllers/stats.controller.js";
 
 const router = express.Router();

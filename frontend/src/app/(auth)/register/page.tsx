@@ -22,13 +22,14 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-[100dvh] flex items-center justify-center bg-gray-50">
       <Card className="w-full max-w-md">
         <h1 className="text-2xl font-bold text-center mb-6">Register</h1>
 
         {registerError && (
           <div className="bg-red-100 text-red-700 p-3 rounded mb-4">
-            {(registerError as any)?.response?.data?.message || "Registration failed"}
+            {(registerError as any)?.response?.data?.message ||
+              "Registration failed"}
           </div>
         )}
 
@@ -45,7 +46,9 @@ export default function RegisterPage() {
             label="Email"
             type="email"
             value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
             required
           />
 
@@ -53,7 +56,9 @@ export default function RegisterPage() {
             label="Password"
             type="password"
             value={formData.password}
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, password: e.target.value })
+            }
             required
           />
 

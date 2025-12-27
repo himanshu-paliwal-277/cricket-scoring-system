@@ -97,7 +97,7 @@ export default function MatchesPage() {
       <div className="space-y-6">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Matches</h1>
-            {user?.role === "owner" && (
+            {user && user?.role === "owner" && (
               <Button onClick={() => setIsModalOpen(true)}>Create Match</Button>
             )}
           </div>
@@ -139,7 +139,7 @@ export default function MatchesPage() {
                             )}
                           </div>
                           <div className="flex gap-2">
-                            {match.status === "not_started" &&
+                            {match.status === "not_started" && user &&
                               user?.role !== "player" && (
                                 <Link href={`/matches/${match._id}/start`}>
                                   <Button>Start</Button>
