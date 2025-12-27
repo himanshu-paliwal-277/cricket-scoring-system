@@ -61,7 +61,7 @@ export default function StatsPage() {
   if (isLoading) {
     return (
       <Layout>
-        <div className="flex justify-center items-center min-h-screen">
+        <div className="flex justify-center items-center min-h-[calc(100dvh - 60px)]">
           <p className="text-lg">Loading stats...</p>
         </div>
       </Layout>
@@ -74,8 +74,8 @@ export default function StatsPage() {
       header: "Rank",
       key: "rank",
       align: "left" as const,
-      render: (_: any, __: any, index: number) => (
-        <span className="font-semibold">{index + 1}</span>
+      render: (_: any, __: any, index?: number) => (
+        <span className="font-semibold">{(index ?? 0) + 1}</span>
       ),
     },
     {
@@ -120,8 +120,8 @@ export default function StatsPage() {
       header: "Rank",
       key: "rank",
       align: "left" as const,
-      render: (_: any, __: any, index: number) => (
-        <span className="font-semibold">{index + 1}</span>
+      render: (_: any, __: any, index?: number) => (
+        <span className="font-semibold">{(index ?? 0) + 1}</span>
       ),
     },
     {
@@ -162,8 +162,8 @@ export default function StatsPage() {
       header: "Rank",
       key: "rank",
       align: "left" as const,
-      render: (_: any, __: any, index: number) => (
-        <span className="font-semibold">{index + 1}</span>
+      render: (_: any, __: any, index?: number) => (
+        <span className="font-semibold">{(index ?? 0) + 1}</span>
       ),
     },
     {
@@ -198,8 +198,8 @@ export default function StatsPage() {
       header: "Rank",
       key: "rank",
       align: "left" as const,
-      render: (_: any, __: any, index: number) => (
-        <span className="font-semibold">{index + 1}</span>
+      render: (_: any, __: any, index?: number) => (
+        <span className="font-semibold">{(index ?? 0) + 1}</span>
       ),
     },
     {
@@ -224,8 +224,8 @@ export default function StatsPage() {
       header: "Rank",
       key: "rank",
       align: "left" as const,
-      render: (_: any, __: any, index: number) => (
-        <span className="font-semibold">{index + 1}</span>
+      render: (_: any, __: any, index?: number) => (
+        <span className="font-semibold">{(index ?? 0) + 1}</span>
       ),
     },
     {
@@ -250,8 +250,8 @@ export default function StatsPage() {
       header: "Rank",
       key: "rank",
       align: "left" as const,
-      render: (_: any, __: any, index: number) => (
-        <span className="font-semibold">{index + 1}</span>
+      render: (_: any, __: any, index?: number) => (
+        <span className="font-semibold">{(index ?? 0) + 1}</span>
       ),
     },
     {
@@ -275,8 +275,8 @@ export default function StatsPage() {
       header: "Rank",
       key: "rank",
       align: "left" as const,
-      render: (_: any, __: any, index: number) => (
-        <span className="font-semibold">{index + 1}</span>
+      render: (_: any, __: any, index?: number) => (
+        <span className="font-semibold">{(index ?? 0) + 1}</span>
       ),
     },
     {
@@ -300,8 +300,8 @@ export default function StatsPage() {
       header: "Rank",
       key: "rank",
       align: "left" as const,
-      render: (_: any, __: any, index: number) => (
-        <span className="font-semibold">{index + 1}</span>
+      render: (_: any, __: any, index?: number) => (
+        <span className="font-semibold">{(index ?? 0) + 1}</span>
       ),
     },
     {
