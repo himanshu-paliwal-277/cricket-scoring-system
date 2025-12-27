@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { useMatch } from "@/hooks/useMatches";
 import { formatISODate } from "@/utils/dateFormatter";
 import { statsService, InningScorecard } from "@/services/statsService";
+import { truncateString } from "@/utils/truncateString";
 
 export default function ScoreboardPage() {
   const params = useParams();
@@ -43,11 +44,15 @@ export default function ScoreboardPage() {
       case "bowled":
         return `b ${stat.dismissedBy?.userId?.name || ""}`;
       case "caught":
-        return `c ${stat.fielder?.userId?.name || ""} b ${stat.dismissedBy?.userId?.name || ""}`;
+        return `c ${stat.fielder?.userId?.name || ""} b ${
+          stat.dismissedBy?.userId?.name || ""
+        }`;
       case "lbw":
         return `lbw b ${stat.dismissedBy?.userId?.name || ""}`;
       case "stumped":
-        return `st ${stat.fielder?.userId?.name || ""} b ${stat.dismissedBy?.userId?.name || ""}`;
+        return `st ${stat.fielder?.userId?.name || ""} b ${
+          stat.dismissedBy?.userId?.name || ""
+        }`;
       case "runOut":
         return "run out";
       case "hitWicket":
@@ -83,14 +88,18 @@ export default function ScoreboardPage() {
         {/* Match Header */}
         <Card>
           <div className="text-center">
-            <h1 className="text-3xl font-bold mb-2">
-              {match.teamASnapshot?.name || match.teamA.name} vs {match.teamBSnapshot?.name || match.teamB.name}
+            <h1 className="sm:text-3xl text-xl font-bold mb-2">
+              {match.teamASnapshot?.name || match.teamA.name}
+              <br className="sm:hidden" />
+              <span className="text-gray-500 "> vs </span>
+              <br className="sm:hidden" />
+              {match.teamBSnapshot?.name || match.teamB.name}
             </h1>
             <p className="text-gray-600 mb-4">
               {formatISODate(match.createdAt)}
             </p>
             {match.status === "completed" && match.resultText && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 inline-block">
+              <div className="bg-green-50 border border-green-200 rounded-lg sm:p-4 py-2 px-3 inline-block">
                 <p className="text-lg font-semibold text-green-700">
                   {match.resultText}
                 </p>
@@ -134,7 +143,11 @@ export default function ScoreboardPage() {
                     setSelectedInning(inning.inningNumber as 1 | 2)
                   }
                 >
-                  {inning.inningNumber === 1 ? "1st" : "2nd"} Innings - {inning.battingTeam.name}
+                  {inning.inningNumber === 1 ? "1st" : "2nd"} Innings{" "}
+                  <span className="sm:block hidden">-</span>{" "}
+                  <span className="sm:block hidden">
+                    {inning.battingTeam.name}
+                  </span>
                 </Button>
               ))}
             </div>
@@ -155,12 +168,14 @@ export default function ScoreboardPage() {
                 <p className="text-xl text-gray-600">
                   ({currentInning.currentOver} overs)
                 </p>
-                <div className="mt-4 pt-4 border-t grid grid-cols-2 gap-4">
+                <div className="mt-4 pt-4 border-t border-gray-400 grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-gray-600">Run Rate</p>
                     <p className="text-lg font-semibold">
                       {currentInning.currentOver > 0
-                        ? (currentInning.totalRuns / currentInning.currentOver).toFixed(2)
+                        ? (
+                            currentInning.totalRuns / currentInning.currentOver
+                          ).toFixed(2)
                         : "0.00"}
                     </p>
                   </div>
@@ -168,9 +183,9 @@ export default function ScoreboardPage() {
                     <p className="text-sm text-gray-600">Extras</p>
                     <p className="text-lg font-semibold">
                       {(currentInning as any).extras?.wides +
-                       (currentInning as any).extras?.noBalls +
-                       (currentInning as any).extras?.byes +
-                       (currentInning as any).extras?.legByes || 0}
+                        (currentInning as any).extras?.noBalls +
+                        (currentInning as any).extras?.byes +
+                        (currentInning as any).extras?.legByes || 0}
                     </p>
                   </div>
                 </div>
@@ -181,51 +196,58 @@ export default function ScoreboardPage() {
             <Card>
               <h3 className="text-xl font-bold mb-4">Batting</h3>
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="sm:w-full w-[320px] sm:text-md text-sm">
                   <thead>
-                    <tr className="border-b bg-gray-50">
-                      <th className="text-left py-3 px-2 font-semibold">Batsman</th>
-                      <th className="text-left py-3 px-2 font-semibold">Dismissal</th>
+                    <tr className="border-b border-gray-400 bg-gray-50">
+                      <th className="text-left py-3 px-2 font-semibold min-w-30">
+                        Batsman
+                      </th>
+                      <th className="text-left py-3 px-2 font-semibold min-w-30">
+                        Dismissal
+                      </th>
                       <th className="text-center py-3 px-2 font-semibold">R</th>
                       <th className="text-center py-3 px-2 font-semibold">B</th>
-                      <th className="text-center py-3 px-2 font-semibold">4s</th>
-                      <th className="text-center py-3 px-2 font-semibold">6s</th>
-                      <th className="text-center py-3 px-2 font-semibold">SR</th>
+                      <th className="text-center py-3 px-2 font-semibold">
+                        4s
+                      </th>
+                      <th className="text-center py-3 px-2 font-semibold">
+                        6s
+                      </th>
+                      <th className="text-center py-3 px-2 font-semibold">
+                        SR
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {currentInning.battingStats
-                      .map((stat, index) => (
-                        <tr
-                          key={index}
-                          className={`border-b hover:bg-gray-50 ${stat.isOut ? "" : "bg-green-50"}`}
-                        >
-                          <td className="py-3 px-2 font-medium">
-                            {stat.playerId.userId.name}
-                            {!stat.isOut && (
-                              <span className="ml-2 text-xs text-green-600 font-bold">*</span>
-                            )}
-                          </td>
-                          <td className="py-3 px-2 text-sm text-gray-600 italic">
-                            {getDismissalText(stat)}
-                          </td>
-                          <td className="text-center py-3 px-2 font-semibold text-blue-600">
-                            {stat.runs}
-                          </td>
-                          <td className="text-center py-3 px-2">
-                            {stat.balls}
-                          </td>
-                          <td className="text-center py-3 px-2">
-                            {stat.fours}
-                          </td>
-                          <td className="text-center py-3 px-2">
-                            {stat.sixes}
-                          </td>
-                          <td className="text-center py-3 px-2">
-                            {stat.strikeRate.toFixed(2)}
-                          </td>
-                        </tr>
-                      ))}
+                    {currentInning.battingStats.map((stat, index) => (
+                      <tr
+                        key={index}
+                        className={`border-b border-gray-300 hover:bg-gray-50 ${
+                          stat.isOut ? "" : "bg-green-50"
+                        }`}
+                      >
+                        <td className="py-3 px-2 font-medium">
+                          {truncateString(stat.playerId.userId.name, 14)}
+                          {!stat.isOut && (
+                            <span className="ml-2 text-xs text-green-600 font-bold">
+                              *
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 px-2 text-sm text-gray-600 italic">
+                          {getDismissalText(stat)}
+                        </td>
+                        <td className="text-center py-3 px-2 font-semibold text-blue-600">
+                          {stat.runs}
+                        </td>
+                        <td className="text-center py-3 px-2">{stat.balls}</td>
+                        <td className="text-center py-3 px-2">{stat.fours}</td>
+                        <td className="text-center py-3 px-2">{stat.sixes}</td>
+                        <td className="text-center py-3 px-2">
+                          {stat.strikeRate.toFixed(2)}
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -235,23 +257,24 @@ export default function ScoreboardPage() {
             <Card>
               <h3 className="text-xl font-bold mb-4">Bowling</h3>
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="sm:w-full w-[320px] sm:text-md text-sm">
                   <thead>
                     <tr className="border-b bg-gray-50">
-                      <th className="text-left py-3 px-2 font-semibold">Bowler</th>
+                      <th className="text-left py-3 px-2 font-semibold">
+                        Bowler
+                      </th>
                       <th className="text-center py-3 px-2 font-semibold">O</th>
                       <th className="text-center py-3 px-2 font-semibold">M</th>
                       <th className="text-center py-3 px-2 font-semibold">R</th>
                       <th className="text-center py-3 px-2 font-semibold">W</th>
-                      <th className="text-center py-3 px-2 font-semibold">Econ</th>
+                      <th className="text-center py-3 px-2 font-semibold">
+                        Econ
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {currentInning.bowlingStats.map((stat, index) => (
-                      <tr
-                        key={index}
-                        className="border-b hover:bg-gray-50"
-                      >
+                      <tr key={index} className="border-b hover:bg-gray-50">
                         <td className="py-3 px-2 font-medium">
                           {stat.playerId.userId.name}
                         </td>
@@ -341,17 +364,23 @@ export default function ScoreboardPage() {
                   )
                     .sort((a, b) => a - b)
                     .map((overNumber) => {
-                      const overBalls = currentInning.balls?.filter(
-                        (ball) => ball.overNumber === overNumber && ball.isValid
-                      ) || [];
+                      const overBalls =
+                        currentInning.balls?.filter(
+                          (ball) =>
+                            ball.overNumber === overNumber && ball.isValid
+                        ) || [];
                       const overRuns = overBalls.reduce(
                         (total, ball) => total + (ball.runs || 0),
                         0
                       );
                       return (
-                        <div key={overNumber} className="flex items-center gap-4">
-                          <span className="font-medium text-sm w-16">
-                            Over {overNumber + 1}:
+                        <div
+                          key={overNumber}
+                          className="flex items-center gap-4"
+                        >
+                          <span className="font-medium text-sm sm:w-16">
+                            <span className="sm:block hidden">Over</span>{" "}
+                            {overNumber + 1}:
                           </span>
                           <div className="flex sm:gap-2 gap-1 flex-wrap flex-1">
                             {overBalls.map((ball) => (
@@ -412,19 +441,23 @@ export default function ScoreboardPage() {
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">{match.teamASnapshot?.name || match.teamA.name} Captain</p>
+              <p className="text-sm text-gray-600">
+                {match.teamASnapshot?.name || match.teamA.name} Captain
+              </p>
               <p className="font-semibold">
                 {match.teamASnapshot?.captain?.userId?.name ||
-                 match.teamA?.captain?.userId?.name ||
-                 "Not Set"}
+                  match.teamA?.captain?.userId?.name ||
+                  "Not Set"}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">{match.teamBSnapshot?.name || match.teamB.name} Captain</p>
+              <p className="text-sm text-gray-600">
+                {match.teamBSnapshot?.name || match.teamB.name} Captain
+              </p>
               <p className="font-semibold">
                 {match.teamBSnapshot?.captain?.userId?.name ||
-                 match.teamB?.captain?.userId?.name ||
-                 "Not Set"}
+                  match.teamB?.captain?.userId?.name ||
+                  "Not Set"}
               </p>
             </div>
           </div>

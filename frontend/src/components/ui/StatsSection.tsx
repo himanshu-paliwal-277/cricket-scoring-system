@@ -6,7 +6,7 @@ interface Column {
   header: string;
   key: string;
   align?: "left" | "center" | "right";
-  render?: (value: any, row: any) => React.ReactNode;
+  render?: (value: any, row: any, index?: number) => React.ReactNode;
   className?: string;
 }
 

@@ -70,78 +70,254 @@ export default function StatsPage() {
 
   // Column definitions
   const mostRunsColumns = [
-    { header: "Rank", key: "rank", align: "left" as const, render: (_: any, __: any, index: number) => <span className="font-semibold">{index + 1}</span> },
-    { header: "Player", key: "userId", align: "left" as const, render: (value: any) => value.name },
+    {
+      header: "Rank",
+      key: "rank",
+      align: "left" as const,
+      render: (_: any, __: any, index: number) => (
+        <span className="font-semibold">{index + 1}</span>
+      ),
+    },
+    {
+      header: "Player",
+      key: "userId",
+      align: "left" as const,
+      render: (value: any) => value.name,
+    },
     { header: "Matches", key: "matchesPlayed", align: "center" as const },
-    { header: "Runs", key: "totalRuns", align: "center" as const, className: "font-bold text-blue-600" },
+    {
+      header: "Runs",
+      key: "totalRuns",
+      align: "center" as const,
+      className: "font-bold text-blue-600",
+    },
     { header: "HS", key: "highestScore", align: "center" as const },
-    { header: "SR", key: "strikeRate", align: "center" as const, render: (_: any, row: any) => row.totalBallsFaced > 0 ? ((row.totalRuns / row.totalBallsFaced) * 100).toFixed(2) : "0.00" },
-    { header: "4s", key: "totalFours", align: "center" as const, render: (value: any) => value || 0 },
-    { header: "6s", key: "totalSixes", align: "center" as const, render: (value: any) => value || 0 },
+    {
+      header: "SR",
+      key: "strikeRate",
+      align: "center" as const,
+      render: (_: any, row: any) =>
+        row.totalBallsFaced > 0
+          ? ((row.totalRuns / row.totalBallsFaced) * 100).toFixed(2)
+          : "0.00",
+    },
+    {
+      header: "4s",
+      key: "totalFours",
+      align: "center" as const,
+      render: (value: any) => value || 0,
+    },
+    {
+      header: "6s",
+      key: "totalSixes",
+      align: "center" as const,
+      render: (value: any) => value || 0,
+    },
   ];
 
   const mostWicketsColumns = [
-    { header: "Rank", key: "rank", align: "left" as const, render: (_: any, __: any, index: number) => <span className="font-semibold">{index + 1}</span> },
-    { header: "Player", key: "userId", align: "left" as const, render: (value: any) => value.name },
+    {
+      header: "Rank",
+      key: "rank",
+      align: "left" as const,
+      render: (_: any, __: any, index: number) => (
+        <span className="font-semibold">{index + 1}</span>
+      ),
+    },
+    {
+      header: "Player",
+      key: "userId",
+      align: "left" as const,
+      render: (value: any) => value.name,
+    },
     { header: "Matches", key: "matchesPlayed", align: "center" as const },
-    { header: "Wickets", key: "totalWickets", align: "center" as const, className: "font-bold text-red-600" },
-    { header: "Overs", key: "overs", align: "center" as const, render: (_: any, row: any) => {
-      const balls = row.totalBallsBowled || 0;
-      return `${Math.floor(balls / 6)}.${balls % 6}`;
-    }},
-    { header: "Econ", key: "economy", align: "center" as const, render: (_: any, row: any) => {
-      const balls = row.totalBallsBowled || 0;
-      return balls > 0 ? ((row.totalRuns / balls) * 6).toFixed(2) : "0.00";
-    }},
+    {
+      header: "Wickets",
+      key: "totalWickets",
+      align: "center" as const,
+      className: "font-bold text-red-600",
+    },
+    {
+      header: "Overs",
+      key: "overs",
+      align: "center" as const,
+      render: (_: any, row: any) => {
+        const balls = row.totalBallsBowled || 0;
+        return `${Math.floor(balls / 6)}.${balls % 6}`;
+      },
+    },
+    {
+      header: "Econ",
+      key: "economy",
+      align: "center" as const,
+      render: (_: any, row: any) => {
+        const balls = row.totalBallsBowled || 0;
+        return balls > 0 ? ((row.totalRuns / balls) * 6).toFixed(2) : "0.00";
+      },
+    },
   ];
 
   const mostBoundariesColumns = [
-    { header: "Rank", key: "rank", align: "left" as const, render: (_: any, __: any, index: number) => <span className="font-semibold">{index + 1}</span> },
-    { header: "Player", key: "userId", align: "left" as const, render: (value: any) => value.name },
+    {
+      header: "Rank",
+      key: "rank",
+      align: "left" as const,
+      render: (_: any, __: any, index: number) => (
+        <span className="font-semibold">{index + 1}</span>
+      ),
+    },
+    {
+      header: "Player",
+      key: "userId",
+      align: "left" as const,
+      render: (value: any) => value.name,
+    },
     { header: "Matches", key: "matchesPlayed", align: "center" as const },
-    { header: "Total", key: "totalBoundaries", align: "center" as const, className: "font-bold text-purple-600" },
-    { header: "4s", key: "totalFours", align: "center" as const, render: (value: any) => value || 0 },
-    { header: "6s", key: "totalSixes", align: "center" as const, render: (value: any) => value || 0 },
+    {
+      header: "Total",
+      key: "totalBoundaries",
+      align: "center" as const,
+      className: "font-bold text-purple-600",
+    },
+    {
+      header: "4s",
+      key: "totalFours",
+      align: "center" as const,
+      render: (value: any) => value || 0,
+    },
+    {
+      header: "6s",
+      key: "totalSixes",
+      align: "center" as const,
+      render: (value: any) => value || 0,
+    },
   ];
 
   const mostFoursColumns = [
-    { header: "Rank", key: "rank", align: "left" as const, render: (_: any, __: any, index: number) => <span className="font-semibold">{index + 1}</span> },
-    { header: "Player", key: "userId", align: "left" as const, render: (value: any) => value.name },
+    {
+      header: "Rank",
+      key: "rank",
+      align: "left" as const,
+      render: (_: any, __: any, index: number) => (
+        <span className="font-semibold">{index + 1}</span>
+      ),
+    },
+    {
+      header: "Player",
+      key: "userId",
+      align: "left" as const,
+      render: (value: any) => value.name,
+    },
     { header: "Matches", key: "matchesPlayed", align: "center" as const },
-    { header: "4s", key: "totalFours", align: "center" as const, className: "font-bold text-blue-600", render: (value: any) => value || 0 },
+    {
+      header: "4s",
+      key: "totalFours",
+      align: "center" as const,
+      className: "font-bold text-blue-600",
+      render: (value: any) => value || 0,
+    },
     { header: "Runs", key: "totalRuns", align: "center" as const },
   ];
 
   const mostSixesColumns = [
-    { header: "Rank", key: "rank", align: "left" as const, render: (_: any, __: any, index: number) => <span className="font-semibold">{index + 1}</span> },
-    { header: "Player", key: "userId", align: "left" as const, render: (value: any) => value.name },
+    {
+      header: "Rank",
+      key: "rank",
+      align: "left" as const,
+      render: (_: any, __: any, index: number) => (
+        <span className="font-semibold">{index + 1}</span>
+      ),
+    },
+    {
+      header: "Player",
+      key: "userId",
+      align: "left" as const,
+      render: (value: any) => value.name,
+    },
     { header: "Matches", key: "matchesPlayed", align: "center" as const },
-    { header: "6s", key: "totalSixes", align: "center" as const, className: "font-bold text-purple-600", render: (value: any) => value || 0 },
+    {
+      header: "6s",
+      key: "totalSixes",
+      align: "center" as const,
+      className: "font-bold text-purple-600",
+      render: (value: any) => value || 0,
+    },
     { header: "Runs", key: "totalRuns", align: "center" as const },
   ];
 
   const highestScoresColumns = [
-    { header: "Rank", key: "rank", align: "left" as const, render: (_: any, __: any, index: number) => <span className="font-semibold">{index + 1}</span> },
-    { header: "Player", key: "userId", align: "left" as const, render: (value: any) => value.name },
-    { header: "Highest Score", key: "highestScore", align: "center" as const, className: "font-bold text-green-600" },
-    { header: "Total Runs", key: "totalRuns", align: "center" as const },
+    {
+      header: "Rank",
+      key: "rank",
+      align: "left" as const,
+      render: (_: any, __: any, index: number) => (
+        <span className="font-semibold">{index + 1}</span>
+      ),
+    },
+    {
+      header: "Player",
+      key: "userId",
+      align: "left" as const,
+      render: (value: any) => value.name,
+    },
     { header: "Matches", key: "matchesPlayed", align: "center" as const },
+    {
+      header: "Highest Score",
+      key: "highestScore",
+      align: "center" as const,
+      className: "font-bold text-green-600",
+    },
+    { header: "Total Runs", key: "totalRuns", align: "center" as const },
   ];
 
   const mostFiftiesColumns = [
-    { header: "Rank", key: "rank", align: "left" as const, render: (_: any, __: any, index: number) => <span className="font-semibold">{index + 1}</span> },
-    { header: "Player", key: "userId", align: "left" as const, render: (value: any) => value.name },
-    { header: "50s", key: "fifties", align: "center" as const, className: "font-bold text-orange-600" },
-    { header: "Total Runs", key: "totalRuns", align: "center" as const },
+    {
+      header: "Rank",
+      key: "rank",
+      align: "left" as const,
+      render: (_: any, __: any, index: number) => (
+        <span className="font-semibold">{index + 1}</span>
+      ),
+    },
+    {
+      header: "Player",
+      key: "userId",
+      align: "left" as const,
+      render: (value: any) => value.name,
+    },
     { header: "Matches", key: "matchesPlayed", align: "center" as const },
+    {
+      header: "50s",
+      key: "fifties",
+      align: "center" as const,
+      className: "font-bold text-orange-600",
+    },
+    { header: "Total Runs", key: "totalRuns", align: "center" as const },
   ];
 
   const mostTwentyFivesColumns = [
-    { header: "Rank", key: "rank", align: "left" as const, render: (_: any, __: any, index: number) => <span className="font-semibold">{index + 1}</span> },
-    { header: "Player", key: "userId", align: "left" as const, render: (value: any) => value.name },
-    { header: "25s", key: "twentyFives", align: "center" as const, className: "font-bold text-teal-600" },
-    { header: "Total Runs", key: "totalRuns", align: "center" as const },
+    {
+      header: "Rank",
+      key: "rank",
+      align: "left" as const,
+      render: (_: any, __: any, index: number) => (
+        <span className="font-semibold">{index + 1}</span>
+      ),
+    },
+    {
+      header: "Player",
+      key: "userId",
+      align: "left" as const,
+      render: (value: any) => value.name,
+    },
     { header: "Matches", key: "matchesPlayed", align: "center" as const },
+    {
+      header: "25s",
+      key: "twentyFives",
+      align: "center" as const,
+      className: "font-bold text-teal-600",
+    },
+    { header: "Total Runs", key: "totalRuns", align: "center" as const },
   ];
 
   return (
@@ -149,14 +325,46 @@ export default function StatsPage() {
       <div className="max-w-7xl mx-auto space-y-6">
         <h1 className="text-3xl font-bold mb-6">Player Statistics</h1>
 
-        <StatsSection title="Most Runs" columns={mostRunsColumns} data={mostRuns} />
-        <StatsSection title="Most Wickets" columns={mostWicketsColumns} data={mostWickets} />
-        <StatsSection title="Most Boundaries" columns={mostBoundariesColumns} data={mostBoundaries} />
-        <StatsSection title="Most Fours" columns={mostFoursColumns} data={mostFours} />
-        <StatsSection title="Most Sixes" columns={mostSixesColumns} data={mostSixes} />
-        <StatsSection title="Highest Scores" columns={highestScoresColumns} data={highestScores} />
-        <StatsSection title="Most Fifties (50-99)" columns={mostFiftiesColumns} data={mostFifties} />
-        <StatsSection title="Most 25s (25-49)" columns={mostTwentyFivesColumns} data={mostTwentyFives} />
+        <StatsSection
+          title="Most Runs"
+          columns={mostRunsColumns}
+          data={mostRuns}
+        />
+        <StatsSection
+          title="Most Wickets"
+          columns={mostWicketsColumns}
+          data={mostWickets}
+        />
+        <StatsSection
+          title="Most Boundaries"
+          columns={mostBoundariesColumns}
+          data={mostBoundaries}
+        />
+        <StatsSection
+          title="Most Fours"
+          columns={mostFoursColumns}
+          data={mostFours}
+        />
+        <StatsSection
+          title="Most Sixes"
+          columns={mostSixesColumns}
+          data={mostSixes}
+        />
+        <StatsSection
+          title="Highest Scores"
+          columns={highestScoresColumns}
+          data={highestScores}
+        />
+        <StatsSection
+          title="Most Fifties (50s)"
+          columns={mostFiftiesColumns}
+          data={mostFifties}
+        />
+        <StatsSection
+          title="Most 25s"
+          columns={mostTwentyFivesColumns}
+          data={mostTwentyFives}
+        />
       </div>
     </Layout>
   );

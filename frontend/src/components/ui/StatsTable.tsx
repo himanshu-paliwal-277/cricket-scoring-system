@@ -3,7 +3,7 @@ interface Column {
   header: string;
   key: string;
   align?: "left" | "center" | "right";
-  render?: (value: any, row: any, index: number) => React.ReactNode;
+  render?: (value: any, row: any, index?: number) => React.ReactNode;
   className?: string;
 }
 
@@ -20,13 +20,13 @@ export const StatsTable: React.FC<StatsTableProps> = ({
 }) => {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full">
+      <table className="sm:w-full w-[450px]">
         <thead>
-          <tr className="border-b">
+          <tr className="border-b border-gray-500">
             {columns.map((column, index) => (
               <th
                 key={index}
-                className={`py-3 px-4 ${
+                className={`sm:py-3 sm:px-4 py-1.5 px-3 ${
                   column.align === "center"
                     ? "text-center"
                     : column.align === "right"
@@ -42,11 +42,14 @@ export const StatsTable: React.FC<StatsTableProps> = ({
         <tbody>
           {data.length > 0 ? (
             data.map((row, rowIndex) => (
-              <tr key={row._id || rowIndex} className="border-b hover:bg-gray-50">
+              <tr
+                key={row._id || rowIndex}
+                className="border-b hover:bg-gray-50 border-gray-300"
+              >
                 {columns.map((column, colIndex) => (
                   <td
                     key={colIndex}
-                    className={`py-3 px-4 ${
+                    className={`sm:py-3 sm:px-4 py-1.5 px-3 ${
                       column.align === "center"
                         ? "text-center"
                         : column.align === "right"

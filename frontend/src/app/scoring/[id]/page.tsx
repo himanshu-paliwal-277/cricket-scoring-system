@@ -389,10 +389,12 @@ export default function ScoringPage() {
     <Layout>
       <div className="max-w-6xl mx-auto space-y-6">
         <Card>
-          <h1 className="sm:text-2xl text-xl sm:text-left text-center font-bold mb-4">
-            {match?.teamA.name} vs {match?.teamB.name}
+          <h1 className="sm:text-2xl text-lg sm:text-left text-center font-bold mb-4">
+            {match?.teamA.name} <br className="sm:hidden" />{" "}
+            <span className="font-medium sm:font-bold text-gray-500">vs</span>{" "}
+            <br className="sm:hidden" /> {match?.teamB.name}
           </h1>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid sm:grid-cols-2 gap-4 ">
             <div>
               <p className="text-gray-600">
                 Batting: {inning?.battingTeam.name}
@@ -460,15 +462,15 @@ export default function ScoringPage() {
           {inning?.battingStats && inning.battingStats.length > 0 && (
             <div className="overflow-x-auto mb-6">
               <h3 className="font-semibold mb-3">Batting</h3>
-              <table className="w-full text-sm">
+              <table className="sm:w-full w-[300px] text-sm">
                 <thead>
                   <tr className="border-b border-gray-300">
                     <th className="text-left py-2">Batsman</th>
-                    <th className="text-right py-2">R</th>
-                    <th className="text-right py-2">B</th>
-                    <th className="text-right py-2">4s</th>
-                    <th className="text-right py-2">6s</th>
-                    <th className="text-right py-2">SR</th>
+                    <th className="text-right py-2 min-w-5">R</th>
+                    <th className="text-right py-2 min-w-5">B</th>
+                    <th className="text-right py-2 min-w-5">4s</th>
+                    <th className="text-right py-2 min-w-5">6s</th>
+                    <th className="text-right py-2 min-w-5">SR</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -538,15 +540,15 @@ export default function ScoringPage() {
           {inning?.bowlingStats && inning.bowlingStats.length > 0 && (
             <div className="overflow-x-auto mb-6">
               <h3 className="font-semibold mb-3">Bowling</h3>
-              <table className="w-full text-sm">
+              <table className="sm:w-full w-[300px] text-sm">
                 <thead>
                   <tr className="border-b border-gray-300">
                     <th className="text-left py-2">Bowler</th>
-                    <th className="text-right py-2">O</th>
-                    <th className="text-right py-2">M</th>
-                    <th className="text-right py-2">R</th>
-                    <th className="text-right py-2">W</th>
-                    <th className="text-right py-2">Econ</th>
+                    <th className="text-right py-2 min-w-4">O</th>
+                    <th className="text-right py-2 min-w-4">M</th>
+                    <th className="text-right py-2 min-w-4">R</th>
+                    <th className="text-right py-2 min-w-4">W</th>
+                    <th className="text-right py-2 min-w-4">Econ</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -748,7 +750,7 @@ export default function ScoringPage() {
           </div>
 
           <div className="grid grid-cols-2 sm:gap-4 mb-6">
-            <div className="border-r border-gray-600 pr-4">
+            <div className="border-r border-gray-400 pr-4">
               <h3 className="font-semibold mb-2">Striker</h3>
               <p className="sm:text-lg flex">
                 <div className="sm:mr-5 mr-2">
@@ -919,7 +921,7 @@ export default function ScoringPage() {
                 .map((ball) => (
                   <div
                     key={ball._id}
-                    className={`w-12 h-12 flex items-center justify-center rounded font-bold text-lg ${
+                    className={`sm:w-12 sm:h-12 w-10 h-10 flex items-center justify-center rounded font-bold text-lg ${
                       ball.ballType === "wicket"
                         ? "bg-red-500 text-white"
                         : ball.ballType === "wide" || ball.ballType === "noBall"
@@ -966,70 +968,73 @@ export default function ScoringPage() {
           </div>
         </Card>
 
-        <Card>
-          <h3 className="font-semibold mb-4">Previous Overs</h3>
-          <div className="space-y-4">
-            {inning?.balls && inning.balls.length > 0 ? (
-              Array.from(
-                new Set(
-                  inning.balls
-                    .filter((ball) => ball.overNumber < inning.currentOver)
-                    .map((ball) => ball.overNumber)
+        {inning && inning?.balls && inning.balls.length > 6 && (
+          <Card>
+            <h3 className="font-semibold mb-4">Previous Overs</h3>
+            <div className="space-y-4">
+              {inning?.balls && inning.balls.length > 0 ? (
+                Array.from(
+                  new Set(
+                    inning.balls
+                      .filter((ball) => ball.overNumber < inning.currentOver)
+                      .map((ball) => ball.overNumber)
+                  )
                 )
-              )
-                .sort((a, b) => b - a) // Show latest overs first
-                .map((overNumber) => {
-                  const overBalls =
-                    inning.balls?.filter(
-                      (ball) => ball.overNumber === overNumber && ball.isValid
-                    ) || [];
-                  const overRuns = overBalls.reduce(
-                    (total, ball) => total + (ball.runs || 0),
-                    0
-                  );
-                  return (
-                    <div key={overNumber} className="flex items-center gap-4">
-                      <span className="font-medium text-sm w-12">
-                        Over {overNumber + 1}:
-                      </span>
-                      <div className="flex sm:gap-2 gap-1 flex-wrap flex-1">
-                        {overBalls.map((ball) => (
-                          <div
-                            key={ball._id}
-                            className={`sm:w-10 sm:h-10 w-8 h-8 flex items-center justify-center rounded font-bold text-sm ${
-                              ball.ballType === "wicket"
-                                ? "bg-red-500 text-white"
-                                : ball.ballType === "wide" ||
-                                  ball.ballType === "noBall"
-                                ? "bg-yellow-500 text-white"
-                                : ball.runs === 4
-                                ? "bg-blue-500 text-white"
-                                : ball.runs === 6
-                                ? "bg-purple-500 text-white"
-                                : "bg-gray-200 text-gray-800"
-                            }`}
-                          >
-                            {ball.ballType === "wicket"
-                              ? "W"
-                              : ball.ballType === "wide"
-                              ? `${ball.runs}Wd`
-                              : ball.ballType === "noBall"
-                              ? `${ball.runs}Nb`
-                              : ball.runs}
-                          </div>
-                        ))}
+                  .sort((a, b) => b - a) // Show latest overs first
+                  .map((overNumber) => {
+                    const overBalls =
+                      inning.balls?.filter(
+                        (ball) => ball.overNumber === overNumber && ball.isValid
+                      ) || [];
+                    const overRuns = overBalls.reduce(
+                      (total, ball) => total + (ball.runs || 0),
+                      0
+                    );
+                    return (
+                      <div key={overNumber} className="flex items-center gap-4">
+                        <span className="font-medium text-sm sm:w-12 w-4">
+                          <span className="sm:block hidden">Over</span>{" "}
+                          {overNumber + 1}:
+                        </span>
+                        <div className="flex sm:gap-2 gap-1 flex-wrap flex-1">
+                          {overBalls.map((ball) => (
+                            <div
+                              key={ball._id}
+                              className={`sm:w-10 sm:h-10 w-8 h-8 flex items-center justify-center rounded font-bold text-sm ${
+                                ball.ballType === "wicket"
+                                  ? "bg-red-500 text-white"
+                                  : ball.ballType === "wide" ||
+                                    ball.ballType === "noBall"
+                                  ? "bg-yellow-500 text-white"
+                                  : ball.runs === 4
+                                  ? "bg-blue-500 text-white"
+                                  : ball.runs === 6
+                                  ? "bg-purple-500 text-white"
+                                  : "bg-gray-200 text-gray-800"
+                              }`}
+                            >
+                              {ball.ballType === "wicket"
+                                ? "W"
+                                : ball.ballType === "wide"
+                                ? `${ball.runs}Wd`
+                                : ball.ballType === "noBall"
+                                ? `${ball.runs}Nb`
+                                : ball.runs}
+                            </div>
+                          ))}
+                        </div>
+                        <span className="text-sm font-semibold text-gray-700 ml-auto">
+                          {overRuns} runs
+                        </span>
                       </div>
-                      <span className="text-sm font-semibold text-gray-700 ml-auto">
-                        {overRuns} runs
-                      </span>
-                    </div>
-                  );
-                })
-            ) : (
-              <p className="text-gray-500 text-sm">No previous overs</p>
-            )}
-          </div>
-        </Card>
+                    );
+                  })
+              ) : (
+                <p className="text-gray-500 text-sm">No previous overs</p>
+              )}
+            </div>
+          </Card>
+        )}
 
         {match?.status !== "completed" && canScore && (
           <Card>
