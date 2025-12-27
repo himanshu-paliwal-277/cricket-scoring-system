@@ -17,7 +17,7 @@ export const updatePlayerStatsAfterMatch = async (matchId) => {
     for (const stat of inning.battingStats) {
       const playerId = stat.playerId.toString();
 
-      await Player.findByIdAndUpdate(playerId, {
+      const updateData = {
         $inc: {
           totalRuns: stat.runs,
           totalBallsFaced: stat.balls,
@@ -25,7 +25,18 @@ export const updatePlayerStatsAfterMatch = async (matchId) => {
           totalSixes: stat.sixes,
         },
         $max: { highestScore: stat.runs },
-      });
+      };
+
+      // Increment 25s counter if score is between 25-49
+      if (stat.runs >= 25 && stat.runs < 50) {
+        updateData.$inc.total25s = 1;
+      }
+      // Increment 50s counter if score is between 50-99
+      else if (stat.runs >= 50 && stat.runs < 100) {
+        updateData.$inc.total50s = 1;
+      }
+
+      await Player.findByIdAndUpdate(playerId, updateData);
 
       playersUpdated.add(playerId);
     }

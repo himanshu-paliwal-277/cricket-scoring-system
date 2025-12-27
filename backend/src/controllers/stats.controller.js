@@ -43,14 +43,93 @@ export const getMostWickets = async (req, res) => {
 export const getMostBoundaries = async (req, res) => {
   try {
     const players = await Player.find()
+      .populate("userId", "name email");
+
+    // Calculate total boundaries and sort by total
+    const playersWithBoundaries = players.map(p => ({
+      ...p.toObject(),
+      totalBoundaries: (p.totalFours || 0) + (p.totalSixes || 0)
+    })).sort((a, b) => b.totalBoundaries - a.totalBoundaries)
+      .slice(0, 10);
+
+    res.json(playersWithBoundaries);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getMostFours = async (req, res) => {
+  try {
+    const players = await Player.find()
       .populate("userId", "name email")
-      .sort({ totalFours: -1, totalSixes: -1 })
+      .sort({ totalFours: -1 })
       .limit(10);
 
-    res.json(players.map(p => ({
+    res.json(players);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getMostSixes = async (req, res) => {
+  try {
+    const players = await Player.find()
+      .populate("userId", "name email")
+      .sort({ totalSixes: -1 })
+      .limit(10);
+
+    res.json(players);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getHighestScores = async (req, res) => {
+  try {
+    const players = await Player.find()
+      .populate("userId", "name email")
+      .sort({ highestScore: -1 })
+      .limit(10);
+
+    res.json(players);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getMostFifties = async (req, res) => {
+  try {
+    const players = await Player.find()
+      .populate("userId", "name email")
+      .sort({ total50s: -1 })
+      .limit(10);
+
+    // Map to include fifties field for frontend compatibility
+    const playersWithFifties = players.map(p => ({
       ...p.toObject(),
-      totalBoundaries: p.totalFours + p.totalSixes
-    })));
+      fifties: p.total50s
+    }));
+
+    res.json(playersWithFifties);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getMostTwentyFives = async (req, res) => {
+  try {
+    const players = await Player.find()
+      .populate("userId", "name email")
+      .sort({ total25s: -1 })
+      .limit(10);
+
+    // Map to include twentyFives field for frontend compatibility
+    const playersWithTwentyFives = players.map(p => ({
+      ...p.toObject(),
+      twentyFives: p.total25s
+    }));
+
+    res.json(playersWithTwentyFives);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

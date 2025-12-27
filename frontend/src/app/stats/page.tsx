@@ -1,14 +1,20 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect } from "react";
 import { Layout } from "@/components/Layout";
-import { Card } from "@/components/ui/Card";
+import { StatsSection } from "@/components/ui/StatsSection";
 import { statsService } from "@/services/statsService";
 
 export default function StatsPage() {
   const [mostRuns, setMostRuns] = useState<any[]>([]);
   const [mostWickets, setMostWickets] = useState<any[]>([]);
   const [mostBoundaries, setMostBoundaries] = useState<any[]>([]);
+  const [mostFours, setMostFours] = useState<any[]>([]);
+  const [mostSixes, setMostSixes] = useState<any[]>([]);
+  const [highestScores, setHighestScores] = useState<any[]>([]);
+  const [mostFifties, setMostFifties] = useState<any[]>([]);
+  const [mostTwentyFives, setMostTwentyFives] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -18,14 +24,33 @@ export default function StatsPage() {
   const loadStats = async () => {
     try {
       setIsLoading(true);
-      const [runs, wickets, boundaries] = await Promise.all([
+      const [
+        runs,
+        wickets,
+        boundaries,
+        fours,
+        sixes,
+        highest,
+        fifties,
+        twentyFives,
+      ] = await Promise.all([
         statsService.getMostRuns(),
         statsService.getMostWickets(),
         statsService.getMostBoundaries(),
+        statsService.getMostFours(),
+        statsService.getMostSixes(),
+        statsService.getHighestScores(),
+        statsService.getMostFifties(),
+        statsService.getMostTwentyFives(),
       ]);
       setMostRuns(runs);
       setMostWickets(wickets);
       setMostBoundaries(boundaries);
+      setMostFours(fours);
+      setMostSixes(sixes);
+      setHighestScores(highest);
+      setMostFifties(fifties);
+      setMostTwentyFives(twentyFives);
     } catch (error) {
       console.error("Failed to load stats:", error);
     } finally {
@@ -43,141 +68,95 @@ export default function StatsPage() {
     );
   }
 
+  // Column definitions
+  const mostRunsColumns = [
+    { header: "Rank", key: "rank", align: "left" as const, render: (_: any, __: any, index: number) => <span className="font-semibold">{index + 1}</span> },
+    { header: "Player", key: "userId", align: "left" as const, render: (value: any) => value.name },
+    { header: "Matches", key: "matchesPlayed", align: "center" as const },
+    { header: "Runs", key: "totalRuns", align: "center" as const, className: "font-bold text-blue-600" },
+    { header: "HS", key: "highestScore", align: "center" as const },
+    { header: "SR", key: "strikeRate", align: "center" as const, render: (_: any, row: any) => row.totalBallsFaced > 0 ? ((row.totalRuns / row.totalBallsFaced) * 100).toFixed(2) : "0.00" },
+    { header: "4s", key: "totalFours", align: "center" as const, render: (value: any) => value || 0 },
+    { header: "6s", key: "totalSixes", align: "center" as const, render: (value: any) => value || 0 },
+  ];
+
+  const mostWicketsColumns = [
+    { header: "Rank", key: "rank", align: "left" as const, render: (_: any, __: any, index: number) => <span className="font-semibold">{index + 1}</span> },
+    { header: "Player", key: "userId", align: "left" as const, render: (value: any) => value.name },
+    { header: "Matches", key: "matchesPlayed", align: "center" as const },
+    { header: "Wickets", key: "totalWickets", align: "center" as const, className: "font-bold text-red-600" },
+    { header: "Overs", key: "overs", align: "center" as const, render: (_: any, row: any) => {
+      const balls = row.totalBallsBowled || 0;
+      return `${Math.floor(balls / 6)}.${balls % 6}`;
+    }},
+    { header: "Econ", key: "economy", align: "center" as const, render: (_: any, row: any) => {
+      const balls = row.totalBallsBowled || 0;
+      return balls > 0 ? ((row.totalRuns / balls) * 6).toFixed(2) : "0.00";
+    }},
+  ];
+
+  const mostBoundariesColumns = [
+    { header: "Rank", key: "rank", align: "left" as const, render: (_: any, __: any, index: number) => <span className="font-semibold">{index + 1}</span> },
+    { header: "Player", key: "userId", align: "left" as const, render: (value: any) => value.name },
+    { header: "Matches", key: "matchesPlayed", align: "center" as const },
+    { header: "Total", key: "totalBoundaries", align: "center" as const, className: "font-bold text-purple-600" },
+    { header: "4s", key: "totalFours", align: "center" as const, render: (value: any) => value || 0 },
+    { header: "6s", key: "totalSixes", align: "center" as const, render: (value: any) => value || 0 },
+  ];
+
+  const mostFoursColumns = [
+    { header: "Rank", key: "rank", align: "left" as const, render: (_: any, __: any, index: number) => <span className="font-semibold">{index + 1}</span> },
+    { header: "Player", key: "userId", align: "left" as const, render: (value: any) => value.name },
+    { header: "Matches", key: "matchesPlayed", align: "center" as const },
+    { header: "4s", key: "totalFours", align: "center" as const, className: "font-bold text-blue-600", render: (value: any) => value || 0 },
+    { header: "Runs", key: "totalRuns", align: "center" as const },
+  ];
+
+  const mostSixesColumns = [
+    { header: "Rank", key: "rank", align: "left" as const, render: (_: any, __: any, index: number) => <span className="font-semibold">{index + 1}</span> },
+    { header: "Player", key: "userId", align: "left" as const, render: (value: any) => value.name },
+    { header: "Matches", key: "matchesPlayed", align: "center" as const },
+    { header: "6s", key: "totalSixes", align: "center" as const, className: "font-bold text-purple-600", render: (value: any) => value || 0 },
+    { header: "Runs", key: "totalRuns", align: "center" as const },
+  ];
+
+  const highestScoresColumns = [
+    { header: "Rank", key: "rank", align: "left" as const, render: (_: any, __: any, index: number) => <span className="font-semibold">{index + 1}</span> },
+    { header: "Player", key: "userId", align: "left" as const, render: (value: any) => value.name },
+    { header: "Highest Score", key: "highestScore", align: "center" as const, className: "font-bold text-green-600" },
+    { header: "Total Runs", key: "totalRuns", align: "center" as const },
+    { header: "Matches", key: "matchesPlayed", align: "center" as const },
+  ];
+
+  const mostFiftiesColumns = [
+    { header: "Rank", key: "rank", align: "left" as const, render: (_: any, __: any, index: number) => <span className="font-semibold">{index + 1}</span> },
+    { header: "Player", key: "userId", align: "left" as const, render: (value: any) => value.name },
+    { header: "50s", key: "fifties", align: "center" as const, className: "font-bold text-orange-600" },
+    { header: "Total Runs", key: "totalRuns", align: "center" as const },
+    { header: "Matches", key: "matchesPlayed", align: "center" as const },
+  ];
+
+  const mostTwentyFivesColumns = [
+    { header: "Rank", key: "rank", align: "left" as const, render: (_: any, __: any, index: number) => <span className="font-semibold">{index + 1}</span> },
+    { header: "Player", key: "userId", align: "left" as const, render: (value: any) => value.name },
+    { header: "25s", key: "twentyFives", align: "center" as const, className: "font-bold text-teal-600" },
+    { header: "Total Runs", key: "totalRuns", align: "center" as const },
+    { header: "Matches", key: "matchesPlayed", align: "center" as const },
+  ];
+
   return (
     <Layout>
       <div className="max-w-7xl mx-auto space-y-6">
         <h1 className="text-3xl font-bold mb-6">Player Statistics</h1>
 
-        <Card>
-          <h2 className="text-2xl font-bold mb-4">Most Runs</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-3 px-4">Rank</th>
-                  <th className="text-left py-3 px-4">Player</th>
-                  <th className="text-center py-3 px-4">Matches</th>
-                  <th className="text-center py-3 px-4">Runs</th>
-                  <th className="text-center py-3 px-4">HS</th>
-                  <th className="text-center py-3 px-4">SR</th>
-                  <th className="text-center py-3 px-4">4s</th>
-                  <th className="text-center py-3 px-4">6s</th>
-                </tr>
-              </thead>
-              <tbody>
-                {mostRuns.map((player, index) => (
-                  <tr key={player._id} className="border-b hover:bg-gray-50">
-                    <td className="py-3 px-4 font-semibold">{index + 1}</td>
-                    <td className="py-3 px-4">{player.userId.name}</td>
-                    <td className="text-center py-3 px-4">{player.matchesPlayed}</td>
-                    <td className="text-center py-3 px-4 font-bold text-blue-600">
-                      {player.totalRuns}
-                    </td>
-                    <td className="text-center py-3 px-4">{player.highestScore}</td>
-                    <td className="text-center py-3 px-4">
-                      {player.totalBallsFaced > 0
-                        ? ((player.totalRuns / player.totalBallsFaced) * 100).toFixed(2)
-                        : "0.00"}
-                    </td>
-                    <td className="text-center py-3 px-4">{player.totalFours || 0}</td>
-                    <td className="text-center py-3 px-4">{player.totalSixes || 0}</td>
-                  </tr>
-                ))}
-                {mostRuns.length === 0 && (
-                  <tr>
-                    <td colSpan={8} className="text-center py-8 text-gray-500">
-                      No data available
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-
-        <Card>
-          <h2 className="text-2xl font-bold mb-4">Most Wickets</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-3 px-4">Rank</th>
-                  <th className="text-left py-3 px-4">Player</th>
-                  <th className="text-center py-3 px-4">Matches</th>
-                  <th className="text-center py-3 px-4">Wickets</th>
-                  <th className="text-center py-3 px-4">Avg</th>
-                  <th className="text-center py-3 px-4">Balls</th>
-                </tr>
-              </thead>
-              <tbody>
-                {mostWickets.map((player, index) => (
-                  <tr key={player._id} className="border-b hover:bg-gray-50">
-                    <td className="py-3 px-4 font-semibold">{index + 1}</td>
-                    <td className="py-3 px-4">{player.userId.name}</td>
-                    <td className="text-center py-3 px-4">{player.matchesPlayed}</td>
-                    <td className="text-center py-3 px-4 font-bold text-red-600">
-                      {player.totalWickets}
-                    </td>
-                    <td className="text-center py-3 px-4">
-                      {player.matchesPlayed > 0
-                        ? (player.totalWickets / player.matchesPlayed).toFixed(2)
-                        : "0.00"}
-                    </td>
-                    <td className="text-center py-3 px-4">
-                      {player.totalBallsBowled || 0}
-                    </td>
-                  </tr>
-                ))}
-                {mostWickets.length === 0 && (
-                  <tr>
-                    <td colSpan={6} className="text-center py-8 text-gray-500">
-                      No data available
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-
-        <Card>
-          <h2 className="text-2xl font-bold mb-4">Most Boundaries</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-3 px-4">Rank</th>
-                  <th className="text-left py-3 px-4">Player</th>
-                  <th className="text-center py-3 px-4">Matches</th>
-                  <th className="text-center py-3 px-4">Total</th>
-                  <th className="text-center py-3 px-4">4s</th>
-                  <th className="text-center py-3 px-4">6s</th>
-                </tr>
-              </thead>
-              <tbody>
-                {mostBoundaries.map((player, index) => (
-                  <tr key={player._id} className="border-b hover:bg-gray-50">
-                    <td className="py-3 px-4 font-semibold">{index + 1}</td>
-                    <td className="py-3 px-4">{player.userId.name}</td>
-                    <td className="text-center py-3 px-4">{player.matchesPlayed}</td>
-                    <td className="text-center py-3 px-4 font-bold text-purple-600">
-                      {player.totalBoundaries}
-                    </td>
-                    <td className="text-center py-3 px-4">{player.totalFours || 0}</td>
-                    <td className="text-center py-3 px-4">{player.totalSixes || 0}</td>
-                  </tr>
-                ))}
-                {mostBoundaries.length === 0 && (
-                  <tr>
-                    <td colSpan={6} className="text-center py-8 text-gray-500">
-                      No data available
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </Card>
+        <StatsSection title="Most Runs" columns={mostRunsColumns} data={mostRuns} />
+        <StatsSection title="Most Wickets" columns={mostWicketsColumns} data={mostWickets} />
+        <StatsSection title="Most Boundaries" columns={mostBoundariesColumns} data={mostBoundaries} />
+        <StatsSection title="Most Fours" columns={mostFoursColumns} data={mostFours} />
+        <StatsSection title="Most Sixes" columns={mostSixesColumns} data={mostSixes} />
+        <StatsSection title="Highest Scores" columns={highestScoresColumns} data={highestScores} />
+        <StatsSection title="Most Fifties (50-99)" columns={mostFiftiesColumns} data={mostFifties} />
+        <StatsSection title="Most 25s (25-49)" columns={mostTwentyFivesColumns} data={mostTwentyFives} />
       </div>
     </Layout>
   );
