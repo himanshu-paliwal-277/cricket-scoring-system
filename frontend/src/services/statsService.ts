@@ -47,8 +47,16 @@ export interface Ball {
 export interface InningScorecard {
   _id: string;
   inningNumber: number;
-  battingTeam: { _id: string; name: string };
-  bowlingTeam: { _id: string; name: string };
+  battingTeam: {
+    _id: string;
+    name: string;
+    captain?: { _id: string; userId: { _id: string; name: string } } | string;
+  };
+  bowlingTeam: {
+    _id: string;
+    name: string;
+    captain?: { _id: string; userId: { _id: string; name: string } } | string;
+  };
   totalRuns: number;
   totalWickets: number;
   currentOver: number;
