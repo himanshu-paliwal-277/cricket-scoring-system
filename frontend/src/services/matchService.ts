@@ -1,11 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axiosInstance from "@/utils/axiosInstance";
 
+export interface Player {
+  _id: string;
+  userId: {
+    _id: string;
+    name: string;
+  };
+}
+
 export interface Team {
   _id: string;
   name: string;
   players: string[];
   isLocked: boolean;
+  captain?: Player | string;
 }
 
 export interface Match {

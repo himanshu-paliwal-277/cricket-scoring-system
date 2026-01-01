@@ -11,6 +11,7 @@ export interface Player {
 export interface Team {
   _id: string;
   name: string;
+  captain?: Player | string;
 }
 
 export interface Ball {

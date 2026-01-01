@@ -228,6 +228,9 @@ export default function ScoreboardPage() {
                       >
                         <td className="py-3 px-2 font-medium">
                           {truncateString(stat.playerId.userId.name, 14)}
+                          {(typeof currentInning.battingTeam?.captain === "string"
+                            ? currentInning.battingTeam?.captain === stat.playerId._id
+                            : currentInning.battingTeam?.captain?._id === stat.playerId._id) && " (C)"}
                           {!stat.isOut && (
                             <span className="ml-2 text-xs text-green-600 font-bold">
                               *

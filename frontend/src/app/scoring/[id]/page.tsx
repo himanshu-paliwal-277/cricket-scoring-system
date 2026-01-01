@@ -47,8 +47,20 @@ export default function ScoringPage() {
   const [inningNonStriker, setInningNonStriker] = useState("");
   const [inningBowler, setInningBowler] = useState("");
   const [availableBatsmen, setAvailableBatsmen] = useState<any[]>([]);
+  const [previousBall, setPreviousBall] = useState<number>(0);
 
   const firstInning = match?.innings?.find((i: any) => i.inningNumber === 1);
+
+  // Auto-show Change Bowler modal when over ends
+  useEffect(() => {
+    if (inning && match?.status === "live" && !checkAllPlayersOut()) {
+      // Check if over just completed (currentBall is 0 and previous was 5)
+      if (inning.currentBall === 0 && previousBall === 5) {
+        setShowBowlerModal(true);
+      }
+      setPreviousBall(inning.currentBall);
+    }
+  }, [inning?.currentBall, match?.status]);
 
   // Determine teams for current inning
   const currentInningBattingTeam =
@@ -491,6 +503,9 @@ export default function ScoringPage() {
                               }
                             >
                               {stat.playerId.userId?.name || "Unknown"}
+                              {(typeof inning.battingTeam?.captain === "string"
+                                ? inning.battingTeam?.captain === stat.playerId._id
+                                : inning.battingTeam?.captain?._id === stat.playerId._id) && " (C)"}
                               {isStriker ? " *" : ""}
                             </span>
                             {stat.isOut && (

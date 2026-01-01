@@ -59,10 +59,10 @@ export function WicketModal({
           options={[
             { value: "bowled", label: "Bowled" },
             { value: "caught", label: "Caught" },
-            { value: "lbw", label: "LBW" },
-            { value: "stumped", label: "Stumped" },
+            // { value: "lbw", label: "LBW" },
+            // { value: "stumped", label: "Stumped" },
             { value: "runOut", label: "Run Out" },
-            { value: "hitWicket", label: "Hit Wicket" },
+            // { value: "hitWicket", label: "Hit Wicket" },
           ]}
         />
 
