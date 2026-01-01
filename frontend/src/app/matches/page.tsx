@@ -49,7 +49,7 @@ export default function MatchesPage() {
 
     matches.forEach((match) => {
       const date = new Date(match.createdAt);
-      const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
+      const dateKey = date.toISOString().split("T")[0]; // YYYY-MM-DD
 
       if (!groups[dateKey]) {
         groups[dateKey] = [];
@@ -78,157 +78,158 @@ export default function MatchesPage() {
       return "Yesterday";
     } else {
       // Format: "December 25, 2025 - Sunday"
-      return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        weekday: 'long'
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        weekday: "long",
       });
     }
   };
 
   const groupedMatches = matches ? groupMatchesByDate(matches) : {};
-  const sortedDateKeys = Object.keys(groupedMatches).sort((a, b) =>
-    new Date(b).getTime() - new Date(a).getTime()
+  const sortedDateKeys = Object.keys(groupedMatches).sort(
+    (a, b) => new Date(b).getTime() - new Date(a).getTime()
   );
 
   return (
     <Layout>
       <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold">Matches</h1>
-            {user?.role === "owner" && (
-              <Button onClick={() => setIsModalOpen(true)}>Create Match</Button>
-            )}
-          </div>
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">Matches</h1>
+          {user?.role === "owner" && (
+            <Button onClick={() => setIsModalOpen(true)}>Create Match</Button>
+          )}
+        </div>
 
-          {isLoading ? (
-            <p>Loading...</p>
-          ) : (
-            <div className="space-y-8">
-              {sortedDateKeys.map((dateKey) => (
-                <div key={dateKey}>
-                  {/* Date Header */}
-                  <div className="sticky top-0 z-10 bg-gray-100 rounded-lg px-4 py-2 mb-4">
-                    <h2 className="text-sm font-semibold text-gray-700 text-center">
-                      {formatDateLabel(dateKey)}
-                    </h2>
-                  </div>
+        {isLoading ? (
+          <p>Loading...</p>
+        ) : (
+          <div className="space-y-8">
+            {sortedDateKeys.map((dateKey) => (
+              <div key={dateKey}>
+                {/* Date Header */}
+                <div className="sticky top-0 z-10 bg-gray-100 rounded-lg px-4 py-2 mb-4">
+                  <h2 className="text-sm font-semibold text-gray-700 text-center">
+                    {formatDateLabel(dateKey)}
+                  </h2>
+                </div>
 
-                  {/* Matches for this date */}
-                  <div className="grid gap-4">
-                    {groupedMatches[dateKey].map((match) => (
-                      <Card key={match._id}>
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <h3 className="text-xl font-semibold mb-2">
-                              {match.teamA.name} vs {match.teamB.name}
-                            </h3>
-                            <p className="text-gray-600">{match.overs} overs</p>
-                            <span
-                              className={`inline-block px-2 py-1 rounded text-sm mt-2 ${getStatusBadge(
-                                match.status
-                              )}`}
-                            >
-                              {match.status.replace("_", " ").toUpperCase()}
-                            </span>
-                            {match.resultText && (
-                              <p className="text-emerald-600 font-semibold mt-2">
-                                {match.resultText}
-                              </p>
+                {/* Matches for this date */}
+                <div className="grid gap-4">
+                  {groupedMatches[dateKey].map((match) => (
+                    <Card key={match._id}>
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <h3 className="text-xl font-semibold mb-2">
+                            {match?.teamA?.name} vs {match?.teamB?.name}
+                          </h3>
+                          <p className="text-gray-600">{match.overs} overs</p>
+                          <span
+                            className={`inline-block px-2 py-1 rounded text-sm mt-2 ${getStatusBadge(
+                              match.status
+                            )}`}
+                          >
+                            {match.status.replace("_", " ").toUpperCase()}
+                          </span>
+                          {match.resultText && (
+                            <p className="text-emerald-600 font-semibold mt-2">
+                              {match.resultText}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex gap-2">
+                          {match.status === "not_started" &&
+                            user?.role !== "player" && (
+                              <Link href={`/matches/${match._id}/start`}>
+                                <Button>Start</Button>
+                              </Link>
                             )}
-                          </div>
-                          <div className="flex gap-2">
-                            {match.status === "not_started" &&
-                              user?.role !== "player" && (
-                                <Link href={`/matches/${match._id}/start`}>
-                                  <Button>Start</Button>
-                                </Link>
-                              )}
-                            {match.status === "live" && user?.role !== "player" && (
+                          {match.status === "live" &&
+                            user?.role !== "player" && (
                               <Link href={`/scoring/${match._id}`}>
                                 <Button>Score</Button>
                               </Link>
                             )}
-                            {match.status === "completed" && (
-                              <Link href={`/view-scoreboard/${match._id}`}>
-                                <Button>View</Button>
-                              </Link>
-                            )}
-                          </div>
+                          {match.status === "completed" && (
+                            <Link href={`/view-scoreboard/${match._id}`}>
+                              <Button>View</Button>
+                            </Link>
+                          )}
                         </div>
-                      </Card>
-                    ))}
-                  </div>
+                      </div>
+                    </Card>
+                  ))}
                 </div>
-              ))}
+              </div>
+            ))}
 
-              {sortedDateKeys.length === 0 && (
-                <Card>
-                  <p className="text-center text-gray-500 py-8">
-                    No matches found. Create your first match!
-                  </p>
-                </Card>
-              )}
-            </div>
-          )}
+            {sortedDateKeys.length === 0 && (
+              <Card>
+                <p className="text-center text-gray-500 py-8">
+                  No matches found. Create your first match!
+                </p>
+              </Card>
+            )}
+          </div>
+        )}
 
-          <Modal
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            title="Create Match"
-          >
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <Select
-                label="Team A"
-                value={formData.teamA}
-                onChange={(e) =>
-                  setFormData({ ...formData, teamA: e.target.value })
-                }
-                options={[
-                  { value: "", label: "Select Team A" },
-                  ...teams.map((team) => ({
-                    value: team._id,
-                    label: team.name,
-                  })),
-                ]}
-                required
-              />
+        <Modal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          title="Create Match"
+        >
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Select
+              label="Team A"
+              value={formData.teamA}
+              onChange={(e) =>
+                setFormData({ ...formData, teamA: e.target.value })
+              }
+              options={[
+                { value: "", label: "Select Team A" },
+                ...teams.map((team) => ({
+                  value: team._id,
+                  label: team.name,
+                })),
+              ]}
+              required
+            />
 
-              <Select
-                label="Team B"
-                value={formData.teamB}
-                onChange={(e) =>
-                  setFormData({ ...formData, teamB: e.target.value })
-                }
-                options={[
-                  { value: "", label: "Select Team B" },
-                  ...teams.map((team) => ({
-                    value: team._id,
-                    label: team.name,
-                  })),
-                ]}
-                required
-              />
+            <Select
+              label="Team B"
+              value={formData.teamB}
+              onChange={(e) =>
+                setFormData({ ...formData, teamB: e.target.value })
+              }
+              options={[
+                { value: "", label: "Select Team B" },
+                ...teams.map((team) => ({
+                  value: team._id,
+                  label: team.name,
+                })),
+              ]}
+              required
+            />
 
-              <Input
-                label="Overs"
-                type="number"
-                min="1"
-                max="50"
-                value={formData.overs}
-                onChange={(e) =>
-                  setFormData({ ...formData, overs: parseInt(e.target.value) })
-                }
-                required
-              />
+            <Input
+              label="Overs"
+              type="number"
+              min="1"
+              max="50"
+              value={formData.overs}
+              onChange={(e) =>
+                setFormData({ ...formData, overs: parseInt(e.target.value) })
+              }
+              required
+            />
 
-              <Button type="submit" className="w-full" isLoading={isCreating}>
-                Create Match
-              </Button>
-            </form>
-          </Modal>
-        </div>
+            <Button type="submit" className="w-full" isLoading={isCreating}>
+              Create Match
+            </Button>
+          </form>
+        </Modal>
+      </div>
     </Layout>
   );
 }

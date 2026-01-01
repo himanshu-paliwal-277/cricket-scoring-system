@@ -1,6 +1,7 @@
+import bcrypt from "bcryptjs";
+
 import Player from "../schema/Player.js";
 import User from "../schema/User.js";
-import bcrypt from "bcryptjs";
 
 export const getAllPlayers = async (req, res) => {
   try {
