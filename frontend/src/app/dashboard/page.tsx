@@ -5,7 +5,6 @@ import { useState } from "react";
 import { Layout } from "@/components/Layout";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { Select } from "@/components/ui/Select";
 import { useAuth } from "@/hooks/useAuth";
 import { useMatches } from "@/hooks/useMatches";
 import { usePlayerStats } from "@/hooks/usePlayers";
@@ -59,12 +58,12 @@ export default function DashboardPage() {
 
             <div className="flex justify-center gap-4 pt-4">
               <Link href="/login">
-                <Button size="lg" variant="default">
+                <Button>
                   Login to Get Started
                 </Button>
               </Link>
               <Link href="/register">
-                <Button size="lg" variant="outline">
+                <Button>
                   Create Account
                 </Button>
               </Link>
@@ -330,7 +329,7 @@ export default function DashboardPage() {
                       </h3>
                       <p className="text-gray-600">{match.overs} overs</p>
                     </div>
-                    {user?.role !== "player" && (
+                    {user && user?.role !== "player" && (
                       <Link href={`/matches/${match._id}/start`}>
                         <Button>Start Match</Button>
                       </Link>

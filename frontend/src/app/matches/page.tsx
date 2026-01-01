@@ -95,12 +95,12 @@ export default function MatchesPage() {
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Matches</h1>
-          {user?.role === "owner" && (
-            <Button onClick={() => setIsModalOpen(true)}>Create Match</Button>
-          )}
-        </div>
+          <div className="flex justify-between items-center">
+            <h1 className="text-3xl font-bold">Matches</h1>
+            {user && user?.role === "owner" && (
+              <Button onClick={() => setIsModalOpen(true)}>Create Match</Button>
+            )}
+          </div>
 
         {isLoading ? (
           <p>Loading...</p>
@@ -145,8 +145,15 @@ export default function MatchesPage() {
                                 <Button>Start</Button>
                               </Link>
                             )}
-                          {match.status === "live" &&
-                            user?.role !== "player" && (
+                          </div>
+                          <div className="flex gap-2">
+                            {match.status === "not_started" && user &&
+                              user?.role !== "player" && (
+                                <Link href={`/matches/${match._id}/start`}>
+                                  <Button>Start</Button>
+                                </Link>
+                              )}
+                            {match.status === "live" && user?.role !== "player" && (
                               <Link href={`/scoring/${match._id}`}>
                                 <Button>Score</Button>
                               </Link>

@@ -78,6 +78,31 @@ export const statsService = {
     return data;
   },
 
+  async getMostFours() {
+    const { data } = await AxiosInstance.get("/stats/most-fours");
+    return data;
+  },
+
+  async getMostSixes() {
+    const { data } = await AxiosInstance.get("/stats/most-sixes");
+    return data;
+  },
+
+  async getHighestScores() {
+    const { data } = await AxiosInstance.get("/stats/highest-scores");
+    return data;
+  },
+
+  async getMostFifties() {
+    const { data } = await AxiosInstance.get("/stats/most-fifties");
+    return data;
+  },
+
+  async getMostTwentyFives() {
+    const { data } = await AxiosInstance.get("/stats/most-twenty-fives");
+    return data;
+  },
+
   async getAvailableBatsmen(inningId: string) {
     const { data } = await AxiosInstance.get(
       `/stats/available-batsmen/${inningId}`

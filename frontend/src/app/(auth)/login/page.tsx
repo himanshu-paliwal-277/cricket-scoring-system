@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
+import { Home } from "lucide-react";
 
 export default function LoginPage() {
   const { login, loginLoading, loginError } = useAuth();
@@ -20,7 +21,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-[100dvh] relative flex items-center justify-center bg-gray-50">
+      <Link href="/dashboard" className="absolute top-5 left-5">
+        <Home size={20} />
+      </Link>
       <Card className="w-full max-w-md">
         <h1 className="text-2xl font-bold text-center mb-6">Login</h1>
 
@@ -35,7 +39,9 @@ export default function LoginPage() {
             label="Email"
             type="email"
             value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
             required
           />
 
@@ -43,7 +49,9 @@ export default function LoginPage() {
             label="Password"
             type="password"
             value={formData.password}
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, password: e.target.value })
+            }
             required
           />
 

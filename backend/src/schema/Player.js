@@ -49,6 +49,14 @@ const playerSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    total25s: {
+      type: Number,
+      default: 0,
+    },
+    total50s: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

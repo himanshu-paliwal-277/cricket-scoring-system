@@ -19,7 +19,7 @@ export default function Home() {
   }, [isAuthenticated, isLoading, router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-[calc(100dvh - 60px)] flex items-center justify-center">
       <div className="text-xl">Loading...</div>
     </div>
   );
