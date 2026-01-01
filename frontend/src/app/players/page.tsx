@@ -11,7 +11,8 @@ import { Select } from "@/components/ui/Select";
 import { usePlayers } from "@/hooks/usePlayers";
 
 export default function PlayersPage() {
-  const { players, isLoading, createPlayer, isCreating, deletePlayer } = usePlayers();
+  const { players, isLoading, createPlayer, isCreating, deletePlayer } =
+    usePlayers();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -26,7 +27,13 @@ export default function PlayersPage() {
     createPlayer(formData, {
       onSuccess: () => {
         setIsModalOpen(false);
-        setFormData({ name: "", email: "", password: "", battingStyle: "right-hand", bowlingStyle: "right-arm-fast" });
+        setFormData({
+          name: "",
+          email: "",
+          password: "",
+          battingStyle: "right-hand",
+          bowlingStyle: "right-arm-fast",
+        });
       },
     });
   };
@@ -46,7 +53,9 @@ export default function PlayersPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {players.map((player) => (
                 <Card key={player._id}>
-                  <h3 className="text-xl font-semibold mb-2">{player.userId.name}</h3>
+                  <h3 className="text-xl font-semibold mb-2">
+                    {player.userId.name}
+                  </h3>
                   <div className="space-y-1 text-sm text-gray-600">
                     <p>Batting: {player.battingStyle}</p>
                     <p>Bowling: {player.bowlingStyle}</p>
@@ -55,24 +64,30 @@ export default function PlayersPage() {
                     <p>Wickets: {player.totalWickets}</p>
                     <p>Highest Score: {player.highestScore}</p>
                   </div>
-                  <Button
+                  {/* <Button
                     variant="danger"
                     className="mt-4 w-full"
                     onClick={() => deletePlayer(player._id)}
                   >
                     Delete
-                  </Button>
+                  </Button> */}
                 </Card>
               ))}
             </div>
           )}
 
-          <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add Player">
+          <Modal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            title="Add Player"
+          >
             <form onSubmit={handleSubmit} className="space-y-4">
               <Input
                 label="Name"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
                 placeholder="Player name"
                 required
               />
@@ -81,7 +96,9 @@ export default function PlayersPage() {
                 label="Email"
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
                 placeholder="player@example.com"
                 required
               />
@@ -90,7 +107,9 @@ export default function PlayersPage() {
                 label="Password"
                 type="password"
                 value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
                 placeholder="Create password"
                 required
               />
@@ -98,7 +117,9 @@ export default function PlayersPage() {
               <Select
                 label="Batting Style"
                 value={formData.battingStyle}
-                onChange={(e) => setFormData({ ...formData, battingStyle: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, battingStyle: e.target.value })
+                }
                 options={[
                   { value: "right-hand", label: "Right Hand" },
                   { value: "left-hand", label: "Left Hand" },
@@ -108,7 +129,9 @@ export default function PlayersPage() {
               <Select
                 label="Bowling Style"
                 value={formData.bowlingStyle}
-                onChange={(e) => setFormData({ ...formData, bowlingStyle: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, bowlingStyle: e.target.value })
+                }
                 options={[
                   { value: "right-arm-fast", label: "Right Arm Fast" },
                   { value: "left-arm-fast", label: "Left Arm Fast" },
