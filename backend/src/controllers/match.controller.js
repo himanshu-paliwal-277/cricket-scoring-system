@@ -321,8 +321,25 @@ export const getAllMatches = async (req, res) => {
       .populate("teamA")
       .populate("teamB")
       .populate("winner")
+      .populate("tossWinner")
       .sort({ createdAt: -1 });
-    res.json(matches);
+
+    // Populate innings data for each match
+    const matchesWithInnings = await Promise.all(
+      matches.map(async (match) => {
+        const innings = await Inning.find({ matchId: match._id })
+          .populate("battingTeam bowlingTeam")
+          .sort({ inningNumber: 1 })
+          .lean();
+
+        return {
+          ...match.toObject(),
+          innings,
+        };
+      })
+    );
+
+    res.json(matchesWithInnings);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

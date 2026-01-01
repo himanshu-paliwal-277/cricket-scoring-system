@@ -3,6 +3,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Layout } from "@/components/Layout";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -27,8 +28,14 @@ export default function MatchesPage() {
   });
 
   // Get default team A and B based on teams array
-  const defaultTeamA = useMemo(() => teams && teams.length >= 1 ? teams[0]._id : "", [teams]);
-  const defaultTeamB = useMemo(() => teams && teams.length >= 2 ? teams[1]._id : "", [teams]);
+  const defaultTeamA = useMemo(
+    () => (teams && teams.length >= 1 ? teams[0]._id : ""),
+    [teams]
+  );
+  const defaultTeamB = useMemo(
+    () => (teams && teams.length >= 2 ? teams[1]._id : ""),
+    [teams]
+  );
 
   // Update formData when modal opens with default values
   const handleModalOpen = () => {
@@ -42,12 +49,12 @@ export default function MatchesPage() {
 
   // Filter teams for Team A dropdown (exclude Team B)
   const teamAOptions = useMemo(() => {
-    return teams.filter(team => team._id !== formData.teamB);
+    return teams.filter((team) => team._id !== formData.teamB);
   }, [teams, formData.teamB]);
 
   // Filter teams for Team B dropdown (exclude Team A)
   const teamBOptions = useMemo(() => {
-    return teams.filter(team => team._id !== formData.teamA);
+    return teams.filter((team) => team._id !== formData.teamA);
   }, [teams, formData.teamA]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -143,58 +150,166 @@ export default function MatchesPage() {
 
                 {/* Matches for this date */}
                 <div className="grid gap-4">
-                  {groupedMatches[dateKey].map((match) => (
-                    <Card key={match._id}>
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <h3 className="text-xl font-semibold mb-2">
-                            {match?.teamA?.name} vs {match?.teamB?.name}
-                          </h3>
-                          <p className="text-gray-600">{match.overs} overs</p>
-                          <span
-                            className={`inline-block px-2 py-1 rounded text-sm mt-2 ${getStatusBadge(
-                              match.status
-                            )}`}
-                          >
-                            {match.status.replace("_", " ").toUpperCase()}
-                          </span>
+                  {groupedMatches[dateKey].map((match) => {
+                    // Get innings data
+                    const inning1 = match.innings?.find(
+                      (i: any) => i.inningNumber === 1
+                    );
+                    const inning2 = match.innings?.find(
+                      (i: any) => i.inningNumber === 2
+                    );
+
+                    // Determine which team batted first based on toss
+                    const teamABattedFirst =
+                      match.tossDecision === "bat"
+                        ? match.tossWinner?._id === match.teamA._id
+                        : match.tossWinner?._id === match.teamB._id;
+
+                    const teamAInning = teamABattedFirst ? inning1 : inning2;
+                    const teamBInning = teamABattedFirst ? inning2 : inning1;
+
+                    return (
+                      <Card key={match._id}>
+                        <div className="space-y-4">
+                          {/* Match Header with Status */}
+                          <div className="flex justify-between items-center pb-3 border-b border-gray-200">
+                            <span
+                              className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusBadge(
+                                match.status
+                              )}`}
+                            >
+                              {match.status.replace("_", " ").toUpperCase()}
+                            </span>
+                            <span className="text-sm text-gray-600">
+                              {match.overs} overs
+                            </span>
+                          </div>
+
+                          {/* Team A */}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              {match.teamA?.logo ? (
+                                <div className="w-10 h-10 relative rounded-full overflow-hidden">
+                                  <Image
+                                    src={match?.teamA?.logo}
+                                    alt={match?.teamA?.name || "Team Logo"}
+                                    fill
+                                    className="object-cover"
+                                  />
+                                </div>
+                              ) : (
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-lg">
+                                  {match.teamA?.name?.charAt(0) || "T"}
+                                </div>
+                              )}
+                              <span className="font-semibold text-sm">
+                                {match.teamA?.name}
+                              </span>
+                            </div>
+                            {teamAInning && match.status === "completed" && (
+                              <div className="text-right">
+                                <span className="text-xl font-bold">
+                                  {teamAInning.totalRuns}/
+                                  {teamAInning.totalWickets}
+                                </span>
+                                <span className="text-gray-600 ml-2">
+                                  (
+                                  {teamAInning.currentOver === match.overs
+                                    ? match.overs
+                                    : teamAInning.currentOver}
+                                  )
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Team B */}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              {match.teamB?.logo ? (
+                                <div className="w-10 h-10 relative rounded-full overflow-hidden">
+                                  <Image
+                                    src={match?.teamB?.logo}
+                                    alt={match?.teamB?.name || "Team B"}
+                                    fill
+                                    className="object-cover"
+                                  />
+                                </div>
+                              ) : (
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white font-bold text-lg">
+                                  {match.teamB?.name?.charAt(0) || "T"}
+                                </div>
+                              )}
+                              <span className="font-semibold text-sm">
+                                {match.teamB?.name}
+                              </span>
+                            </div>
+                            {teamBInning && match.status === "completed" && (
+                              <div className="text-right">
+                                <span className="text-xl font-bold">
+                                  {teamBInning.totalRuns}/
+                                  {teamBInning.totalWickets}
+                                </span>
+                                <span className="text-gray-600 ml-2">
+                                  (
+                                  {teamBInning.currentOver === match.overs
+                                    ? match.overs
+                                    : teamBInning.currentOver}
+                                  )
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Result Text */}
                           {match.resultText && (
-                            <p className="text-emerald-600 font-semibold mt-2">
-                              {match.resultText}
-                            </p>
+                            <div className="pt-2 border-t border-gray-200">
+                              <p className="text-emerald-600 font-semibold text-center text-sm">
+                                {match.resultText}
+                              </p>
+                            </div>
                           )}
+
+                          {/* Action Buttons */}
+                          <div className="flex gap-2 pt-2 border-t border-gray-200">
+                            {match.status === "not_started" &&
+                              user &&
+                              user?.role !== "player" && (
+                                <Link
+                                  href={`/matches/${match._id}/start`}
+                                  className="flex-1"
+                                >
+                                  <Button className="w-full">
+                                    Start Match
+                                  </Button>
+                                </Link>
+                              )}
+                            {match.status === "live" &&
+                              user?.role !== "player" && (
+                                <Link
+                                  href={`/scoring/${match._id}`}
+                                  className="flex-1"
+                                >
+                                  <Button className="w-full bg-green-600 hover:bg-green-700">
+                                    Score
+                                  </Button>
+                                </Link>
+                              )}
+                            {match.status === "completed" && (
+                              <Link
+                                href={`/view-scoreboard/${match._id}`}
+                                className="flex-1"
+                              >
+                                <Button className="w-full">
+                                  View Scorecard
+                                </Button>
+                              </Link>
+                            )}
+                          </div>
                         </div>
-                        {/* <div className="flex gap-2">
-                          {match.status === "not_started" &&
-                            user?.role !== "player" && (
-                              <Link href={`/matches/${match._id}/start`}>
-                                <Button>Start</Button>
-                              </Link>
-                            )}
-                          </div> */}
-                        <div className="flex gap-2">
-                          {match.status === "not_started" &&
-                            user &&
-                            user?.role !== "player" && (
-                              <Link href={`/matches/${match._id}/start`}>
-                                <Button>Start</Button>
-                              </Link>
-                            )}
-                          {match.status === "live" &&
-                            user?.role !== "player" && (
-                              <Link href={`/scoring/${match._id}`}>
-                                <Button>Score</Button>
-                              </Link>
-                            )}
-                          {match.status === "completed" && (
-                            <Link href={`/view-scoreboard/${match._id}`}>
-                              <Button>View</Button>
-                            </Link>
-                          )}
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
+                      </Card>
+                    );
+                  })}
                 </div>
               </div>
             ))}

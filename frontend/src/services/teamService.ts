@@ -18,6 +18,7 @@ export interface Team {
   isLocked: boolean;
   createdAt: string;
   captain?: Player | string;
+  logo?: string;
 }
 
 export interface CreateTeamData {

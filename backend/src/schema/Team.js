@@ -22,6 +22,10 @@ const teamSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Player",
     },
+    logo: {
+      type: String,
+      trim: true,
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

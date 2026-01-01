@@ -15,6 +15,7 @@ export interface Team {
   players: string[];
   isLocked: boolean;
   captain?: Player | string;
+  logo?: string;
 }
 
 export interface Match {
