@@ -20,6 +20,8 @@ export default function TeamsPage() {
     players: [] as string[],
     captain: "",
   });
+  const [selectedCommonPlayer, setSelectedCommonPlayer] = useState<string>("");
+  const [isAddingCommonPlayer, setIsAddingCommonPlayer] = useState(false);
 
   // Initialize teams on component mount
   useEffect(() => {
@@ -61,6 +63,66 @@ export default function TeamsPage() {
         },
       }
     );
+  };
+
+  const handleAddCommonPlayer = async () => {
+    if (!selectedCommonPlayer || !team1 || !team2) return;
+
+    setIsAddingCommonPlayer(true);
+
+    try {
+      // Add common player to team1
+      const team1Players = [
+        ...team1.players.map((p) => p._id),
+        selectedCommonPlayer,
+      ];
+      const team1CaptainId =
+        typeof team1.captain === "string"
+          ? team1.captain
+          : team1.captain?._id || "";
+
+      await updateTeam(
+        {
+          id: team1._id,
+          data: { players: team1Players, captain: team1CaptainId },
+        },
+        { onSuccess: () => {} }
+      );
+
+      // Add common player to team2
+      const team2Players = [
+        ...team2.players.map((p) => p._id),
+        selectedCommonPlayer,
+      ];
+      const team2CaptainId =
+        typeof team2.captain === "string"
+          ? team2.captain
+          : team2.captain?._id || "";
+
+      await updateTeam(
+        {
+          id: team2._id,
+          data: { players: team2Players, captain: team2CaptainId },
+        },
+        { onSuccess: () => {} }
+      );
+
+      // Clear selection after adding
+      setSelectedCommonPlayer("");
+    } catch (error) {
+      console.error("Error adding common player:", error);
+    } finally {
+      setIsAddingCommonPlayer(false);
+    }
+  };
+
+  // Get players who are not in either team
+  const getPlayersNotInAnyTeam = () => {
+    const team1PlayerIds = team1?.players.map((p) => p._id) || [];
+    const team2PlayerIds = team2?.players.map((p) => p._id) || [];
+    const allTeamPlayerIds = [...team1PlayerIds, ...team2PlayerIds];
+
+    return players.filter((player) => !allTeamPlayerIds.includes(player._id));
   };
 
   const getAvailablePlayers = (currentTeam: Team) => {
@@ -135,6 +197,56 @@ export default function TeamsPage() {
               </p>
             </div>
           </div>
+
+          {/* Common Player Section */}
+          {user?.role === "owner" && !isLoading && team1 && team2 && (
+            <Card>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold mb-1">
+                    Add Common Player
+                  </h3>
+                  {/* <p className="text-sm text-gray-600">
+                    Select a player to add to both teams automatically. The common player will appear in both Team 1 and Team 2.
+                  </p> */}
+                </div>
+
+                {/* Select Player Dropdown */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Select Common Player
+                  </label>
+                  <select
+                    value={selectedCommonPlayer}
+                    onChange={(e) => setSelectedCommonPlayer(e.target.value)}
+                    className="w-full border rounded-lg px-3 py-2 bg-white"
+                  >
+                    <option value="">Select a player</option>
+                    {getPlayersNotInAnyTeam().map((player) => (
+                      <option key={player._id} value={player._id}>
+                        {player.userId.name}
+                      </option>
+                    ))}
+                  </select>
+                  {getPlayersNotInAnyTeam().length === 0 && (
+                    <p className="text-sm text-gray-500 mt-1">
+                      All players are already in teams
+                    </p>
+                  )}
+                </div>
+
+                {/* Add Button */}
+                <Button
+                  onClick={handleAddCommonPlayer}
+                  disabled={!selectedCommonPlayer || isAddingCommonPlayer}
+                  isLoading={isAddingCommonPlayer}
+                  className="w-full"
+                >
+                  Add Common Player to Both Teams
+                </Button>
+              </div>
+            </Card>
+          )}
 
           {isLoading ? (
             <p>Loading...</p>
