@@ -101,15 +101,13 @@ export const Navbar = () => {
           ) : (
             <div className="flex items-center gap-2">
               <Link href="/login">
-                <Button size="xs" variant="white">
-                  Login
-                </Button>
+                <Button size="xs">Login</Button>
               </Link>
-              <Link href="/register">
+              {/* <Link href="/register">
                 <Button size="xs" color="dark">
                   Register
                 </Button>
-              </Link>
+              </Link> */}
             </div>
           )}
         </div>

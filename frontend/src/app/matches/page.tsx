@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Layout } from "@/components/Layout";
 import { Card } from "@/components/ui/Card";
@@ -18,11 +18,37 @@ export default function MatchesPage() {
   const { teams } = useTeams();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { user } = useAuth();
+
+  // Initialize formData with default team selections
   const [formData, setFormData] = useState({
     teamA: "",
     teamB: "",
     overs: 6,
   });
+
+  // Get default team A and B based on teams array
+  const defaultTeamA = useMemo(() => teams && teams.length >= 1 ? teams[0]._id : "", [teams]);
+  const defaultTeamB = useMemo(() => teams && teams.length >= 2 ? teams[1]._id : "", [teams]);
+
+  // Update formData when modal opens with default values
+  const handleModalOpen = () => {
+    setFormData({
+      teamA: defaultTeamA,
+      teamB: defaultTeamB,
+      overs: 6,
+    });
+    setIsModalOpen(true);
+  };
+
+  // Filter teams for Team A dropdown (exclude Team B)
+  const teamAOptions = useMemo(() => {
+    return teams.filter(team => team._id !== formData.teamB);
+  }, [teams, formData.teamB]);
+
+  // Filter teams for Team B dropdown (exclude Team A)
+  const teamBOptions = useMemo(() => {
+    return teams.filter(team => team._id !== formData.teamA);
+  }, [teams, formData.teamA]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,12 +121,12 @@ export default function MatchesPage() {
   return (
     <Layout>
       <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold">Matches</h1>
-            {user && user?.role === "owner" && (
-              <Button onClick={() => setIsModalOpen(true)}>Create Match</Button>
-            )}
-          </div>
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">Matches</h1>
+          {user && user?.role === "owner" && (
+            <Button onClick={handleModalOpen}>Create Match</Button>
+          )}
+        </div>
 
         {isLoading ? (
           <p>Loading...</p>
@@ -138,22 +164,24 @@ export default function MatchesPage() {
                             </p>
                           )}
                         </div>
-                        <div className="flex gap-2">
+                        {/* <div className="flex gap-2">
                           {match.status === "not_started" &&
                             user?.role !== "player" && (
                               <Link href={`/matches/${match._id}/start`}>
                                 <Button>Start</Button>
                               </Link>
                             )}
-                          </div>
-                          <div className="flex gap-2">
-                            {match.status === "not_started" && user &&
-                              user?.role !== "player" && (
-                                <Link href={`/matches/${match._id}/start`}>
-                                  <Button>Start</Button>
-                                </Link>
-                              )}
-                            {match.status === "live" && user?.role !== "player" && (
+                          </div> */}
+                        <div className="flex gap-2">
+                          {match.status === "not_started" &&
+                            user &&
+                            user?.role !== "player" && (
+                              <Link href={`/matches/${match._id}/start`}>
+                                <Button>Start</Button>
+                              </Link>
+                            )}
+                          {match.status === "live" &&
+                            user?.role !== "player" && (
                               <Link href={`/scoring/${match._id}`}>
                                 <Button>Score</Button>
                               </Link>
@@ -187,7 +215,8 @@ export default function MatchesPage() {
           title="Create Match"
         >
           <form onSubmit={handleSubmit} className="space-y-4">
-            <Select
+            {/* Old logic - commented out */}
+            {/* <Select
               label="Team A"
               value={formData.teamA}
               onChange={(e) =>
@@ -216,6 +245,34 @@ export default function MatchesPage() {
                   label: team.name,
                 })),
               ]}
+              required
+            /> */}
+
+            {/* New logic - Team A defaults to teams[0], Team B defaults to teams[1] */}
+            {/* If one team is selected, it won't show in the other dropdown */}
+            <Select
+              label="Team A"
+              value={formData.teamA}
+              onChange={(e) =>
+                setFormData({ ...formData, teamA: e.target.value })
+              }
+              options={teamAOptions.map((team) => ({
+                value: team._id,
+                label: team.name,
+              }))}
+              required
+            />
+
+            <Select
+              label="Team B"
+              value={formData.teamB}
+              onChange={(e) =>
+                setFormData({ ...formData, teamB: e.target.value })
+              }
+              options={teamBOptions.map((team) => ({
+                value: team._id,
+                label: team.name,
+              }))}
               required
             />
 

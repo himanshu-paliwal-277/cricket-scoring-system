@@ -168,40 +168,110 @@ export default function TeamsPage() {
             title={`Edit ${editingTeam?.name}`}
           >
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Selected Players Box */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Selected Players
+                  </label>
+                  <span className="text-sm font-semibold text-blue-600">
+                    Count: {formData.players.length}
+                  </span>
+                </div>
+                <div
+                  className="border rounded-lg p-2 bg-blue-50 min-h-[40px] max-h-40 overflow-y-auto"
+                  style={{
+                    scrollbarWidth: "thin",
+                  }}
+                >
+                  {formData.players.length > 0 ? (
+                    <div className="space-y-2">
+                      {formData.players.map((playerId) => {
+                        const player = players.find((p) => p._id === playerId);
+                        return (
+                          <div
+                            key={playerId}
+                            className="flex items-center justify-between bg-white px-3 py-1.5 rounded shadow-sm"
+                          >
+                            <div className="flex-1">
+                              <span className="font-medium">
+                                {player?.userId.name}
+                              </span>
+                              {/* <span className="text-xs text-gray-500 ml-2">
+                                ({player?.userId.email})
+                              </span> */}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handlePlayerToggle(playerId)}
+                              className="text-red-500 hover:text-red-700 ml-2 !text-sm font-medium"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 text-sm text-center py-8">
+                      No players selected yet. Select players from below.
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Select New Player Section */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Players
+                  Select New Player
                 </label>
                 <p className="text-xs text-gray-500 mb-2">
                   Players already in the other team are not available for
                   selection
                 </p>
-                <div className="max-h-60 overflow-y-auto border rounded p-2 space-y-2">
+                <div
+                  className="max-h-40 overflow-y-auto border rounded-lg p-2 space-y-2 bg-gray-50"
+                  style={{
+                    scrollbarWidth: "thin",
+                  }}
+                >
                   {editingTeam &&
-                    getAvailablePlayers(editingTeam).map((player) => (
-                      <div key={player._id} className="flex items-center">
-                        <input
-                          type="checkbox"
-                          id={player._id}
-                          checked={formData.players.includes(player._id)}
-                          onChange={() => handlePlayerToggle(player._id)}
-                          className="mr-2"
-                        />
-                        <label
-                          htmlFor={player._id}
-                          className="cursor-pointer flex-1"
+                    getAvailablePlayers(editingTeam)
+                      .filter(
+                        (player) => !formData.players.includes(player._id)
+                      )
+                      .map((player) => (
+                        <div
+                          key={player._id}
+                          className="flex items-center bg-white px-3 py-1.5 rounded hover:bg-blue-50 transition-colors"
                         >
-                          {player.userId.name}
-                          <span className="text-xs text-gray-500 ml-2">
-                            ({player.userId.email})
-                          </span>
-                        </label>
-                      </div>
-                    ))}
+                          <input
+                            type="checkbox"
+                            id={player._id}
+                            checked={formData.players.includes(player._id)}
+                            onChange={() => handlePlayerToggle(player._id)}
+                            className="mr-2 cursor-pointer"
+                          />
+                          <label
+                            htmlFor={player._id}
+                            className="cursor-pointer flex-1"
+                          >
+                            {player.userId.name}
+                            {/* <span className="text-xs text-gray-500 ml-2">
+                              ({player.userId.email})
+                            </span> */}
+                          </label>
+                        </div>
+                      ))}
+                  {editingTeam &&
+                    getAvailablePlayers(editingTeam).filter(
+                      (player) => !formData.players.includes(player._id)
+                    ).length === 0 && (
+                      <p className="text-gray-500 text-sm text-center py-4">
+                        All available players have been selected
+                      </p>
+                    )}
                 </div>
-                <p className="text-sm text-gray-600 mt-1">
-                  Selected: {formData.players.length}
-                </p>
               </div>
 
               <div>

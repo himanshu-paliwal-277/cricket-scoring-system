@@ -62,11 +62,11 @@ export default function DashboardPage() {
                   Login to Get Started
                 </Button>
               </Link>
-              <Link href="/register">
+              {/* <Link href="/register">
                 <Button>
                   Create Account
                 </Button>
-              </Link>
+              </Link> */}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto pt-12">
