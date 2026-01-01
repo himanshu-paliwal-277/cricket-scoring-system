@@ -76,15 +76,11 @@ export default function TeamsPage() {
         ...team1.players.map((p) => p._id),
         selectedCommonPlayer,
       ];
-      const team1CaptainId =
-        typeof team1.captain === "string"
-          ? team1.captain
-          : team1.captain?._id || "";
 
       await updateTeam(
         {
           id: team1._id,
-          data: { players: team1Players, captain: team1CaptainId },
+          data: { players: team1Players },
         },
         { onSuccess: () => {} }
       );
@@ -94,15 +90,11 @@ export default function TeamsPage() {
         ...team2.players.map((p) => p._id),
         selectedCommonPlayer,
       ];
-      const team2CaptainId =
-        typeof team2.captain === "string"
-          ? team2.captain
-          : team2.captain?._id || "";
 
       await updateTeam(
         {
           id: team2._id,
-          data: { players: team2Players, captain: team2CaptainId },
+          data: { players: team2Players },
         },
         { onSuccess: () => {} }
       );
