@@ -443,7 +443,18 @@ export const getCurrentInning = async (req, res) => {
     }
 
     const balls = await Ball.find({ inningId: inning._id })
-      .populate("batsman bowler")
+      .populate({
+        path: "batsman",
+        populate: { path: "userId", select: "name email" }
+      })
+      .populate({
+        path: "bowler",
+        populate: { path: "userId", select: "name email" }
+      })
+      .populate({
+        path: "fielder",
+        populate: { path: "userId", select: "name email" }
+      })
       .sort({ createdAt: 1 });
 
     res.json({ inning, balls });

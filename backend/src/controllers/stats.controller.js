@@ -163,6 +163,18 @@ export const getMatchScorecard = async (req, res) => {
     const inningsWithBalls = await Promise.all(
       innings.map(async (inning) => {
         const balls = await Ball.find({ inningId: inning._id })
+          .populate({
+            path: "batsman",
+            populate: { path: "userId", select: "name email" }
+          })
+          .populate({
+            path: "bowler",
+            populate: { path: "userId", select: "name email" }
+          })
+          .populate({
+            path: "fielder",
+            populate: { path: "userId", select: "name email" }
+          })
           .sort({ createdAt: 1 });
         return {
           ...inning.toObject(),

@@ -504,8 +504,10 @@ export default function ScoringPage() {
                             >
                               {stat.playerId.userId?.name || "Unknown"}
                               {(typeof inning.battingTeam?.captain === "string"
-                                ? inning.battingTeam?.captain === stat.playerId._id
-                                : inning.battingTeam?.captain?._id === stat.playerId._id) && " (C)"}
+                                ? inning.battingTeam?.captain ===
+                                  stat.playerId._id
+                                : inning.battingTeam?.captain?._id ===
+                                  stat.playerId._id) && " (C)"}
                               {isStriker ? " *" : ""}
                             </span>
                             {stat.isOut && (
@@ -560,7 +562,7 @@ export default function ScoringPage() {
                   <tr className="border-b border-gray-300">
                     <th className="text-left py-2">Bowler</th>
                     <th className="text-right py-2 min-w-4">O</th>
-                    <th className="text-right py-2 min-w-4">M</th>
+                    {/* <th className="text-right py-2 min-w-4">M</th> */}
                     <th className="text-right py-2 min-w-4">R</th>
                     <th className="text-right py-2 min-w-4">W</th>
                     <th className="text-right py-2 min-w-4">Econ</th>
@@ -584,7 +586,7 @@ export default function ScoringPage() {
                         <td className="text-right py-2">
                           {stat.overs.toFixed(1)}
                         </td>
-                        <td className="text-right py-2">{stat.maidens}</td>
+                        {/* <td className="text-right py-2">{stat.maidens}</td> */}
                         <td className="text-right py-2">{stat.runsConceded}</td>
                         <td className="text-right py-2">{stat.wickets}</td>
                         <td className="text-right py-2">
@@ -986,7 +988,7 @@ export default function ScoringPage() {
         {inning && inning?.balls && inning.balls.length > 6 && (
           <Card>
             <h3 className="font-semibold mb-4">Previous Overs</h3>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {inning?.balls && inning.balls.length > 0 ? (
                 Array.from(
                   new Set(
@@ -1005,17 +1007,33 @@ export default function ScoringPage() {
                       (total, ball) => total + (ball.runs || 0),
                       0
                     );
+                    const bowlerName =
+                      overBalls[0]?.bowler?.userId?.name || "Unknown";
                     return (
-                      <div key={overNumber} className="flex items-center gap-4">
-                        <span className="font-medium text-sm sm:w-12 w-4">
-                          <span className="sm:block hidden">Over</span>{" "}
-                          {overNumber + 1}:
-                        </span>
-                        <div className="flex sm:gap-2 gap-1 flex-wrap flex-1">
+                      <div
+                        key={overNumber}
+                        className="border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow bg-white"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-sm bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                              Over {overNumber + 1}
+                            </span>
+                            <span className="text-sm text-gray-600">
+                              {bowlerName}
+                            </span>
+                          </div>
+                          <div className="bg-gray-100 px-3 py-1 rounded-full">
+                            <span className="text-sm font-bold text-gray-700">
+                              {overRuns} run{overRuns !== 1 ? "s" : ""}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex sm:gap-2 gap-1 flex-wrap">
                           {overBalls.map((ball) => (
                             <div
                               key={ball._id}
-                              className={`sm:w-10 sm:h-10 w-8 h-8 flex items-center justify-center rounded font-bold text-sm ${
+                              className={`sm:w-10 sm:h-10 w-8 h-8 flex items-center justify-center rounded-xs font-bold text-sm shadow-sm ${
                                 ball.ballType === "wicket"
                                   ? "bg-red-500 text-white"
                                   : ball.ballType === "wide" ||
@@ -1038,9 +1056,6 @@ export default function ScoringPage() {
                             </div>
                           ))}
                         </div>
-                        <span className="text-sm font-semibold text-gray-700 ml-auto">
-                          {overRuns} runs
-                        </span>
                       </div>
                     );
                   })
@@ -1288,7 +1303,8 @@ export default function ScoringPage() {
                   {inning?.currentBall !== 0 && (
                     <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded">
                       <p className="text-sm">
-                        Current bowler&apos;s over is not completed. You cannot change the bowler until the over is finished.
+                        Current bowler&apos;s over is not completed. You cannot
+                        change the bowler until the over is finished.
                       </p>
                     </div>
                   )}

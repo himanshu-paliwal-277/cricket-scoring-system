@@ -228,9 +228,12 @@ export default function ScoreboardPage() {
                       >
                         <td className="py-3 px-2 font-medium">
                           {truncateString(stat.playerId.userId.name, 14)}
-                          {(typeof currentInning.battingTeam?.captain === "string"
-                            ? currentInning.battingTeam?.captain === stat.playerId._id
-                            : currentInning.battingTeam?.captain?._id === stat.playerId._id) && " (C)"}
+                          {(typeof currentInning.battingTeam?.captain ===
+                          "string"
+                            ? currentInning.battingTeam?.captain ===
+                              stat.playerId._id
+                            : currentInning.battingTeam?.captain?._id ===
+                              stat.playerId._id) && " (C)"}
                           {!stat.isOut && (
                             <span className="ml-2 text-xs text-green-600 font-bold">
                               *
@@ -267,7 +270,7 @@ export default function ScoreboardPage() {
                         Bowler
                       </th>
                       <th className="text-center py-3 px-2 font-semibold">O</th>
-                      <th className="text-center py-3 px-2 font-semibold">M</th>
+                      {/* <th className="text-center py-3 px-2 font-semibold">M</th> */}
                       <th className="text-center py-3 px-2 font-semibold">R</th>
                       <th className="text-center py-3 px-2 font-semibold">W</th>
                       <th className="text-center py-3 px-2 font-semibold">
@@ -287,9 +290,9 @@ export default function ScoreboardPage() {
                         <td className="text-center py-3 px-2">
                           {stat.overs.toFixed(1)}
                         </td>
-                        <td className="text-center py-3 px-2">
+                        {/* <td className="text-center py-3 px-2">
                           {stat.maidens}
-                        </td>
+                        </td> */}
                         <td className="text-center py-3 px-2">
                           {stat.runsConceded}
                         </td>
@@ -360,7 +363,7 @@ export default function ScoreboardPage() {
             {currentInning?.balls && currentInning.balls.length > 0 && (
               <Card>
                 <h3 className="text-xl font-bold mb-4">Overs</h3>
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {Array.from(
                     new Set(
                       currentInning.balls
@@ -379,20 +382,33 @@ export default function ScoreboardPage() {
                         (total, ball) => total + (ball.runs || 0),
                         0
                       );
+                      const bowlerName =
+                        overBalls[0]?.bowler?.userId?.name || "Unknown";
                       return (
                         <div
                           key={overNumber}
-                          className="flex items-center gap-4"
+                          className="border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow bg-white"
                         >
-                          <span className="font-medium text-sm sm:w-16">
-                            <span className="sm:inline hidden">Over</span>{" "}
-                            {overNumber + 1}:
-                          </span>
-                          <div className="flex sm:gap-2 gap-1 flex-wrap flex-1">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-sm bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                                Over {overNumber + 1}
+                              </span>
+                              <span className="text-sm text-gray-600">
+                                {bowlerName}
+                              </span>
+                            </div>
+                            <div className="bg-gray-100 px-3 py-1 rounded-full">
+                              <span className="text-sm font-bold text-gray-700">
+                                {overRuns} run{overRuns !== 1 ? "s" : ""}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex sm:gap-2 gap-1 flex-wrap">
                             {overBalls.map((ball) => (
                               <div
                                 key={ball._id}
-                                className={`sm:w-10 sm:h-10 w-8 h-8 flex items-center justify-center rounded font-bold text-sm ${
+                              className={`sm:w-10 sm:h-10 w-8 h-8 flex items-center justify-center rounded-xs font-bold text-sm shadow-sm ${
                                   ball.ballType === "wicket"
                                     ? "bg-red-500 text-white"
                                     : ball.ballType === "wide" ||
@@ -415,9 +431,6 @@ export default function ScoreboardPage() {
                               </div>
                             ))}
                           </div>
-                          <span className="text-sm font-semibold text-gray-700 ml-auto">
-                            [{overRuns}]
-                          </span>
                         </div>
                       );
                     })}
