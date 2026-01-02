@@ -187,14 +187,14 @@ export default function MatchesPage() {
 
                           {/* Team A */}
                           <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2">
                               {match.teamA?.logo ? (
                                 <div className="w-10 h-10 relative rounded-full overflow-hidden">
                                   <Image
                                     src={match?.teamA?.logo}
                                     alt={match?.teamA?.name || "Team Logo"}
                                     fill
-                                    className="object-cover"
+                                    className="object-contain"
                                   />
                                 </div>
                               ) : (
@@ -225,14 +225,14 @@ export default function MatchesPage() {
 
                           {/* Team B */}
                           <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2">
                               {match.teamB?.logo ? (
                                 <div className="w-10 h-10 relative rounded-full overflow-hidden">
                                   <Image
                                     src={match?.teamB?.logo}
                                     alt={match?.teamB?.name || "Team B"}
                                     fill
-                                    className="object-cover"
+                                    className="object-contain"
                                   />
                                 </div>
                               ) : (

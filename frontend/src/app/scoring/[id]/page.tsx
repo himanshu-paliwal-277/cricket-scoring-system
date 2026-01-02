@@ -1285,6 +1285,13 @@ export default function ScoringPage() {
                 title="Change Bowler"
               >
                 <div className="space-y-4">
+                  {inning?.currentBall !== 0 && (
+                    <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded">
+                      <p className="text-sm">
+                        Current bowler&apos;s over is not completed. You cannot change the bowler until the over is finished.
+                      </p>
+                    </div>
+                  )}
                   <Select
                     label="Select New Bowler"
                     value={newBowlerId}
@@ -1305,8 +1312,13 @@ export default function ScoringPage() {
                           };
                         }),
                     ]}
+                    disabled={inning?.currentBall !== 0}
                   />
-                  <Button onClick={handleChangeBowler} className="w-full">
+                  <Button
+                    onClick={handleChangeBowler}
+                    className="w-full"
+                    disabled={inning?.currentBall !== 0 || !newBowlerId}
+                  >
                     Confirm
                   </Button>
                 </div>
