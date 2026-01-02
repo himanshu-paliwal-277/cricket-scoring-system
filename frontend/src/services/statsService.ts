@@ -42,6 +42,30 @@ export interface Ball {
   runs: number;
   ballType: string;
   isValid: boolean;
+  batsman?: {
+    _id: string;
+    userId?: {
+      _id: string;
+      name: string;
+      email: string;
+    };
+  };
+  bowler?: {
+    _id: string;
+    userId?: {
+      _id: string;
+      name: string;
+      email: string;
+    };
+  };
+  fielder?: {
+    _id: string;
+    userId?: {
+      _id: string;
+      name: string;
+      email: string;
+    };
+  } | null;
 }
 
 export interface InningScorecard {
