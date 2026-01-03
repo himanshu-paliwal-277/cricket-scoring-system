@@ -84,6 +84,7 @@ export interface InningScorecard {
   totalRuns: number;
   totalWickets: number;
   currentOver: number;
+  currentBall: number;
   battingStats: BattingStats[];
   bowlingStats: BowlingStats[];
   balls?: Ball[];

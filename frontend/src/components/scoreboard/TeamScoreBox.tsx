@@ -5,7 +5,7 @@ interface TeamScoreBoxProps {
   teamName: string;
   runs: number;
   wickets: number;
-  overs: number;
+  overs: string;
   isSecond?: boolean;
 }
 
@@ -23,9 +23,9 @@ export function TeamScoreBox({
         isSecond ? "flex-row-reverse" : ""
       }`}
     >
-      <div className="flex flex-col gap-1 items-center">
+      <div className="flex flex-col items-center">
         {teamLogo ? (
-          <div className="w-12 h-12 relative rounded-full overflow-hidden">
+          <div className="w-14 h-14 relative rounded-full overflow-hidden">
             <Image
               src={teamLogo}
               alt={teamName || "Team Logo"}
@@ -40,11 +40,11 @@ export function TeamScoreBox({
         )}
         <h2 className="font-bold text-center min-w-20">{teamName}</h2>
       </div>
-      <div>
-        <p className="font-bold text-blue-600 text-lg">
+      <div className="flex flex-col items-center">
+        <p className="font-bold text-blue-600 text-xl">
           {runs}/{wickets}
         </p>
-        <p className="text-gray-600 text-xs">({overs} overs)</p>
+        <p className="text-gray-600 text-sm">({overs})</p>
       </div>
     </div>
   );

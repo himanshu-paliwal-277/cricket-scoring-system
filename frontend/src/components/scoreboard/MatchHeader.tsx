@@ -8,6 +8,7 @@ interface InningData {
   totalRuns: number;
   totalWickets: number;
   currentOver: number;
+  currentBall: number;
 }
 
 interface Team {
@@ -66,7 +67,9 @@ export function MatchHeader({
             }
             runs={firstInning.totalRuns}
             wickets={firstInning.totalWickets}
-            overs={firstInning.currentOver}
+            overs={`${firstInning.currentOver}${
+              firstInning.currentBall > 0 ? "." + firstInning.currentBall : ""
+            }`}
           />
         )}
 
@@ -80,7 +83,11 @@ export function MatchHeader({
             }
             runs={secondInning.totalRuns}
             wickets={secondInning.totalWickets}
-            overs={secondInning.currentOver}
+            overs={`${secondInning.currentOver}${
+              secondInning.currentBall > 0
+                ? "." + secondInning.currentBall
+                : ""
+            }`}
             isSecond
           />
         ) : (
@@ -97,7 +104,7 @@ export function MatchHeader({
 
       {matchStatus === "completed" && resultText && (
         <div className="text-center">
-          <p className="font-semibold text-green-700 text-xs">{resultText}</p>
+          <p className="font-semibold text-green-700 text-sm">{resultText}</p>
         </div>
       )}
     </div>

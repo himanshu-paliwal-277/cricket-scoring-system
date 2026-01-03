@@ -129,7 +129,7 @@ export default function MatchesPage() {
     <Layout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Matches</h1>
+          <h1 className="text-2xl font-bold">Matches</h1>
           {user && user?.role === "owner" && (
             <Button onClick={handleModalOpen}>Create Match</Button>
           )}
@@ -170,7 +170,7 @@ export default function MatchesPage() {
 
                     return (
                       <Card key={match._id}>
-                        <div className="space-y-4">
+                        <div className="space-y-2">
                           {/* Match Header with Status */}
                           <div className="flex justify-between items-center pb-3 border-b border-gray-200">
                             <span
@@ -208,15 +208,17 @@ export default function MatchesPage() {
                             </div>
                             {teamAInning && match.status === "completed" && (
                               <div className="text-right">
-                                <span className="text-xl font-bold">
+                                <span className="text-lg font-bold">
                                   {teamAInning.totalRuns}/
                                   {teamAInning.totalWickets}
                                 </span>
                                 <span className="text-gray-600 ml-2">
                                   (
-                                  {teamAInning.currentOver === match.overs
-                                    ? match.overs
-                                    : teamAInning.currentOver}
+                                  {`${teamAInning.currentOver}${
+                                    teamAInning.currentBall > 0
+                                      ? "." + teamAInning.currentBall
+                                      : ""
+                                  }`}
                                   )
                                 </span>
                               </div>
@@ -246,15 +248,17 @@ export default function MatchesPage() {
                             </div>
                             {teamBInning && match.status === "completed" && (
                               <div className="text-right">
-                                <span className="text-xl font-bold">
+                                <span className="text-lg font-bold">
                                   {teamBInning.totalRuns}/
                                   {teamBInning.totalWickets}
                                 </span>
                                 <span className="text-gray-600 ml-2">
                                   (
-                                  {teamBInning.currentOver === match.overs
-                                    ? match.overs
-                                    : teamBInning.currentOver}
+                                  {`${teamBInning.currentOver}${
+                                    teamBInning.currentBall > 0
+                                      ? "." + teamBInning.currentBall
+                                      : ""
+                                  }`}
                                   )
                                 </span>
                               </div>
@@ -263,7 +267,7 @@ export default function MatchesPage() {
 
                           {/* Result Text */}
                           {match.resultText && (
-                            <div className="pt-2 border-t border-gray-200">
+                            <div className="pt-2">
                               <p className="text-emerald-600 font-semibold text-center text-sm">
                                 {match.resultText}
                               </p>
@@ -271,7 +275,7 @@ export default function MatchesPage() {
                           )}
 
                           {/* Action Buttons */}
-                          <div className="flex gap-2 pt-2 border-t border-gray-200">
+                          <div className="flex gap-2 pt-2">
                             {match.status === "not_started" &&
                               user &&
                               user?.role !== "player" && (
@@ -279,7 +283,7 @@ export default function MatchesPage() {
                                   href={`/matches/${match._id}/start`}
                                   className="flex-1"
                                 >
-                                  <Button className="w-full">
+                                  <Button className="w-full ">
                                     Start Match
                                   </Button>
                                 </Link>
@@ -298,9 +302,9 @@ export default function MatchesPage() {
                             {match.status === "completed" && (
                               <Link
                                 href={`/view-scoreboard/${match._id}`}
-                                className="flex-1"
+                                className="flex-1 "
                               >
-                                <Button className="w-full">
+                                <Button className="w-full ">
                                   View Scorecard
                                 </Button>
                               </Link>

@@ -5,12 +5,12 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { Layout } from "@/components/Layout";
 import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
 import { useMatch } from "@/hooks/useMatches";
 import { formatISODate } from "@/utils/dateFormatter";
 import { statsService, InningScorecard } from "@/services/statsService";
-import { truncateString } from "@/utils/truncateString";
-import { MatchHeader } from "@/components/MatchHeader";
+import { MatchHeader } from "@/components/scoreboard/MatchHeader";
+import { BattingScorecard } from "@/components/scoreboard/BattingScorecard";
+import { BowlingScorecard } from "@/components/scoreboard/BowlingScorecard";
 
 export default function ScoreboardPage() {
   const params = useParams();
@@ -135,22 +135,26 @@ export default function ScoreboardPage() {
         {innings.length > 0 && (
           <div className="flex sm:gap-2 justify-center">
             {innings.map((inning) => (
-              <Button
+              <button
                 key={inning.inningNumber}
-                variant={
-                  selectedInning === inning.inningNumber
-                    ? "primary"
-                    : "secondary"
-                }
                 onClick={() => setSelectedInning(inning.inningNumber as 1 | 2)}
-                className="sm:w-auto w-[50%] sm:rounded-md rounded-none "
+                className={`sm:w-auto border-b-3 p-2  w-[50%] sm:rounded-md rounded-none ${
+                  selectedInning === inning.inningNumber
+                    ? "border-green-500 "
+                    : "border-gray-200"
+                }`}
               >
-                {inning.inningNumber === 1 ? "1st" : "2nd"} Innings{" "}
-                <span className="sm:block hidden">-</span>{" "}
-                <span className="sm:block hidden">
+                {/* {inning.inningNumber === 1 ? "1st" : "2nd"} Innings{" "} */}
+                <span
+                  className={`${
+                    selectedInning === inning.inningNumber
+                      ? " font-semibold text-black"
+                      : ""
+                  } text-sm`}
+                >
                   {inning.battingTeam.name}
                 </span>
-              </Button>
+              </button>
             ))}
           </div>
         )}
@@ -158,148 +162,55 @@ export default function ScoreboardPage() {
         {currentInning && (
           <>
             {/* Batting Scorecard */}
-            <Card>
-              <h3 className="text-xl font-bold mb-4">Batting</h3>
-              <div className="overflow-x-auto">
-                <table className="sm:w-full w-[320px] sm:text-md text-sm">
-                  <thead>
-                    <tr className="border-b border-gray-400 bg-gray-50">
-                      <th className="text-left py-3 px-2 font-semibold min-w-30">
-                        Batsman
-                      </th>
-                      <th className="text-left py-3 px-2 font-semibold min-w-30">
-                        Dismissal
-                      </th>
-                      <th className="text-center py-3 px-2 font-semibold">R</th>
-                      <th className="text-center py-3 px-2 font-semibold">B</th>
-                      <th className="text-center py-3 px-2 font-semibold">
-                        4s
-                      </th>
-                      <th className="text-center py-3 px-2 font-semibold">
-                        6s
-                      </th>
-                      <th className="text-center py-3 px-2 font-semibold">
-                        SR
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {currentInning.battingStats.map((stat, index) => (
-                      <tr
-                        key={index}
-                        className={`border-b border-gray-300 hover:bg-gray-50 ${
-                          stat.isOut ? "" : "bg-green-50"
-                        }`}
-                      >
-                        <td className="py-3 px-2 font-medium">
-                          {truncateString(stat.playerId.userId.name, 14)}
-                          {(typeof currentInning.battingTeam?.captain ===
-                          "string"
-                            ? currentInning.battingTeam?.captain ===
-                              stat.playerId._id
-                            : currentInning.battingTeam?.captain?._id ===
-                              stat.playerId._id) && " (C)"}
-                          {!stat.isOut && (
-                            <span className="ml-2 text-xs text-green-600 font-bold">
-                              *
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-3 px-2 text-sm text-gray-600 italic">
-                          {getDismissalText(stat)}
-                        </td>
-                        <td className="text-center py-3 px-2 font-semibold text-blue-600">
-                          {stat.runs}
-                        </td>
-                        <td className="text-center py-3 px-2">{stat.balls}</td>
-                        <td className="text-center py-3 px-2">{stat.fours}</td>
-                        <td className="text-center py-3 px-2">{stat.sixes}</td>
-                        <td className="text-center py-3 px-2">
-                          {stat.strikeRate.toFixed(2)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </Card>
-
-            {/* Bowling Scorecard */}
-            <Card>
-              <h3 className="text-xl font-bold mb-4">Bowling</h3>
-              <div className="overflow-x-auto">
-                <table className="sm:w-full w-[320px] sm:text-md text-sm">
-                  <thead>
-                    <tr className="border-b border-gray-400 bg-gray-50">
-                      <th className="text-left py-3 px-2 font-semibold">
-                        Bowler
-                      </th>
-                      <th className="text-center py-3 px-2 font-semibold">O</th>
-                      {/* <th className="text-center py-3 px-2 font-semibold">M</th> */}
-                      <th className="text-center py-3 px-2 font-semibold">R</th>
-                      <th className="text-center py-3 px-2 font-semibold">W</th>
-                      <th className="text-center py-3 px-2 font-semibold">
-                        Econ
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {currentInning.bowlingStats.map((stat, index) => (
-                      <tr
-                        key={index}
-                        className="border-b border-gray-300 hover:bg-gray-50"
-                      >
-                        <td className="py-3 px-2 font-medium">
-                          {stat.playerId.userId.name}
-                        </td>
-                        <td className="text-center py-3 px-2">
-                          {stat.overs.toFixed(1)}
-                        </td>
-                        {/* <td className="text-center py-3 px-2">
-                          {stat.maidens}
-                        </td> */}
-                        <td className="text-center py-3 px-2">
-                          {stat.runsConceded}
-                        </td>
-                        <td className="text-center py-3 px-2 font-semibold text-red-600">
-                          {stat.wickets}
-                        </td>
-                        <td className="text-center py-3 px-2">
-                          {stat.economy.toFixed(2)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </Card>
+            <BattingScorecard
+              battingStats={currentInning.battingStats}
+              captainId={
+                typeof currentInning.battingTeam?.captain === "string"
+                  ? currentInning.battingTeam?.captain
+                  : currentInning.battingTeam?.captain?._id
+              }
+              getDismissalText={getDismissalText}
+            />
 
             {/* Score Summary */}
-            <Card>
-              <div className="text-center">
-                <div className="mt-4 pt-4 border-t border-gray-400 grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-600">Run Rate</p>
-                    <p className="text-lg font-semibold">
-                      {currentInning.currentOver > 0
-                        ? (
-                            currentInning.totalRuns / currentInning.currentOver
-                          ).toFixed(2)
-                        : "0.00"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Extras</p>
-                    <p className="text-lg font-semibold">
-                      {(currentInning as any).extras?.wides +
-                        (currentInning as any).extras?.noBalls +
-                        (currentInning as any).extras?.byes +
-                        (currentInning as any).extras?.legByes || 0}
-                    </p>
-                  </div>
-                </div>
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-5 items-center">
+                <p className="text-sm min-w-36 text-gray-600">Extras</p>
+                <p className="text-sm text-gray-800">
+                  {((currentInning as any).extras?.wides || 0) +
+                    ((currentInning as any).extras?.noBalls || 0)}{" "}
+                  {`(W ${(currentInning as any).extras?.wides || 0}, NB ${
+                    (currentInning as any).extras?.noBalls || 0
+                  })`}
+                </p>
               </div>
-            </Card>
+              <div className="flex gap-5 items-center">
+                <p className="text-sm min-w-36 text-gray-600">Total Runs</p>
+                <p className="text-sm text-gray-800">
+                  {currentInning.totalRuns}{" "}
+                  {`(${currentInning.totalWickets} wkts, ${
+                    currentInning.currentOver
+                  }${
+                    currentInning.currentBall > 0
+                      ? `.${currentInning.currentBall}`
+                      : ""
+                  } ov)`}
+                </p>
+              </div>
+              <div className="flex gap-5 items-center">
+                <p className="text-sm min-w-36 text-gray-600">Run Rate</p>
+                <p className="text-sm text-gray-800">
+                  {currentInning.currentOver > 0
+                    ? (
+                        currentInning.totalRuns / currentInning.currentOver
+                      ).toFixed(2)
+                    : "0.00"}
+                </p>
+              </div>
+            </div>
+
+            {/* Bowling Scorecard */}
+            <BowlingScorecard bowlingStats={currentInning.bowlingStats} />
 
             {/* Partnerships */}
             {/* {currentInning.battingStats.length > 0 && (
@@ -353,8 +264,8 @@ export default function ScoreboardPage() {
 
             {/* Overs */}
             {currentInning?.balls && currentInning.balls.length > 0 && (
-              <Card>
-                <h3 className="text-xl font-bold mb-4">Overs</h3>
+              <div>
+                <h3 className="text-md font-semibold mb-4">Overs</h3>
                 <div className="space-y-3">
                   {Array.from(
                     new Set(
@@ -379,18 +290,18 @@ export default function ScoreboardPage() {
                       return (
                         <div
                           key={overNumber}
-                          className="border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow bg-white"
+                          className="sm:border sm:border-gray-200 sm:rounded-lg sm:p-3 sm:hover:shadow-md sm:transition-shadow sm:bg-white border-b-2 border-gray-200 pb-4"
                         >
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
-                              <span className="font-semibold text-sm bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                              <span className="font-semibold text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
                                 Over {overNumber + 1}
                               </span>
-                              <span className="text-sm text-gray-600">
+                              <span className="text-xs text-gray-600">
                                 {bowlerName}
                               </span>
                             </div>
-                            <div className="bg-gray-100 px-3 py-1 rounded-full">
+                            <div className="bg-gray-100 px-2 py-0.5 rounded-xs">
                               <span className="text-sm font-bold text-gray-700">
                                 {overRuns} run{overRuns !== 1 ? "s" : ""}
                               </span>
@@ -427,13 +338,13 @@ export default function ScoreboardPage() {
                       );
                     })}
                 </div>
-              </Card>
+              </div>
             )}
           </>
         )}
 
         {/* Match Details */}
-        <Card>
+        <div>
           <h3 className="text-xl font-bold mb-4">Match Details</h3>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
@@ -472,7 +383,7 @@ export default function ScoreboardPage() {
               </p>
             </div>
           </div>
-        </Card>
+        </div>
       </div>
     </Layout>
   );
