@@ -61,7 +61,7 @@ export function BattingScorecard({
       accessor: "dismissal",
       align: "left",
       minWidth: "min-w-30",
-      className: "text-sm text-gray-600 italic",
+      className: "text-[11px] text-gray-600 italic",
       render: (_, row: BattingStat) => getDismissalText(row),
     },
     {

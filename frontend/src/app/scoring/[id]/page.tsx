@@ -13,8 +13,12 @@ import { Modal } from "@/components/ui/Modal";
 import { Select } from "@/components/ui/Select";
 import { useAuth } from "@/hooks/useAuth";
 import { WicketModal } from "@/components/WicketModal";
-import { statsService } from "@/services/statsService";
+import { statsService, InningScorecard } from "@/services/statsService";
 import { truncateString } from "@/utils/truncateString";
+import { BattingScorecard } from "@/components/scoreboard/BattingScorecard";
+import { BowlingScorecard } from "@/components/scoreboard/BowlingScorecard";
+import { MatchHeader } from "@/components/scoreboard/MatchHeader";
+import { formatISODate } from "@/utils/dateFormatter";
 
 export default function ScoringPage() {
   const params = useParams();
@@ -48,19 +52,23 @@ export default function ScoringPage() {
   const [inningBowler, setInningBowler] = useState("");
   const [availableBatsmen, setAvailableBatsmen] = useState<any[]>([]);
   const [previousBall, setPreviousBall] = useState<number>(0);
+  const [innings, setInnings] = useState<InningScorecard[]>([]);
+  const [selectedInning, setSelectedInning] = useState<1 | 2>(1);
 
   const firstInning = match?.innings?.find((i: any) => i.inningNumber === 1);
 
-  // Auto-show Change Bowler modal when over ends
+  // Load innings data for MatchHeader
   useEffect(() => {
-    if (inning && match?.status === "live" && !checkAllPlayersOut()) {
-      // Check if over just completed (currentBall is 0 and previous was 5)
-      if (inning.currentBall === 0 && previousBall === 5) {
-        setShowBowlerModal(true);
+    const loadInnings = async () => {
+      try {
+        const data = await statsService.getMatchScorecard(matchId);
+        setInnings(data);
+      } catch (error) {
+        console.error("Failed to load innings:", error);
       }
-      setPreviousBall(inning.currentBall);
-    }
-  }, [inning?.currentBall, match?.status]);
+    };
+    loadInnings();
+  }, [matchId, inning?.totalRuns, inning?.totalWickets]);
 
   // Determine teams for current inning
   const currentInningBattingTeam =
@@ -101,6 +109,42 @@ export default function ScoringPage() {
     // For 5 players: max 5 wickets, for 11 players: max 11 wickets
     return totalWickets >= totalPlayers;
   };
+
+  const getDismissalText = (stat: any) => {
+    if (!stat.isOut) return "not out";
+
+    switch (stat.dismissalType) {
+      case "bowled":
+        return `b ${stat.dismissedBy?.userId?.name || ""}`;
+      case "caught":
+        return `c ${stat.fielder?.userId?.name || ""} b ${
+          stat.dismissedBy?.userId?.name || ""
+        }`;
+      case "lbw":
+        return `lbw b ${stat.dismissedBy?.userId?.name || ""}`;
+      case "stumped":
+        return `st ${stat.fielder?.userId?.name || ""} b ${
+          stat.dismissedBy?.userId?.name || ""
+        }`;
+      case "runOut":
+        return "run out";
+      case "hitWicket":
+        return "hit wicket";
+      default:
+        return stat.dismissalType;
+    }
+  };
+
+  // Auto-show Change Bowler modal when over ends
+  useEffect(() => {
+    if (inning && match?.status === "live" && !checkAllPlayersOut()) {
+      // Check if over just completed (currentBall is 0 and previous was 5)
+      if (inning.currentBall === 0 && previousBall === 5) {
+        setShowBowlerModal(true);
+      }
+      setPreviousBall(inning.currentBall);
+    }
+  }, [inning?.currentBall, match?.status]);
 
   const handleEndMatch = () => {
     setShowEndMatchModal(true);
@@ -303,7 +347,7 @@ export default function ScoringPage() {
   if (!inning || !inning._id) {
     return (
       <Layout>
-        <Card className="max-w-2xl mx-auto">
+        <div className="max-w-2xl mx-auto">
           <h1 className="text-2xl font-bold mb-4 text-center">
             {canScore
               ? `Start ${
@@ -392,7 +436,7 @@ export default function ScoringPage() {
               </p>
             </div>
           )}
-        </Card>
+        </div>
       </Layout>
     );
   }
@@ -400,7 +444,7 @@ export default function ScoringPage() {
   return (
     <Layout>
       <div className="max-w-6xl mx-auto space-y-6">
-        <Card>
+        {/* <div>
           <h1 className="sm:text-2xl text-lg sm:text-left text-center font-bold mb-4">
             {match?.teamA.name} <br className="sm:hidden" />{" "}
             <span className="font-medium sm:font-bold text-gray-500">vs</span>{" "}
@@ -423,340 +467,163 @@ export default function ScoringPage() {
               </p>
             </div>
           </div>
-        </Card>
-
-        {/* Current Inning Scoreboard */}
-        <Card>
-          <h2 className="sm:text-xl text-lg sm:text-left text-center font-bold mb-4">
-            Current Inning Scoreboard
-          </h2>
-          <div className="text-center mb-6">
-            <p className="sm:text-3xl text-2xl font-bold">
-              {inning?.battingTeam.name}: {inning?.totalRuns}/
-              {inning?.totalWickets}
-            </p>
-            <p className="text-lg text-gray-600">
-              Overs: {inning?.currentOver}.{inning?.currentBall} /{" "}
-              {match?.overs}
-            </p>
-            {checkAllPlayersOut() && (
-              <p className="text-red-600 font-semibold mt-2 text-xl">
-                All Out! ({inning?.totalWickets}/
-                {currentInningBattingTeam?.players?.length || 0})
-              </p>
-            )}
-            {/* Show required runs for second inning when <= 30 runs needed */}
-            {match?.currentInning === 2 &&
-              inning &&
-              firstInning &&
-              !inning.isCompleted &&
-              (() => {
-                const target = (firstInning.totalRuns || 0) + 1;
-                const runsNeeded = target - (inning.totalRuns || 0);
-                const totalBalls = (match?.overs || 0) * 6;
-                const ballsPlayed =
-                  (inning.currentOver || 0) * 6 + (inning.currentBall || 0);
-                const ballsRemaining = totalBalls - ballsPlayed;
-
-                if (runsNeeded > 0 && runsNeeded <= 30) {
-                  return (
-                    <p className="text-blue-600 font-semibold mt-2 text-lg">
-                      Need {runsNeeded} run{runsNeeded !== 1 ? "s" : ""} in{" "}
-                      {ballsRemaining} ball{ballsRemaining !== 1 ? "s" : ""}
-                    </p>
-                  );
-                }
-                return null;
-              })()}
-          </div>
-
-          {/* Live Batting Scorecard */}
-          {inning?.battingStats && inning.battingStats.length > 0 && (
-            <div className="overflow-x-auto mb-6">
-              <h3 className="font-semibold mb-3">Batting</h3>
-              <table className="sm:w-full w-[300px] text-sm">
-                <thead>
-                  <tr className="border-b border-gray-300">
-                    <th className="text-left py-2">Batsman</th>
-                    <th className="text-right py-2 min-w-5">R</th>
-                    <th className="text-right py-2 min-w-5">B</th>
-                    <th className="text-right py-2 min-w-5">4s</th>
-                    <th className="text-right py-2 min-w-5">6s</th>
-                    <th className="text-right py-2 min-w-5">SR</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {inning.battingStats.map((stat: any) => {
-                    const isStriker = stat.playerId._id === inning.striker?._id;
-                    const isNonStriker =
-                      stat.playerId._id === inning.nonStriker?._id;
-                    return (
-                      <tr
-                        key={stat.playerId._id}
-                        className="border-b border-gray-200"
-                      >
-                        <td className="py-2">
-                          <div className="flex flex-col">
-                            <span
-                              className={
-                                isStriker || isNonStriker ? "font-semibold" : ""
-                              }
-                            >
-                              {stat.playerId.userId?.name || "Unknown"}
-                              {(typeof inning.battingTeam?.captain === "string"
-                                ? inning.battingTeam?.captain ===
-                                  stat.playerId._id
-                                : inning.battingTeam?.captain?._id ===
-                                  stat.playerId._id) && " (C)"}
-                              {isStriker ? " *" : ""}
-                            </span>
-                            {stat.isOut && (
-                              <span className="text-xs text-gray-600">
-                                {stat.dismissalType === "bowled" &&
-                                  `b ${stat.dismissedBy?.userId?.name || ""}`}
-                                {stat.dismissalType === "caught" &&
-                                  `c ${stat.fielder?.userId?.name || ""} b ${
-                                    stat.dismissedBy?.userId?.name || ""
-                                  }`}
-                                {stat.dismissalType === "stumped" &&
-                                  `st ${stat.fielder?.userId?.name || ""} b ${
-                                    stat.dismissedBy?.userId?.name || ""
-                                  }`}
-                                {stat.dismissalType === "lbw" &&
-                                  `lbw b ${
-                                    stat.dismissedBy?.userId?.name || ""
-                                  }`}
-                                {stat.dismissalType === "runOut" && "run out"}
-                                {stat.dismissalType === "hitWicket" &&
-                                  "hit wicket"}
-                              </span>
-                            )}
-                            {!stat.isOut && (
-                              <span className="text-xs text-gray-600">
-                                not out
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="text-right py-2">{stat.runs}</td>
-                        <td className="text-right py-2">{stat.balls}</td>
-                        <td className="text-right py-2">{stat.fours}</td>
-                        <td className="text-right py-2">{stat.sixes}</td>
-                        <td className="text-right py-2">
-                          {stat.strikeRate.toFixed(2)}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {/* Live Bowling Scorecard */}
-          {inning?.bowlingStats && inning.bowlingStats.length > 0 && (
-            <div className="overflow-x-auto mb-6">
-              <h3 className="font-semibold mb-3">Bowling</h3>
-              <table className="sm:w-full w-[300px] text-sm">
-                <thead>
-                  <tr className="border-b border-gray-300">
-                    <th className="text-left py-2">Bowler</th>
-                    <th className="text-right py-2 min-w-4">O</th>
-                    {/* <th className="text-right py-2 min-w-4">M</th> */}
-                    <th className="text-right py-2 min-w-4">R</th>
-                    <th className="text-right py-2 min-w-4">W</th>
-                    <th className="text-right py-2 min-w-4">Econ</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {inning.bowlingStats.map((stat: any) => {
-                    const isCurrent =
-                      stat.playerId._id === inning.currentBowler?._id;
-                    return (
-                      <tr
-                        key={stat.playerId._id}
-                        className="border-b border-gray-200"
-                      >
-                        <td className="py-2">
-                          <span className={isCurrent ? "font-semibold" : ""}>
-                            {stat.playerId.userId?.name || "Unknown"}
-                            {isCurrent ? " *" : ""}
-                          </span>
-                        </td>
-                        <td className="text-right py-2">
-                          {stat.overs.toFixed(1)}
-                        </td>
-                        {/* <td className="text-right py-2">{stat.maidens}</td> */}
-                        <td className="text-right py-2">{stat.runsConceded}</td>
-                        <td className="text-right py-2">{stat.wickets}</td>
-                        <td className="text-right py-2">
-                          {stat.economy.toFixed(2)}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {/* Fall of Wickets */}
-          {inning?.battingStats &&
-            inning.battingStats.filter((s: any) => s.isOut).length > 0 && (
-              <div className="mb-6">
-                <h3 className="font-semibold mb-3">Fall of Wickets</h3>
-                <div className="flex flex-wrap gap-3 text-sm items-center">
-                  {(() => {
-                    // Calculate score at each wicket using ball-by-ball data
-                    const wickets: any[] = [];
-
-                    inning.battingStats.forEach((stat: any) => {
-                      if (stat.isOut && inning.balls) {
-                        // Find the ball where this player got out
-                        const wicketBall = inning.balls.find(
-                          (ball: any) =>
-                            ball.ballType === "wicket" &&
-                            ball.batsman._id === stat.playerId._id
-                        );
-
-                        if (wicketBall) {
-                          // Calculate score at this wicket
-                          const ballsUpToWicket = inning.balls.filter(
-                            (b: any) =>
-                              b.overNumber < wicketBall.overNumber ||
-                              (b.overNumber === wicketBall.overNumber &&
-                                b.ballNumber <= wicketBall.ballNumber)
-                          );
-
-                          const scoreAtWicket = ballsUpToWicket.reduce(
-                            (total: number, ball: any) =>
-                              total + (ball.runs || 0),
-                            0
-                          );
-
-                          const oversAtWicket = `${wicketBall.overNumber}.${wicketBall.ballNumber}`;
-
-                          wickets.push({
-                            playerName: stat.playerId.userId?.name,
-                            playerRuns: stat.runs,
-                            playerBalls: stat.balls,
-                            teamScore: scoreAtWicket,
-                            overs: oversAtWicket,
-                            wicketNumber: wickets.length + 1,
-                          });
-                        }
-                      }
-                    });
-
-                    return wickets.map((w, idx) => (
-                      <>
-                        <div key={idx} className="text-gray-700">
-                          {w.teamScore}/{w.wicketNumber} ({w.playerName},{" "}
-                          {w.playerRuns} runs, {w.overs} ov)
-                        </div>
-                        {idx !== wickets.length - 1 && (
-                          <div className="w-1 h-1 mt-1 rounded-full bg-black" />
-                        )}
-                      </>
-                    ));
-                  })()}
-                </div>
-              </div>
-            )}
-
-          {/* Partnerships */}
-          {inning?.battingStats && inning.battingStats.length >= 1 && (
-            <div className="mb-4">
-              <h3 className="font-semibold mb-3">Partnerships</h3>
-              <div className="space-y-2 text-sm">
-                {(() => {
-                  // Simple approach: Show current partnership if ongoing
-                  // For completed partnerships, calculate from total score progression
-                  const partnerships: any[] = [];
-
-                  // If there's a current partnership ongoing
-                  if (
-                    inning.striker &&
-                    inning.nonStriker &&
-                    !inning.isCompleted
-                  ) {
-                    const striker = inning.battingStats?.find(
-                      (s: any) => s.playerId._id === inning.striker._id
-                    );
-                    const nonStriker = inning.battingStats?.find(
-                      (s: any) => s.playerId._id === inning.nonStriker._id
-                    );
-
-                    if (striker && nonStriker) {
-                      // For current partnership, use total score (includes extras)
-                      // minus runs from batsmen who got out
-                      const outBatsmenRuns = (inning.battingStats || [])
-                        .filter((s: any) => s.isOut)
-                        .reduce((sum: number, s: any) => sum + s.runs, 0);
-
-                      const currentPartnershipRuns =
-                        (inning.totalRuns || 0) - outBatsmenRuns;
-
-                      partnerships.push({
-                        player1: striker,
-                        player2: nonStriker,
-                        runs: Math.max(0, currentPartnershipRuns),
-                        wicket: (inning.totalWickets || 0) + 1,
-                        current: true,
-                      });
-                    }
-                  }
-
-                  return partnerships.map((p, idx) => (
-                    <div
-                      key={idx}
-                      className="flex justify-between items-center border-b border-gray-200 pb-2"
-                    >
-                      <span className="text-gray-700">
-                        {p.player1.playerId.userId?.name} -{" "}
-                        {p.player2.playerId.userId?.name}
-                      </span>
-                      <span
-                        className={`font-semibold ${
-                          p.current ? "text-blue-600" : ""
-                        }`}
-                      >
-                        {p.runs} runs{p.current ? " *" : ""}
-                      </span>
-                    </div>
-                  ));
-                })()}
-              </div>
-            </div>
-          )}
-        </Card>
-
-        {/* First Inning Scoreboard (when in second inning) */}
-        {match?.currentInning === 2 && firstInning && (
-          <Card>
-            <h2 className="sm:text-xl text-lg  font-bold mb-4 sm:text-left text-center">
-              First Inning Scoreboard
-            </h2>
-            <div className="text-center">
-              <p className="sm:text-2xl text-xl font-bold">
-                {firstInning.battingTeam.name}: {firstInning.totalRuns}/
-                {firstInning.totalWickets}
-              </p>
-              <p className="text-lg text-gray-600">
-                Overs:{" "}
-                {Math.floor(
-                  firstInning.currentOver + firstInning.currentBall / 6
-                )}
-                .{firstInning.currentBall % 6}
-              </p>
-              <p className="text-sm text-gray-500 mt-2">
-                Target: {firstInning.totalRuns + 1} runs
-              </p>
-            </div>
-          </Card>
+        </div> */}
+        {/* Match Header */}
+        {match && (
+          <MatchHeader
+            date={formatISODate(match.createdAt)}
+            teamA={match.teamA}
+            teamB={match.teamB}
+            innings={innings}
+            resultText={match.resultText}
+            matchStatus={match.status}
+          />
         )}
 
-        <Card>
+        {/* Innings Selector */}
+        {innings.length > 0 && (
+          <div className="flex sm:gap-2 justify-center">
+            {innings.map((inningData) => (
+              <button
+                key={inningData.inningNumber}
+                onClick={() =>
+                  setSelectedInning(inningData.inningNumber as 1 | 2)
+                }
+                className={`sm:w-auto border-b-3 p-2 w-[50%] sm:rounded-md rounded-none ${
+                  selectedInning === inningData.inningNumber
+                    ? "border-green-500 "
+                    : "border-gray-200"
+                }`}
+              >
+                <span
+                  className={`${
+                    selectedInning === inningData.inningNumber
+                      ? " font-semibold text-black"
+                      : ""
+                  } text-sm`}
+                >
+                  {inningData.battingTeam.name}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Inning Scoreboard - Shows selected inning data */}
+        {(() => {
+          const currentInningData = innings.find(
+            (i) => i.inningNumber === selectedInning
+          );
+
+          if (!currentInningData) return null;
+
+          return (
+            <div>
+              {/* Batting Scorecard */}
+              {currentInningData.battingStats &&
+                currentInningData.battingStats.length > 0 && (
+                  <BattingScorecard
+                    battingStats={currentInningData.battingStats}
+                    captainId={
+                      typeof currentInningData.battingTeam?.captain === "string"
+                        ? currentInningData.battingTeam?.captain
+                        : currentInningData.battingTeam?.captain?._id
+                    }
+                    getDismissalText={getDismissalText}
+                  />
+                )}
+
+              {/* Bowling Scorecard */}
+              <div className="mt-5">
+                {currentInningData.bowlingStats &&
+                  currentInningData.bowlingStats.length > 0 && (
+                    <BowlingScorecard
+                      bowlingStats={currentInningData.bowlingStats}
+                    />
+                  )}
+              </div>
+
+              {/* Partnerships */}
+              <div className="mt-5">
+                {currentInningData.battingStats &&
+                  currentInningData.battingStats.length >= 1 && (
+                    <div className="mb-4">
+                      <h3 className="font-semibold mb-3">Partnerships</h3>
+                      <div className="space-y-2 text-sm">
+                        {(() => {
+                          const partnerships: any[] = [];
+
+                          // If this is the current live inning, show current partnership
+                          if (
+                            selectedInning === match?.currentInning &&
+                            inning?.striker &&
+                            inning?.nonStriker &&
+                            !inning.isCompleted
+                          ) {
+                            const striker =
+                              currentInningData.battingStats?.find(
+                                (s: any) =>
+                                  s.playerId._id === inning.striker._id
+                              );
+                            const nonStriker =
+                              currentInningData.battingStats?.find(
+                                (s: any) =>
+                                  s.playerId._id === inning.nonStriker._id
+                              );
+
+                            if (striker && nonStriker) {
+                              const outBatsmenRuns = (
+                                currentInningData.battingStats || []
+                              )
+                                .filter((s: any) => s.isOut)
+                                .reduce(
+                                  (sum: number, s: any) => sum + s.runs,
+                                  0
+                                );
+
+                              const currentPartnershipRuns =
+                                (currentInningData.totalRuns || 0) -
+                                outBatsmenRuns;
+
+                              partnerships.push({
+                                player1: striker,
+                                player2: nonStriker,
+                                runs: Math.max(0, currentPartnershipRuns),
+                                wicket:
+                                  (currentInningData.totalWickets || 0) + 1,
+                                current: true,
+                              });
+                            }
+                          }
+
+                          return partnerships.map((p, idx) => (
+                            <div
+                              key={idx}
+                              className="flex justify-between items-center border-b border-gray-200 pb-2"
+                            >
+                              <span className="text-gray-700">
+                                {p.player1.playerId.userId?.name} -{" "}
+                                {p.player2.playerId.userId?.name}
+                              </span>
+                              <span
+                                className={`font-semibold ${
+                                  p.current ? "text-blue-600" : ""
+                                }`}
+                              >
+                                {p.runs} runs{p.current ? " *" : ""}
+                              </span>
+                            </div>
+                          ));
+                        })()}
+                      </div>
+                    </div>
+                  )}
+              </div>
+            </div>
+          );
+        })()}
+
+        <div>
           <div className="text-center mb-6">
             <h2 className="text-5xl font-bold mb-2">
               {inning?.totalRuns}/{inning?.totalWickets}
@@ -911,9 +778,9 @@ export default function ScoringPage() {
               </Button>
             </div>
           )}
-        </Card>
+        </div>
 
-        <Card>
+        <div>
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-semibold">Current Over</h3>
             {inning?.balls && inning.balls.length > 0 && (
@@ -983,10 +850,10 @@ export default function ScoringPage() {
               <p className="text-lg font-semibold">{inning?.extras.legByes}</p>
             </div>
           </div>
-        </Card>
+        </div>
 
         {inning && inning?.balls && inning.balls.length > 6 && (
-          <Card>
+          <div>
             <h3 className="font-semibold mb-4">Previous Overs</h3>
             <div className="space-y-3">
               {inning?.balls && inning.balls.length > 0 ? (
@@ -1023,7 +890,7 @@ export default function ScoringPage() {
                               {bowlerName}
                             </span>
                           </div>
-                          <div className="bg-gray-100 px-3 py-1 rounded-full">
+                          <div className="bg-gray-100 px-2 py-0.5 rounded-xs">
                             <span className="text-sm font-bold text-gray-700">
                               {overRuns} run{overRuns !== 1 ? "s" : ""}
                             </span>
@@ -1063,11 +930,11 @@ export default function ScoringPage() {
                 <p className="text-gray-500 text-sm">No previous overs</p>
               )}
             </div>
-          </Card>
+          </div>
         )}
 
         {match?.status !== "completed" && canScore && (
-          <Card>
+          <div>
             <div className="text-center space-y-3">
               <h3 className="font-semibold mb-4">Match Controls</h3>
 
@@ -1099,11 +966,11 @@ export default function ScoringPage() {
                 Use this to manually end the match before completion
               </p>
             </div>
-          </Card>
+          </div>
         )}
 
         {match?.status === "completed" && (
-          <Card>
+          <div>
             <div className="text-center">
               <h3 className="font-semibold text-xl mb-2">Match Completed</h3>
               <p className="text-lg text-green-600 font-semibold mb-4">
@@ -1125,7 +992,7 @@ export default function ScoringPage() {
                 </div>
               )}
             </div>
-          </Card>
+          </div>
         )}
 
         {(() => {

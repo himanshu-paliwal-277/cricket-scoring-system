@@ -169,10 +169,13 @@ export default function MatchesPage() {
                     const teamBInning = teamABattedFirst ? inning2 : inning1;
 
                     return (
-                      <Card key={match._id}>
+                      <div
+                        className="p-3 border-1 border-gray-300 rounded-md"
+                        key={match._id}
+                      >
                         <div className="space-y-2">
                           {/* Match Header with Status */}
-                          <div className="flex justify-between items-center pb-3 border-b border-gray-200">
+                          <div className="flex justify-between items-center pb-2">
                             <span
                               className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusBadge(
                                 match.status
@@ -311,7 +314,7 @@ export default function MatchesPage() {
                             )}
                           </div>
                         </div>
-                      </Card>
+                      </div>
                     );
                   })}
                 </div>

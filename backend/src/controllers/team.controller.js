@@ -178,9 +178,14 @@ export const updateTeam = async (req, res) => {
     team.captain = captain !== undefined ? captain : team.captain;
 
     // Auto-generate team name based on captain
-    if (captain) {
-      const captainPlayer = await Player.findById(captain).populate("userId", "name");
-      team.name = `${captainPlayer.userId.name} - Team`;
+    // if (captain) {
+    //   const captainPlayer = await Player.findById(captain).populate("userId", "name");
+    //   team.name = `${captainPlayer.userId.name} - Team`;
+    // }
+
+    // Allow direct team name editing
+    if (req.body.name !== undefined) {
+      team.name = req.body.name;
     }
 
     await team.save();

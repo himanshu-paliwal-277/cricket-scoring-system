@@ -17,6 +17,7 @@ export default function TeamsPage() {
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
   const { user } = useAuth();
   const [formData, setFormData] = useState({
+    name: "",
     players: [] as string[],
     captain: "",
   });
@@ -36,6 +37,7 @@ export default function TeamsPage() {
     const captainId =
       typeof team.captain === "string" ? team.captain : team.captain?._id || "";
     setFormData({
+      name: team.name,
       players: team.players.map((p) => p._id),
       captain: captainId,
     });
@@ -59,7 +61,7 @@ export default function TeamsPage() {
       {
         onSuccess: () => {
           setEditingTeam(null);
-          setFormData({ players: [], captain: "" });
+          setFormData({ name: "", players: [], captain: "" });
         },
       }
     );
@@ -267,11 +269,28 @@ export default function TeamsPage() {
             isOpen={!!editingTeam}
             onClose={() => {
               setEditingTeam(null);
-              setFormData({ players: [], captain: "" });
+              setFormData({ name: "", players: [], captain: "" });
             }}
             title={`Edit ${editingTeam?.name}`}
           >
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Team Name Input */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Team Name
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  className="w-full border rounded-lg px-3 py-2"
+                  placeholder="Enter team name"
+                  required
+                />
+              </div>
+
               {/* Selected Players Box */}
               <div>
                 <div className="flex items-center justify-between mb-2">
@@ -400,13 +419,13 @@ export default function TeamsPage() {
                     );
                   })}
                 </select>
-                <p className="text-xs text-gray-500 mt-1">
+                {/* <p className="text-xs text-gray-500 mt-1">
                   Team name will be auto-generated as:{" "}
                   {formData.captain &&
                     players.find((p) => p._id === formData.captain)?.userId
                       .name}{" "}
                   - Team
-                </p>
+                </p> */}
               </div>
 
               <div className="flex gap-2">
@@ -419,7 +438,7 @@ export default function TeamsPage() {
                   className="flex-1"
                   onClick={() => {
                     setEditingTeam(null);
-                    setFormData({ players: [], captain: "" });
+                    setFormData({ name: "", players: [], captain: "" });
                   }}
                 >
                   Cancel
