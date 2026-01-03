@@ -10,6 +10,7 @@ import { useMatch } from "@/hooks/useMatches";
 import { formatISODate } from "@/utils/dateFormatter";
 import { statsService, InningScorecard } from "@/services/statsService";
 import { truncateString } from "@/utils/truncateString";
+import { MatchHeader } from "@/components/MatchHeader";
 
 export default function ScoreboardPage() {
   const params = useParams();
@@ -86,7 +87,7 @@ export default function ScoreboardPage() {
     <Layout>
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Match Header */}
-        <Card>
+        {/* <Card>
           <div className="text-center">
             <h1 className="sm:text-3xl text-xl font-bold mb-2">
               {match.teamASnapshot?.name || match.teamA.name}
@@ -98,13 +99,7 @@ export default function ScoreboardPage() {
             <p className="text-gray-600 mb-4">
               {formatISODate(match.createdAt)}
             </p>
-            {match.status === "completed" && match.resultText && (
-              <div className="bg-green-50 border border-green-200 rounded-lg sm:p-4 py-2 px-3 inline-block">
-                <p className="text-lg font-semibold text-green-700">
-                  {match.resultText}
-                </p>
-              </div>
-            )}
+
             {match.status !== "completed" && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 inline-block">
                 <p className="text-lg font-semibold text-blue-700">
@@ -113,10 +108,10 @@ export default function ScoreboardPage() {
               </div>
             )}
           </div>
-        </Card>
+        </Card> */}
 
         {/* Player of the Match */}
-        {match.status === "completed" && match.playerOfTheMatch && (
+        {/* {match.status === "completed" && match.playerOfTheMatch && (
           <Card>
             <div className="text-center bg-yellow-50 rounded-lg p-4">
               <p className="text-sm text-gray-600 mb-1">Player of the Match</p>
@@ -125,73 +120,43 @@ export default function ScoreboardPage() {
               </p>
             </div>
           </Card>
-        )}
+        )} */}
+
+        <MatchHeader
+          date={formatISODate(match.createdAt)}
+          teamA={match.teamA}
+          teamB={match.teamB}
+          innings={innings}
+          resultText={match.resultText}
+          matchStatus={match.status}
+        />
 
         {/* Innings Selector */}
         {innings.length > 0 && (
-          <Card>
-            <div className="flex gap-2 justify-center">
-              {innings.map((inning) => (
-                <Button
-                  key={inning.inningNumber}
-                  variant={
-                    selectedInning === inning.inningNumber
-                      ? "primary"
-                      : "secondary"
-                  }
-                  onClick={() =>
-                    setSelectedInning(inning.inningNumber as 1 | 2)
-                  }
-                >
-                  {inning.inningNumber === 1 ? "1st" : "2nd"} Innings{" "}
-                  <span className="sm:block hidden">-</span>{" "}
-                  <span className="sm:block hidden">
-                    {inning.battingTeam.name}
-                  </span>
-                </Button>
-              ))}
-            </div>
-          </Card>
+          <div className="flex sm:gap-2 justify-center">
+            {innings.map((inning) => (
+              <Button
+                key={inning.inningNumber}
+                variant={
+                  selectedInning === inning.inningNumber
+                    ? "primary"
+                    : "secondary"
+                }
+                onClick={() => setSelectedInning(inning.inningNumber as 1 | 2)}
+                className="sm:w-auto w-[50%] sm:rounded-md rounded-none "
+              >
+                {inning.inningNumber === 1 ? "1st" : "2nd"} Innings{" "}
+                <span className="sm:block hidden">-</span>{" "}
+                <span className="sm:block hidden">
+                  {inning.battingTeam.name}
+                </span>
+              </Button>
+            ))}
+          </div>
         )}
 
         {currentInning && (
           <>
-            {/* Score Summary */}
-            <Card>
-              <div className="text-center">
-                <h2 className="text-2xl font-bold mb-2">
-                  {currentInning.battingTeam.name}
-                </h2>
-                <p className="text-5xl font-bold text-blue-600 mb-2">
-                  {currentInning.totalRuns}/{currentInning.totalWickets}
-                </p>
-                <p className="text-xl text-gray-600">
-                  ({currentInning.currentOver} overs)
-                </p>
-                <div className="mt-4 pt-4 border-t border-gray-400 grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-600">Run Rate</p>
-                    <p className="text-lg font-semibold">
-                      {currentInning.currentOver > 0
-                        ? (
-                            currentInning.totalRuns / currentInning.currentOver
-                          ).toFixed(2)
-                        : "0.00"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Extras</p>
-                    <p className="text-lg font-semibold">
-                      {(currentInning as any).extras?.wides +
-                        (currentInning as any).extras?.noBalls +
-                        (currentInning as any).extras?.byes +
-                        (currentInning as any).extras?.legByes || 0}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </Card>
-
             {/* Batting Scorecard */}
             <Card>
               <h3 className="text-xl font-bold mb-4">Batting</h3>
@@ -309,6 +274,33 @@ export default function ScoreboardPage() {
               </div>
             </Card>
 
+            {/* Score Summary */}
+            <Card>
+              <div className="text-center">
+                <div className="mt-4 pt-4 border-t border-gray-400 grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-600">Run Rate</p>
+                    <p className="text-lg font-semibold">
+                      {currentInning.currentOver > 0
+                        ? (
+                            currentInning.totalRuns / currentInning.currentOver
+                          ).toFixed(2)
+                        : "0.00"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Extras</p>
+                    <p className="text-lg font-semibold">
+                      {(currentInning as any).extras?.wides +
+                        (currentInning as any).extras?.noBalls +
+                        (currentInning as any).extras?.byes +
+                        (currentInning as any).extras?.legByes || 0}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
             {/* Partnerships */}
             {/* {currentInning.battingStats.length > 0 && (
               <Card>
@@ -408,7 +400,7 @@ export default function ScoreboardPage() {
                             {overBalls.map((ball) => (
                               <div
                                 key={ball._id}
-                              className={`sm:w-10 sm:h-10 w-8 h-8 flex items-center justify-center rounded-xs font-bold text-sm shadow-sm ${
+                                className={`sm:w-10 sm:h-10 w-8 h-8 flex items-center justify-center rounded-xs font-bold text-sm shadow-sm ${
                                   ball.ballType === "wicket"
                                     ? "bg-red-500 text-white"
                                     : ball.ballType === "wide" ||
