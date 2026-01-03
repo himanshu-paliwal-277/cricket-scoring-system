@@ -631,6 +631,29 @@ export default function ScoringPage() {
             <p className="text-xl text-gray-600">
               {inning?.currentOver}.{inning?.currentBall} overs
             </p>
+            {/* Show required runs for second inning when <= 30 runs needed */}
+            {match?.currentInning === 2 &&
+              inning &&
+              firstInning &&
+              !inning.isCompleted &&
+              (() => {
+                const target = (firstInning.totalRuns || 0) + 1;
+                const runsNeeded = target - (inning.totalRuns || 0);
+                const totalBalls = (match?.overs || 0) * 6;
+                const ballsPlayed =
+                  (inning.currentOver || 0) * 6 + (inning.currentBall || 0);
+                const ballsRemaining = totalBalls - ballsPlayed;
+
+                if (runsNeeded > 0 && runsNeeded <= 30) {
+                  return (
+                    <p className="text-blue-600 font-semibold mt-2 text-lg">
+                      Need {runsNeeded} run{runsNeeded !== 1 ? "s" : ""} in{" "}
+                      {ballsRemaining} ball{ballsRemaining !== 1 ? "s" : ""}
+                    </p>
+                  );
+                }
+                return null;
+              })()}
           </div>
 
           <div className="grid grid-cols-2 sm:gap-4 mb-6">
