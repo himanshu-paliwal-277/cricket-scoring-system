@@ -20,13 +20,13 @@ export const StatsTable: React.FC<StatsTableProps> = ({
 }) => {
   return (
     <div className="overflow-x-auto">
-      <table className="sm:w-full w-[450px]">
+      <table className="sm:w-full w-[450px] text-sm">
         <thead>
-          <tr className="border-b border-gray-500">
+          <tr className="border-b border-gray-400">
             {columns.map((column, index) => (
               <th
                 key={index}
-                className={`sm:py-3 sm:px-4 py-1.5 px-3 ${
+                className={`sm:py-3 sm:px-4 py-1.5 px-3 font-semibold ${
                   column.align === "center"
                     ? "text-center"
                     : column.align === "right"

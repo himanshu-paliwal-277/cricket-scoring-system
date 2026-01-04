@@ -323,7 +323,7 @@ export default function StatsPage() {
   return (
     <Layout>
       <div className="max-w-7xl mx-auto space-y-6">
-        <h1 className="text-3xl font-bold mb-6">Player Statistics</h1>
+        <h1 className="text-2xl font-bold mb-6">Player Statistics</h1>
 
         <StatsSection
           title="Most Runs"

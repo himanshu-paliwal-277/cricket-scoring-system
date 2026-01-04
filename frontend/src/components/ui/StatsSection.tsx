@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Card } from "./Card";
 import { StatsTable } from "./StatsTable";
 
 interface Column {
@@ -24,9 +23,9 @@ export const StatsSection: React.FC<StatsSectionProps> = ({
   emptyMessage,
 }) => {
   return (
-    <Card>
-      <h2 className="text-2xl font-bold mb-4">{title}</h2>
+    <div className="p-4 border-1 border-gray-300 rounded-md">
+      <h2 className="text-lg font-bold mb-2">{title}</h2>
       <StatsTable columns={columns} data={data} emptyMessage={emptyMessage} />
-    </Card>
+    </div>
   );
 };
