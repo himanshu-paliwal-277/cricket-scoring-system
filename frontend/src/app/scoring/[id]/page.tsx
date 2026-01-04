@@ -544,7 +544,7 @@ export default function ScoringPage() {
               </div>
 
               {/* Partnerships */}
-              <div className="mt-5">
+              {/* <div className="mt-5">
                 {currentInningData.battingStats &&
                   currentInningData.battingStats.length >= 1 && (
                     <div className="mb-4">
@@ -618,17 +618,17 @@ export default function ScoringPage() {
                       </div>
                     </div>
                   )}
-              </div>
+              </div> */}
             </div>
           );
         })()}
 
-        <div>
-          <div className="text-center mb-6">
-            <h2 className="text-5xl font-bold mb-2">
+        <div className="pt-6">
+          <div className="text-center mb-6 ">
+            <h2 className="text-4xl font-bold mb-1 pt-2">
               {inning?.totalRuns}/{inning?.totalWickets}
             </h2>
-            <p className="text-xl text-gray-600">
+            <p className="text-lg text-gray-600">
               {inning?.currentOver}.{inning?.currentBall} overs
             </p>
             {/* Show required runs for second inning when <= 30 runs needed */}
@@ -646,7 +646,7 @@ export default function ScoringPage() {
 
                 if (runsNeeded > 0 && runsNeeded <= 30) {
                   return (
-                    <p className="text-blue-600 font-semibold mt-2 text-lg">
+                    <p className="text-blue-600 font-semibold mt-2 text-md">
                       Need {runsNeeded} run{runsNeeded !== 1 ? "s" : ""} in{" "}
                       {ballsRemaining} ball{ballsRemaining !== 1 ? "s" : ""}
                     </p>
@@ -855,23 +855,23 @@ export default function ScoringPage() {
           </div>
 
           <h3 className="font-semibold mb-2">Extras</h3>
-          <div className="grid grid-cols-4 gap-4">
-            <div>
-              <p className="text-sm text-gray-600">Wides</p>
+          <div className="flex w-full items-center">
+            <div className="flex-1 flex items-center gap-2">
+              <p className="text-sm text-gray-600">Wides:</p>
               <p className="text-lg font-semibold">{inning?.extras.wides}</p>
             </div>
-            <div>
-              <p className="text-sm text-gray-600">No Balls</p>
+            <div className="flex-1 flex items-center gap-2">
+              <p className="text-sm text-gray-600">No Balls:</p>
               <p className="text-lg font-semibold">{inning?.extras.noBalls}</p>
             </div>
-            <div>
+            {/* <div>
               <p className="text-sm text-gray-600">Byes</p>
               <p className="text-lg font-semibold">{inning?.extras.byes}</p>
             </div>
             <div>
               <p className="text-sm text-gray-600">Leg Byes</p>
               <p className="text-lg font-semibold">{inning?.extras.legByes}</p>
-            </div>
+            </div> */}
           </div>
         </div>
 
