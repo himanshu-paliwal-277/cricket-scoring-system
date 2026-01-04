@@ -22,7 +22,7 @@ export const StatsTable: React.FC<StatsTableProps> = ({
     <div className="overflow-x-auto">
       <table className="sm:w-full w-[450px] text-sm">
         <thead>
-          <tr className="border-b border-gray-400">
+          <tr className="border-b border-gray-400 bg-gray-50">
             {columns.map((column, index) => (
               <th
                 key={index}

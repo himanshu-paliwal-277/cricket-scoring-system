@@ -10,7 +10,8 @@
       "Bash(npx tsc:*)",
       "Bash(npm run build:*)",
       "Bash(mkdir:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(grep:*)"
     ]
   }
 }

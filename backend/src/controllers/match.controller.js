@@ -364,6 +364,14 @@ export const getMatchById = async (req, res) => {
       .populate({
         path: "teamBSnapshot.captain",
         populate: { path: "userId", select: "name email" },
+      })
+      .populate({
+        path: "teamASnapshot.players",
+        populate: { path: "userId", select: "name email" },
+      })
+      .populate({
+        path: "teamBSnapshot.players",
+        populate: { path: "userId", select: "name email" },
       });
 
     if (!match) {

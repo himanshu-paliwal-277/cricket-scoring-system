@@ -23,7 +23,7 @@ export function ScoreTable({
 }: ScoreTableProps) {
   return (
     <div className="overflow-x-auto">
-      <table className="sm:w-full w-[350px] sm:text-md text-xs">
+      <table className="sm:w-full w-full sm:text-md text-xs">
         <thead>
           <tr className="border-b border-gray-400 bg-gray-50">
             {columns.map((column, index) => (

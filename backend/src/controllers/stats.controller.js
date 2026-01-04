@@ -140,7 +140,20 @@ export const getMatchScorecard = async (req, res) => {
     const { matchId } = req.params;
 
     const innings = await Inning.find({ matchId })
-      .populate("battingTeam bowlingTeam")
+      .populate({
+        path: "battingTeam",
+        populate: {
+          path: "players",
+          populate: { path: "userId", select: "name email" }
+        }
+      })
+      .populate({
+        path: "bowlingTeam",
+        populate: {
+          path: "players",
+          populate: { path: "userId", select: "name email" }
+        }
+      })
       .populate({
         path: "battingStats.playerId",
         populate: { path: "userId", select: "name email" }

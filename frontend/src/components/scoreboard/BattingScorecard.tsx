@@ -45,25 +45,33 @@ export function BattingScorecard({
       accessor: "batsman",
       align: "left",
       minWidth: "min-w-30",
-      className: "font-medium",
+      className: "",
       render: (_, row: BattingStat) => (
         <>
-          {truncateString(row.playerId.userId.name, 14)}
-          {captainId === row.playerId._id && " (C)"}
-          {!row.isOut && (
-            <span className="ml-2 text-xs text-green-600 font-bold">*</span>
-          )}
+          <div>
+            <span className="font-medium">
+              {truncateString(row.playerId.userId.name, 14)}
+              {captainId === row.playerId._id && " (C)"}
+              {!row.isOut && (
+                <span className="ml-2 text-xs text-green-600 font-bold">*</span>
+              )}
+            </span>
+            <br />
+            <span className="text-[11px] text-gray-400 italic">
+              {getDismissalText(row)}
+            </span>
+          </div>
         </>
       ),
     },
-    {
-      header: "Dismissal",
-      accessor: "dismissal",
-      align: "left",
-      minWidth: "min-w-30",
-      className: "text-[11px] text-gray-600 italic",
-      render: (_, row: BattingStat) => getDismissalText(row),
-    },
+    // {
+    //   header: "Dismissal",
+    //   accessor: "dismissal",
+    //   align: "left",
+    //   minWidth: "min-w-30",
+    //   className: "text-[11px] text-gray-600 italic",
+    //   render: (_, row: BattingStat) => getDismissalText(row),
+    // },
     {
       header: "R",
       accessor: "runs",

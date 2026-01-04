@@ -165,9 +165,20 @@ export default function ScoreboardPage() {
             <BattingScorecard
               battingStats={currentInning.battingStats}
               captainId={
-                typeof currentInning.battingTeam?.captain === "string"
-                  ? currentInning.battingTeam?.captain
-                  : currentInning.battingTeam?.captain?._id
+                // Get captain from snapshot first (captain at match time), then fallback to current captain
+                currentInning.inningNumber === 1
+                  ? typeof (
+                      match.teamASnapshot?.captain || match.teamA?.captain
+                    ) === "string"
+                    ? match.teamASnapshot?.captain || match.teamA?.captain
+                    : match.teamASnapshot?.captain?._id ||
+                      match.teamA?.captain?._id
+                  : typeof (
+                      match.teamBSnapshot?.captain || match.teamB?.captain
+                    ) === "string"
+                  ? match.teamBSnapshot?.captain || match.teamB?.captain
+                  : match.teamBSnapshot?.captain?._id ||
+                    match.teamB?.captain?._id
               }
               getDismissalText={getDismissalText}
             />
@@ -198,6 +209,10 @@ export default function ScoreboardPage() {
                 </p>
               </div>
               <div className="flex gap-5 items-center">
+                <p className="text-sm min-w-36 text-gray-600">Total Overs</p>
+                <p className="text-sm text-gray-800">{match.overs} Overs</p>
+              </div>
+              <div className="flex gap-5 items-center">
                 <p className="text-sm min-w-36 text-gray-600">Run Rate</p>
                 <p className="text-sm text-gray-800">
                   {currentInning.currentOver > 0
@@ -208,6 +223,92 @@ export default function ScoreboardPage() {
                 </p>
               </div>
             </div>
+
+            {/* Yet to bat */}
+            {(() => {
+              // Get all players who batted
+              const battedPlayerIds = currentInning.battingStats.map(
+                (stat: any) => stat.playerId._id
+              );
+
+              // Get team snapshot or current team based on inning
+              const battingTeamSnapshot =
+                currentInning.inningNumber === 1
+                  ? match.teamASnapshot || match.teamA
+                  : match.teamBSnapshot || match.teamB;
+
+              // Filter players who haven't batted yet
+              const yetToBatPlayers =
+                battingTeamSnapshot.players?.filter(
+                  (player: any) =>
+                    !battedPlayerIds.includes(
+                      player.playerId?._id || player._id
+                    )
+                ) || [];
+
+              return yetToBatPlayers.length > 0 ? (
+                <div>
+                  <h3 className="font-semibold mb-3">Yet to bat</h3>
+                  <p className="text-sm text-gray-700">
+                    {yetToBatPlayers
+                      .map(
+                        (player: any) =>
+                          player.playerId?.userId?.name ||
+                          player.userId?.name ||
+                          player.name
+                      )
+                      .join(" • ")}
+                  </p>
+                </div>
+              ) : null;
+            })()}
+
+            {/* Fall of wickets */}
+            {(() => {
+              if (!currentInning.balls || currentInning.balls.length === 0) {
+                return null;
+              }
+
+              // Calculate cumulative runs and valid ball count as we go through balls
+              let cumulativeRuns = 0;
+              let validBallCount = 0;
+              const wicketBalls: any[] = [];
+
+              currentInning.balls.forEach((ball: any) => {
+                if (ball.isValid) {
+                  cumulativeRuns += ball.runs || 0;
+                  validBallCount++;
+                }
+
+                if (ball.ballType === "wicket") {
+                  // Calculate over.ball format (e.g., 0.4 means 1st over, 4th ball)
+                  const overNum = Math.floor(validBallCount / 6);
+                  const ballNum = validBallCount % 6;
+
+                  wicketBalls.push({
+                    batsman: ball.batsman,
+                    runsAtWicket: cumulativeRuns,
+                    over: ballNum === 0 ? overNum : `${overNum}.${ballNum}`,
+                  });
+                }
+              });
+
+              return wicketBalls.length > 0 ? (
+                <div>
+                  <h3 className="font-semibold mb-3">Fall of wickets</h3>
+                  <p className="text-sm text-gray-700">
+                    {wicketBalls
+                      .map(
+                        (wicket, index) =>
+                          `${wicket.runsAtWicket}/${index + 1} (${
+                            wicket.batsman?.userId?.name || "Unknown"
+                          }, ${wicket.over} ov)`
+                      )
+                      .join(" • ")}
+                  </p>
+                </div>
+              ) : null;
+            })()}
 
             {/* Bowling Scorecard */}
             <BowlingScorecard bowlingStats={currentInning.bowlingStats} />
@@ -344,7 +445,7 @@ export default function ScoreboardPage() {
         )}
 
         {/* Match Details */}
-        <div>
+        {/* <div>
           <h3 className="text-xl font-bold mb-4">Match Details</h3>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
@@ -383,7 +484,7 @@ export default function ScoreboardPage() {
               </p>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </Layout>
   );
