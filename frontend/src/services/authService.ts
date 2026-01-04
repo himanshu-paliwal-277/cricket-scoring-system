@@ -25,6 +25,8 @@ export interface PlayerProfile {
   totalBallsBowled: number;
   totalFours: number;
   totalSixes: number;
+  total25s: number;
+  total50s: number;
   createdAt: string;
   updatedAt: string;
 }

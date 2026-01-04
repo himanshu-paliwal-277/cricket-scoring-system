@@ -24,6 +24,7 @@ interface MatchHeaderProps {
   innings: InningData[];
   resultText?: string;
   matchStatus?: string;
+  isLive?: boolean;
 }
 
 export function MatchHeader({
@@ -33,6 +34,7 @@ export function MatchHeader({
   innings,
   resultText,
   matchStatus,
+  isLive,
 }: MatchHeaderProps) {
   const firstInning = innings.length > 0 && innings[0] ? innings[0] : null;
   const secondInning = innings.length > 1 && innings[1] ? innings[1] : null;
@@ -54,7 +56,10 @@ export function MatchHeader({
 
   return (
     <div className="space-y-4">
-      <p className="text-gray-600 text-xs">{date}</p>
+      <div className="flex justify-between items-center">
+        <p className="text-gray-600 text-xs">{date}</p>
+        {isLive && <p className="text-green-500 font-semibold">Live</p>}
+      </div>
 
       <div className="flex items-center justify-between gap-3">
         {firstInning && (

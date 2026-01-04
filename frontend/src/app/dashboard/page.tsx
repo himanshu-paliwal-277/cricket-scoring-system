@@ -52,15 +52,14 @@ export default function DashboardPage() {
                 Welcome to Cricket Scoring
               </h1>
               <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
-                Track matches, manage teams, and view comprehensive cricket statistics all in one place
+                Track matches, manage teams, and view comprehensive cricket
+                statistics all in one place
               </p>
             </div>
 
             <div className="flex justify-center gap-4 pt-4">
               <Link href="/login">
-                <Button>
-                  Login to Get Started
-                </Button>
+                <Button>Login to Get Started</Button>
               </Link>
               {/* <Link href="/register">
                 <Button>
@@ -82,7 +81,8 @@ export default function DashboardPage() {
                 <div className="text-4xl mb-3">👥</div>
                 <h3 className="text-lg font-semibold mb-2">Team Management</h3>
                 <p className="text-gray-600 text-sm">
-                  Create and manage teams, track player statistics and performance
+                  Create and manage teams, track player statistics and
+                  performance
                 </p>
               </Card>
 
@@ -90,7 +90,8 @@ export default function DashboardPage() {
                 <div className="text-4xl mb-3">🏆</div>
                 <h3 className="text-lg font-semibold mb-2">Detailed Stats</h3>
                 <p className="text-gray-600 text-sm">
-                  View comprehensive statistics including runs, wickets, and strike rates
+                  View comprehensive statistics including runs, wickets, and
+                  strike rates
                 </p>
               </Card>
             </div>
@@ -107,7 +108,7 @@ export default function DashboardPage() {
         )}
 
         {user && user?.role === "player" && user?.playerProfile && (
-          <Card>
+          <div>
             <h2 className="text-2xl font-bold mb-4">Your Cricket Statistics</h2>
             {statsLoading ? (
               <p>Loading stats...</p>
@@ -172,6 +173,18 @@ export default function DashboardPage() {
                     </p>
                     <p className="text-sm text-gray-600">Boundaries</p>
                   </div>
+                  <div className="bg-teal-50 p-4 rounded-lg text-center">
+                    <p className="text-3xl font-bold text-green-600">
+                      {user.playerProfile.total50s}
+                    </p>
+                    <p className="text-sm text-gray-600">50s</p>
+                  </div>
+                  <div className="bg-teal-50 p-4 rounded-lg text-center">
+                    <p className="text-3xl font-bold text-sky-600">
+                      {user.playerProfile.total25s}
+                    </p>
+                    <p className="text-sm text-gray-600">25s</p>
+                  </div>
                 </div>
 
                 <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -192,7 +205,7 @@ export default function DashboardPage() {
             ) : (
               <p className="text-gray-600">No stats available</p>
             )}
-          </Card>
+          </div>
         )}
 
         {/* {user?.role === "owner" && (

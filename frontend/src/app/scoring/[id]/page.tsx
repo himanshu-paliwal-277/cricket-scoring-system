@@ -477,6 +477,7 @@ export default function ScoringPage() {
             innings={innings}
             resultText={match.resultText}
             matchStatus={match.status}
+            isLive={true}
           />
         )}
 
@@ -873,6 +874,10 @@ export default function ScoringPage() {
               <p className="text-lg font-semibold">{inning?.extras.legByes}</p>
             </div> */}
           </div>
+
+          <div className="mt-2">
+            <h3 className="font-semibold">Total Over: {match.overs}</h3>
+          </div>
         </div>
 
         {inning && inning?.balls && inning.balls.length > 6 && (
@@ -902,7 +907,7 @@ export default function ScoringPage() {
                     return (
                       <div
                         key={overNumber}
-                        className="border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow bg-white"
+                        className="border-b-2 border-gray-200 pb-3 hover:shadow-md transition-shadow bg-white"
                       >
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">

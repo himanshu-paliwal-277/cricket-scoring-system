@@ -57,10 +57,7 @@ export const updatePlayerStatsAfterMatch = async (matchId) => {
   }
 
   // Get all players from both teams
-  const allPlayerIds = [
-    ...match.teamASnapshot.players,
-    ...match.teamBSnapshot.players
-  ];
+  const allPlayerIds = [...match.teamASnapshot.players, ...match.teamBSnapshot.players];
 
   // Increment matchesPlayed for ALL players in the match (even if they didn't bat/bowl)
   for (const playerId of allPlayerIds) {
@@ -161,7 +158,7 @@ export const startMatch = async (req, res) => {
           sixes: 0,
           strikeRate: 0,
           isOut: false,
-          dismissalType: "none"
+          dismissalType: "none",
         },
         {
           playerId: nonStriker,
@@ -171,8 +168,8 @@ export const startMatch = async (req, res) => {
           sixes: 0,
           strikeRate: 0,
           isOut: false,
-          dismissalType: "none"
-        }
+          dismissalType: "none",
+        },
       ],
       bowlingStats: [
         {
@@ -182,9 +179,9 @@ export const startMatch = async (req, res) => {
           runsConceded: 0,
           wickets: 0,
           maidens: 0,
-          economy: 0
-        }
-      ]
+          economy: 0,
+        },
+      ],
     });
 
     // match.status = "live";
@@ -281,7 +278,7 @@ export const startInning = async (req, res) => {
           sixes: 0,
           strikeRate: 0,
           isOut: false,
-          dismissalType: "none"
+          dismissalType: "none",
         },
         {
           playerId: nonStriker,
@@ -291,8 +288,8 @@ export const startInning = async (req, res) => {
           sixes: 0,
           strikeRate: 0,
           isOut: false,
-          dismissalType: "none"
-        }
+          dismissalType: "none",
+        },
       ],
       bowlingStats: [
         {
@@ -302,9 +299,9 @@ export const startInning = async (req, res) => {
           runsConceded: 0,
           wickets: 0,
           maidens: 0,
-          economy: 0
-        }
-      ]
+          economy: 0,
+        },
+      ],
     });
 
     const populatedMatch = await Match.findById(match._id).populate("teamA").populate("teamB");
@@ -453,15 +450,15 @@ export const getCurrentInning = async (req, res) => {
     const balls = await Ball.find({ inningId: inning._id })
       .populate({
         path: "batsman",
-        populate: { path: "userId", select: "name email" }
+        populate: { path: "userId", select: "name email" },
       })
       .populate({
         path: "bowler",
-        populate: { path: "userId", select: "name email" }
+        populate: { path: "userId", select: "name email" },
       })
       .populate({
         path: "fielder",
-        populate: { path: "userId", select: "name email" }
+        populate: { path: "userId", select: "name email" },
       })
       .sort({ createdAt: 1 });
 
