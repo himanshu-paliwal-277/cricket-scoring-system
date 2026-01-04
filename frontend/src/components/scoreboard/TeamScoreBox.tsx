@@ -3,9 +3,9 @@ import Image from "next/image";
 interface TeamScoreBoxProps {
   teamLogo?: string;
   teamName: string;
-  runs: number;
-  wickets: number;
-  overs: string;
+  runs?: number;
+  wickets?: number;
+  overs?: string;
   isSecond?: boolean;
 }
 
@@ -40,12 +40,16 @@ export function TeamScoreBox({
         )}
         <h2 className="font-bold text-center min-w-20">{teamName}</h2>
       </div>
-      <div className="flex flex-col items-center">
-        <p className="font-bold text-blue-600 text-xl">
-          {runs}/{wickets}
-        </p>
-        <p className="text-gray-600 text-sm">({overs})</p>
-      </div>
+      {runs !== undefined && wickets !== undefined && overs !== undefined ? (
+        <div className="flex flex-col items-center">
+          <p className="font-bold text-blue-600 text-xl">
+            {runs}/{wickets}
+          </p>
+          <p className="text-gray-600 text-sm">({overs})</p>
+        </div>
+      ) : (
+        "yet to bat"
+      )}
     </div>
   );
 }

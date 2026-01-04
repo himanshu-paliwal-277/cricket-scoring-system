@@ -84,21 +84,29 @@ export function MatchHeader({
             runs={secondInning.totalRuns}
             wickets={secondInning.totalWickets}
             overs={`${secondInning.currentOver}${
-              secondInning.currentBall > 0
-                ? "." + secondInning.currentBall
-                : ""
+              secondInning.currentBall > 0 ? "." + secondInning.currentBall : ""
             }`}
             isSecond
           />
         ) : (
-          <div className="flex flex-col items-center gap-2 opacity-50">
-            <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-white font-bold text-lg">
-              ?
-            </div>
-            <h2 className="font-bold text-center text-gray-400">Yet to bat</h2>
-            <p className="font-bold text-gray-400 text-lg">-/-</p>
-            <p className="text-gray-400 text-sm">(- overs)</p>
-          </div>
+          // <div className="flex flex-col items-center gap-2 opacity-50">
+          //   <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-white font-bold text-lg">
+          //     ?
+          //   </div>
+          //   <h2 className="font-bold text-center text-gray-400">Yet to bat</h2>
+          //   <p className="font-bold text-gray-400 text-lg">-/-</p>
+          //   <p className="text-gray-400 text-sm">(- overs)</p>
+          // </div>
+          <TeamScoreBox
+            teamLogo={teamB?.logo}
+            teamName={
+              teamB?.shortName ||
+              // secondInning?.battingTeam?.shortName ||
+              // secondInning?.battingTeam?.name ||
+              "Team"
+            }
+            isSecond
+          />
         )}
       </div>
 
