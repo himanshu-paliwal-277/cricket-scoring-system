@@ -55,11 +55,35 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               if ('serviceWorker' in navigator) {
+                // Auto-reload when new service worker takes control
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                  console.log('New service worker activated, reloading...');
+                  window.location.reload();
+                });
+
                 window.addEventListener('load', () => {
                   navigator.serviceWorker
                     .register('/sw.js')
                     .then((registration) => {
                       console.log('Service Worker registered:', registration);
+
+                      // Check for updates every 60 seconds
+                      setInterval(() => {
+                        registration.update();
+                      }, 60000);
+
+                      // Listen for updates
+                      registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        if (newWorker) {
+                          newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                              console.log('New service worker available');
+                              // The new service worker will activate and trigger controllerchange
+                            }
+                          });
+                        }
+                      });
                     })
                     .catch((error) => {
                       console.log('Service Worker registration failed:', error);
