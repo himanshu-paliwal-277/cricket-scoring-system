@@ -15,9 +15,13 @@ export const Select: React.FC<SelectProps> = ({
 }) => {
   return (
     <div className="w-full">
-      {label && <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>}
+      {label && (
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          {label}
+        </label>
+      )}
       <select
-        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+        className={`w-full px-4 py-2 border sm:rounded-lg rounded-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
           error ? "border-red-500" : "border-gray-300"
         } ${className}`}
         {...props}

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { useMatch, useMatches } from "@/hooks/useMatches";
 import { usePlayers } from "@/hooks/usePlayers";
+import Image from "next/image";
 
 export default function StartMatchPage() {
   const router = useRouter();
@@ -34,16 +35,16 @@ export default function StartMatchPage() {
         ? teamAPlayers
         : teamBPlayers
       : formData.tossDecision === "bat"
-        ? teamBPlayers
-        : teamAPlayers;
+      ? teamBPlayers
+      : teamAPlayers;
   const bowlingTeamPlayers =
     formData.tossWinner === match?.teamA._id
       ? formData.tossDecision === "bowl"
         ? teamAPlayers
         : teamBPlayers
       : formData.tossDecision === "bowl"
-        ? teamBPlayers
-        : teamAPlayers;
+      ? teamBPlayers
+      : teamAPlayers;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,22 +58,41 @@ export default function StartMatchPage() {
     );
   };
 
-  if (isLoading || !match) return <Layout><p>Loading...</p></Layout>;
+  if (isLoading || !match)
+    return (
+      <Layout>
+        <p>Loading...</p>
+      </Layout>
+    );
 
   return (
     <ProtectedRoute allowedRoles={["owner", "scorer"]}>
       <Layout>
-        <Card className="max-w-2xl mx-auto">
+        <div className="max-w-2xl mx-auto">
           <h1 className="text-2xl font-bold mb-6">Start Match</h1>
-          <h2 className="text-xl mb-6">
-            {match.teamA.name} vs {match.teamB.name}
-          </h2>
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col items-center">
+              <Image src={match.teamA.logo} alt="logo" width={50} height={50} />
+              <h2 className="text-md mb-6 min-w-36 text-center">
+                {match.teamA.name}
+              </h2>
+            </div>
+            <span className="text-gray-500">VS</span>
+            <div className="flex flex-col items-center">
+              <Image src={match.teamB.logo} alt="logo" width={50} height={50} />
+              <h2 className="text-md mb-6 min-w-36 text-center">
+                {match.teamB.name}
+              </h2>
+            </div>
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <Select
               label="Toss Winner"
               value={formData.tossWinner}
-              onChange={(e) => setFormData({ ...formData, tossWinner: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, tossWinner: e.target.value })
+              }
               options={[
                 { value: "", label: "Select Toss Winner" },
                 { value: match.teamA._id, label: match.teamA.name },
@@ -85,7 +105,10 @@ export default function StartMatchPage() {
               label="Toss Decision"
               value={formData.tossDecision}
               onChange={(e) =>
-                setFormData({ ...formData, tossDecision: e.target.value as "bat" | "bowl" })
+                setFormData({
+                  ...formData,
+                  tossDecision: e.target.value as "bat" | "bowl",
+                })
               }
               options={[
                 { value: "bat", label: "Bat" },
@@ -98,12 +121,17 @@ export default function StartMatchPage() {
                 <Select
                   label="Striker"
                   value={formData.striker}
-                  onChange={(e) => setFormData({ ...formData, striker: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, striker: e.target.value })
+                  }
                   options={[
                     { value: "", label: "Select Striker" },
                     ...battingTeamPlayers.map((playerId: string) => {
                       const player = players.find((p) => p._id === playerId);
-                      return { value: playerId, label: player?.userId.name || "" };
+                      return {
+                        value: playerId,
+                        label: player?.userId.name || "",
+                      };
                     }),
                   ]}
                   required
@@ -112,14 +140,19 @@ export default function StartMatchPage() {
                 <Select
                   label="Non-Striker"
                   value={formData.nonStriker}
-                  onChange={(e) => setFormData({ ...formData, nonStriker: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, nonStriker: e.target.value })
+                  }
                   options={[
                     { value: "", label: "Select Non-Striker" },
                     ...battingTeamPlayers
                       .filter((id: string) => id !== formData.striker)
                       .map((playerId: string) => {
                         const player = players.find((p) => p._id === playerId);
-                        return { value: playerId, label: player?.userId.name || "" };
+                        return {
+                          value: playerId,
+                          label: player?.userId.name || "",
+                        };
                       }),
                   ]}
                   required
@@ -128,12 +161,17 @@ export default function StartMatchPage() {
                 <Select
                   label="Bowler"
                   value={formData.bowler}
-                  onChange={(e) => setFormData({ ...formData, bowler: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, bowler: e.target.value })
+                  }
                   options={[
                     { value: "", label: "Select Bowler" },
                     ...bowlingTeamPlayers.map((playerId: string) => {
                       const player = players.find((p) => p._id === playerId);
-                      return { value: playerId, label: player?.userId.name || "" };
+                      return {
+                        value: playerId,
+                        label: player?.userId.name || "",
+                      };
                     }),
                   ]}
                   required
@@ -145,7 +183,7 @@ export default function StartMatchPage() {
               Start Match
             </Button>
           </form>
-        </Card>
+        </div>
       </Layout>
     </ProtectedRoute>
   );

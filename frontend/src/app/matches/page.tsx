@@ -13,6 +13,7 @@ import { Select } from "@/components/ui/Select";
 import { useMatches } from "@/hooks/useMatches";
 import { useTeams } from "@/hooks/useTeams";
 import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 
 export default function MatchesPage() {
   const { matches, isLoading, createMatch, isCreating } = useMatches();
@@ -26,6 +27,8 @@ export default function MatchesPage() {
     teamB: "",
     overs: 6,
   });
+
+  const router = useRouter();
 
   // Get default team A and B based on teams array
   const defaultTeamA = useMemo(
@@ -169,9 +172,14 @@ export default function MatchesPage() {
                     const teamBInning = teamABattedFirst ? inning2 : inning1;
 
                     return (
-                      <div
+                      <button
                         className="p-3 border-1 border-gray-300 rounded-md"
                         key={match._id}
+                        onClick={() => {
+                          if (match.status === "completed") {
+                            router.push(`/view-scoreboard/${match._id}`);
+                          }
+                        }}
                       >
                         <div className="space-y-2">
                           {/* Match Header with Status */}
@@ -278,43 +286,45 @@ export default function MatchesPage() {
                           )}
 
                           {/* Action Buttons */}
-                          <div className="flex gap-2 pt-2">
-                            {match.status === "not_started" &&
-                              user &&
-                              user?.role !== "player" && (
+                          {match.status !== "completed" && (
+                            <div className="flex gap-2 pt-2">
+                              {match.status === "not_started" &&
+                                user &&
+                                user?.role !== "player" && (
+                                  <Link
+                                    href={`/matches/${match._id}/start`}
+                                    className="flex-1"
+                                  >
+                                    <Button className="w-full ">
+                                      Start Match
+                                    </Button>
+                                  </Link>
+                                )}
+                              {match.status === "live" &&
+                                user?.role !== "player" && (
+                                  <Link
+                                    href={`/scoring/${match._id}`}
+                                    className="flex-1"
+                                  >
+                                    <Button className="w-full bg-green-600 hover:bg-green-700">
+                                      Score
+                                    </Button>
+                                  </Link>
+                                )}
+                              {/* {match.status === "completed" && (
                                 <Link
-                                  href={`/matches/${match._id}/start`}
-                                  className="flex-1"
+                                  href={`/view-scoreboard/${match._id}`}
+                                  className="flex-1 "
                                 >
                                   <Button className="w-full ">
-                                    Start Match
+                                    View Scorecard
                                   </Button>
                                 </Link>
-                              )}
-                            {match.status === "live" &&
-                              user?.role !== "player" && (
-                                <Link
-                                  href={`/scoring/${match._id}`}
-                                  className="flex-1"
-                                >
-                                  <Button className="w-full bg-green-600 hover:bg-green-700">
-                                    Score
-                                  </Button>
-                                </Link>
-                              )}
-                            {match.status === "completed" && (
-                              <Link
-                                href={`/view-scoreboard/${match._id}`}
-                                className="flex-1 "
-                              >
-                                <Button className="w-full ">
-                                  View Scorecard
-                                </Button>
-                              </Link>
-                            )}
-                          </div>
+                              )} */}
+                            </div>
+                          )}
                         </div>
-                      </div>
+                      </button>
                     );
                   })}
                 </div>
