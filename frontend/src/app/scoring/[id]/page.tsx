@@ -258,6 +258,28 @@ export default function ScoringPage() {
     }
   }, [showWicketModal, inning]);
 
+  // Get the last over's bowler
+  const getLastOverBowler = () => {
+    if (!inning?.balls || inning.balls.length === 0) return null;
+
+    const currentOver = inning.currentOver;
+    const lastOverNumber = currentOver > 0 ? currentOver - 1 : -1;
+
+    if (lastOverNumber < 0) return null;
+
+    const lastOverBalls = inning.balls.filter(
+      (ball) => ball.overNumber === lastOverNumber && ball.isValid
+    );
+
+    return lastOverBalls.length > 0 ? lastOverBalls[0].bowler._id : null;
+  };
+
+  // Check if current bowler is same as last over bowler
+  const isSameBowlerAsLastOver = () => {
+    const lastOverBowlerId = getLastOverBowler();
+    return lastOverBowlerId !== null && inning?.currentBowler?._id === lastOverBowlerId;
+  };
+
   const handleChangeBowler = () => {
     if (newBowlerId && inning) {
       changeBowler({ inningId: inning._id, bowlerId: newBowlerId });
@@ -721,6 +743,13 @@ export default function ScoringPage() {
                 </Button>
               )}
             </div>
+            {isSameBowlerAsLastOver() && (
+              <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mt-3">
+                <p className="text-sm font-semibold">
+                  ⚠️ Change bowler! The same bowler cannot bowl for 2 consecutive overs.
+                </p>
+              </div>
+            )}
           </div>
 
           {match?.status === "live" && canScore && !checkAllPlayersOut() && (
@@ -733,12 +762,14 @@ export default function ScoringPage() {
                   variant="secondary"
                   onClick={handleWideClick}
                   isLoading={isAddingBall}
+                  disabled={isSameBowlerAsLastOver()}
                 >
                   Wide (+1)
                 </Button>
                 <Button
                   variant={ballType === "noBall" ? "primary" : "secondary"}
                   onClick={() => setBallType("noBall")}
+                  disabled={isSameBowlerAsLastOver()}
                 >
                   No Ball
                 </Button>
@@ -746,12 +777,14 @@ export default function ScoringPage() {
                   variant="danger"
                   onClick={() => handleAddBall(0, "wicket")}
                   isLoading={isAddingBall}
+                  disabled={isSameBowlerAsLastOver()}
                 >
                   Wicket
                 </Button>
                 <Button
                   variant={ballType === "normal" ? "primary" : "secondary"}
                   onClick={() => setBallType("normal")}
+                  disabled={isSameBowlerAsLastOver()}
                 >
                   Normal
                 </Button>
@@ -771,6 +804,7 @@ export default function ScoringPage() {
                     onClick={() => handleAddBall(runs, ballType)}
                     isLoading={isAddingBall}
                     className="text-2xl h-16"
+                    disabled={isSameBowlerAsLastOver()}
                   >
                     {runs}
                   </Button>
@@ -1203,6 +1237,13 @@ export default function ScoringPage() {
                       </p>
                     </div>
                   )}
+                  {newBowlerId && newBowlerId === getLastOverBowler() && (
+                    <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded">
+                      <p className="text-sm font-semibold">
+                        Change bowler! The same bowler cannot bowl for 2 consecutive overs.
+                      </p>
+                    </div>
+                  )}
                   <Select
                     label="Select New Bowler"
                     value={newBowlerId}
@@ -1228,7 +1269,7 @@ export default function ScoringPage() {
                   <Button
                     onClick={handleChangeBowler}
                     className="w-full"
-                    disabled={inning?.currentBall !== 0 || !newBowlerId}
+                    disabled={inning?.currentBall !== 0 || !newBowlerId || newBowlerId === getLastOverBowler()}
                   >
                     Confirm
                   </Button>

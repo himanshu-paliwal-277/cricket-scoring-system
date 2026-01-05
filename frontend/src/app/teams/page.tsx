@@ -130,43 +130,44 @@ export default function TeamsPage() {
     if (!team) return null;
 
     return (
-      <Card key={team._id}>
+      <div className="border-2 p-4 border-gray-300 rounded-md" key={team._id}>
         <div className="flex justify-between items-start mb-4">
           <div>
-            <h3 className="text-2xl font-bold">{team.name}</h3>
-            <p className="text-sm text-gray-500">
+            <h3 className="text-xl font-bold">{team.name}</h3>
+            <p className="text-xs text-gray-500">
               {team.teamType === "team1" ? "First Team" : "Second Team"}
             </p>
             {team.captain &&
               typeof team.captain === "object" &&
               team.captain.userId && (
-                <p className="text-sm font-semibold text-blue-600 mt-1">
+                <p className="text-xs font-semibold text-blue-600 mt-1">
                   Captain: {team.captain.userId.name}
                 </p>
               )}
           </div>
           {user?.role === "owner" && (
-            <Button variant="secondary" onClick={() => handleEditTeam(team)}>
+            <button
+              className="bg-gray-200 rounded-sm px-3 py-1.5 text-sm!"
+              onClick={() => handleEditTeam(team)}
+            >
               Edit Team
-            </Button>
+            </button>
           )}
         </div>
 
-        <div className="mb-4">
+        <div className="">
           <h4 className="font-semibold mb-2">
             Players ({team.players.length})
           </h4>
           {team.players.length > 0 ? (
-            <ul className="space-y-2">
+            <ul className="grid grid-cols-2 gap-2">
               {team.players.map((player) => (
                 <li
                   key={player._id}
-                  className="flex items-center justify-between bg-gray-50 p-2 rounded"
+                  className="text-sm flex items-center justify-between bg-gray-50 border-1 border-gray-200 p-2 rounded"
                 >
                   <span>{player.userId.name}</span>
-                  <span className="text-sm text-gray-500">
-                    {player.userId.email}
-                  </span>
+                  {/* <span className=" text-gray-500">{player.userId.email}</span> */}
                 </li>
               ))}
             </ul>
@@ -174,7 +175,7 @@ export default function TeamsPage() {
             <p className="text-gray-500 text-sm">No players added yet</p>
           )}
         </div>
-      </Card>
+      </div>
     );
   };
 
@@ -184,17 +185,40 @@ export default function TeamsPage() {
         <div className="space-y-6">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold">Teams</h1>
-              <p className="text-gray-600 mt-1">
+              <h1 className="text-2xl font-bold">Teams</h1>
+              {/* <p className="text-gray-600 mt-1">
                 Manage your two teams. Players can only be in one team at a
                 time.
-              </p>
+              </p> */}
             </div>
           </div>
 
+          {isLoading ? (
+            <p>Loading...</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {renderTeamCard(team1)}
+              {renderTeamCard(team2)}
+            </div>
+          )}
+
+          {!team1 && !team2 && !isLoading && (
+            <div>
+              <div className="text-center py-8">
+                <p className="text-gray-600 mb-4">
+                  No teams found. Teams will be automatically created when you
+                  access this page.
+                </p>
+                <p className="text-sm text-gray-500">
+                  Please refresh the page if teams don&apos;t appear.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Common Player Section */}
           {user?.role === "owner" && !isLoading && team1 && team2 && (
-            <Card>
+            <div>
               <div className="space-y-4">
                 <div>
                   <h3 className="text-lg font-semibold mb-1">
@@ -213,7 +237,7 @@ export default function TeamsPage() {
                   <select
                     value={selectedCommonPlayer}
                     onChange={(e) => setSelectedCommonPlayer(e.target.value)}
-                    className="w-full border rounded-lg px-3 py-2 bg-white"
+                    className="w-full border border-gray-300 rounded-sm px-3 py-2 bg-white"
                   >
                     <option value="">Select a player</option>
                     {getPlayersNotInAnyTeam().map((player) => (
@@ -239,30 +263,7 @@ export default function TeamsPage() {
                   Add Common Player to Both Teams
                 </Button>
               </div>
-            </Card>
-          )}
-
-          {isLoading ? (
-            <p>Loading...</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {renderTeamCard(team1)}
-              {renderTeamCard(team2)}
             </div>
-          )}
-
-          {!team1 && !team2 && !isLoading && (
-            <Card>
-              <div className="text-center py-8">
-                <p className="text-gray-600 mb-4">
-                  No teams found. Teams will be automatically created when you
-                  access this page.
-                </p>
-                <p className="text-sm text-gray-500">
-                  Please refresh the page if teams don&apos;t appear.
-                </p>
-              </div>
-            </Card>
           )}
 
           <Modal
@@ -285,7 +286,7 @@ export default function TeamsPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  className="w-full border rounded-lg px-3 py-2"
+                  className="w-full border rounded-sm px-3 py-2 !text-sm"
                   placeholder="Enter team name"
                   required
                 />
@@ -302,7 +303,7 @@ export default function TeamsPage() {
                   </span>
                 </div>
                 <div
-                  className="border rounded-lg p-2 bg-blue-50 min-h-[40px] max-h-40 overflow-y-auto"
+                  className="border border-gray-300 rounded-sm p-2 bg-green-50 min-h-[40px] max-h-40 overflow-y-auto"
                   style={{
                     scrollbarWidth: "thin",
                   }}
@@ -314,10 +315,10 @@ export default function TeamsPage() {
                         return (
                           <div
                             key={playerId}
-                            className="flex items-center justify-between bg-white px-3 py-1.5 rounded shadow-sm"
+                            className="flex items-center justify-between bg-white px-3 py-1 rounded-sm shadow-sm"
                           >
                             <div className="flex-1">
-                              <span className="font-medium">
+                              <span className="font-medium text-sm">
                                 {player?.userId.name}
                               </span>
                               {/* <span className="text-xs text-gray-500 ml-2">
@@ -348,12 +349,12 @@ export default function TeamsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Select New Player
                 </label>
-                <p className="text-xs text-gray-500 mb-2">
+                {/* <p className="text-xs text-gray-500 mb-2">
                   Players already in the other team are not available for
                   selection
-                </p>
+                </p> */}
                 <div
-                  className="max-h-40 overflow-y-auto border rounded-lg p-2 space-y-2 bg-gray-50"
+                  className="max-h-40 overflow-y-auto border border-gray-300 rounded-sm p-2 space-y-2 bg-gray-50"
                   style={{
                     scrollbarWidth: "thin",
                   }}
@@ -366,7 +367,7 @@ export default function TeamsPage() {
                       .map((player) => (
                         <div
                           key={player._id}
-                          className="flex items-center bg-white px-3 py-1.5 rounded hover:bg-blue-50 transition-colors"
+                          className="flex items-center bg-white px-3 py-1.5 rounded-sm hover:bg-blue-50 transition-colors"
                         >
                           <input
                             type="checkbox"
@@ -377,7 +378,7 @@ export default function TeamsPage() {
                           />
                           <label
                             htmlFor={player._id}
-                            className="cursor-pointer flex-1"
+                            className="cursor-pointer flex-1 text-sm"
                           >
                             {player.userId.name}
                             {/* <span className="text-xs text-gray-500 ml-2">
@@ -406,7 +407,7 @@ export default function TeamsPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, captain: e.target.value })
                   }
-                  className="w-full border rounded px-3 py-2"
+                  className="w-full border border-gray-300 rounded px-3 py-2"
                   required
                 >
                   <option value="">Select Captain</option>
