@@ -58,7 +58,14 @@ export function MatchHeader({
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <p className="text-gray-600 text-xs">{date}</p>
-        {isLive && <p className="text-green-500 font-semibold">Live</p>}
+        {isLive && (
+          <div className="w-auto">
+            <p className="text-green-500 font-semibold">Live</p>
+            <div className="relative h-[2px] overflow-hidden bg-gray-300">
+              <span className="live-loader absolute left-0 top-0 h-full bg-green-500"></span>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center justify-between gap-3">

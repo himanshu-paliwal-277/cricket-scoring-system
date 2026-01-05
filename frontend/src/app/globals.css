@@ -1,1 +1,18 @@
 @import "tailwindcss";
+
+@keyframes liveLine {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+.live-loader {
+  width: 50%;
+  animation: liveLine 0.8s linear infinite;
+}

@@ -70,6 +70,37 @@ export default function ScoringPage() {
     loadInnings();
   }, [matchId, inning?.totalRuns, inning?.totalWickets]);
 
+  // Short polling for player role and non-logged-in users - fetch inning score every 5 seconds
+  useEffect(() => {
+    // Don't poll if user is loading
+    if (isLoadingUser) {
+      return;
+    }
+
+    // Don't poll for scorer or owner roles
+    if (user?.role === "scorer" || user?.role === "owner") {
+      return;
+    }
+
+    // Don't poll if match is not live
+    if (match?.status !== "live") {
+      return;
+    }
+
+    // Poll for player role or non-logged-in users (user is null/undefined)
+    const pollInterval = setInterval(async () => {
+      try {
+        const data = await statsService.getMatchScorecard(matchId);
+        setInnings(data);
+      } catch (error) {
+        console.error("Failed to poll innings data:", error);
+      }
+    }, 5000); // Poll every 5 seconds
+
+    // Cleanup interval on unmount or when dependencies change
+    return () => clearInterval(pollInterval);
+  }, [user?.role, match?.status, matchId, isLoadingUser]);
+
   // Determine teams for current inning
   const currentInningBattingTeam =
     match?.currentInning === 1
@@ -277,7 +308,10 @@ export default function ScoringPage() {
   // Check if current bowler is same as last over bowler
   const isSameBowlerAsLastOver = () => {
     const lastOverBowlerId = getLastOverBowler();
-    return lastOverBowlerId !== null && inning?.currentBowler?._id === lastOverBowlerId;
+    return (
+      lastOverBowlerId !== null &&
+      inning?.currentBowler?._id === lastOverBowlerId
+    );
   };
 
   const handleChangeBowler = () => {
@@ -746,7 +780,8 @@ export default function ScoringPage() {
             {isSameBowlerAsLastOver() && (
               <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mt-3">
                 <p className="text-sm font-semibold">
-                  ⚠️ Change bowler! The same bowler cannot bowl for 2 consecutive overs.
+                  ⚠️ Change bowler! The same bowler cannot bowl for 2
+                  consecutive overs.
                 </p>
               </div>
             )}
@@ -1240,7 +1275,8 @@ export default function ScoringPage() {
                   {newBowlerId && newBowlerId === getLastOverBowler() && (
                     <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded">
                       <p className="text-sm font-semibold">
-                        Change bowler! The same bowler cannot bowl for 2 consecutive overs.
+                        Change bowler! The same bowler cannot bowl for 2
+                        consecutive overs.
                       </p>
                     </div>
                   )}
@@ -1269,7 +1305,11 @@ export default function ScoringPage() {
                   <Button
                     onClick={handleChangeBowler}
                     className="w-full"
-                    disabled={inning?.currentBall !== 0 || !newBowlerId || newBowlerId === getLastOverBowler()}
+                    disabled={
+                      inning?.currentBall !== 0 ||
+                      !newBowlerId ||
+                      newBowlerId === getLastOverBowler()
+                    }
                   >
                     Confirm
                   </Button>
