@@ -130,7 +130,7 @@ export default function TeamsPage() {
     if (!team) return null;
 
     return (
-      <div className="border-2 p-4 border-gray-300 rounded-md" key={team._id}>
+      <div className="border-1 p-4 border-gray-300 rounded-md" key={team._id}>
         <div className="flex justify-between items-start mb-4">
           <div>
             <h3 className="text-xl font-bold">{team.name}</h3>

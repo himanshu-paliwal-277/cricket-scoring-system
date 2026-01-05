@@ -142,7 +142,7 @@ export default function MatchesPage() {
             {sortedDateKeys.map((dateKey) => (
               <div key={dateKey}>
                 {/* Date Header */}
-                <div className="sticky top-0 z-10 bg-gray-100 rounded-lg px-4 py-2 mb-4">
+                <div className="sticky top-0 z-10 bg-gray-100 rounded-sm px-4 py-2 mb-4">
                   <h2 className="text-sm font-semibold text-gray-700 text-center">
                     {formatDateLabel(dateKey)}
                   </h2>

@@ -41,37 +41,38 @@ export default function PlayersPage() {
   return (
     <ProtectedRoute allowedRoles={["owner", "scorer"]}>
       <Layout>
-        <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold">Players</h1>
+        <div className="">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold">Players</h1>
             <Button onClick={() => setIsModalOpen(true)}>Add Player</Button>
           </div>
 
           {isLoading ? (
             <p>Loading...</p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {players.map((player) => (
-                <Card key={player._id}>
-                  <h3 className="text-xl font-semibold mb-2">
-                    {player.userId.name}
-                  </h3>
-                  <div className="space-y-1 text-sm text-gray-600">
-                    <p>Batting: {player.battingStyle}</p>
-                    <p>Bowling: {player.bowlingStyle}</p>
-                    <p>Matches: {player.matchesPlayed}</p>
-                    <p>Runs: {player.totalRuns}</p>
-                    <p>Wickets: {player.totalWickets}</p>
-                    <p>Highest Score: {player.highestScore}</p>
+            <div className="border-1 border-gray-300 rounded-sm overflow-hidden">
+              <div className="border-b-1 text-sm border-gray-400 bg-gray-100 px-3 py-2 flex items-center justify-between">
+                <div className="flex gap-5">
+                  <p className="text-md font-bold min-w-8">S.no</p>
+                  <p className="text-md font-bold min-w-28">Name</p>
+                </div>
+                <p className="text-md min-w-8 font-bold">Matches</p>
+                <p className="text-md min-w-8 font-bold">Runs</p>
+              </div>
+              {players.map((player, index) => (
+                <div
+                  className="border-b-1 text-sm border-gray-300 px-3 py-2 flex items-center justify-between"
+                  key={player._id}
+                >
+                  <div className="flex gap-5">
+                    <p className="min-w-8">{index + 1}</p>
+                    <p className="font-semibold min-w-28">
+                      {player.userId.name}
+                    </p>
                   </div>
-                  {/* <Button
-                    variant="danger"
-                    className="mt-4 w-full"
-                    onClick={() => deletePlayer(player._id)}
-                  >
-                    Delete
-                  </Button> */}
-                </Card>
+                  <p className="min-w-8">{player.matchesPlayed}</p>
+                  <p className="min-w-8">{player.totalRuns}</p>
+                </div>
               ))}
             </div>
           )}
