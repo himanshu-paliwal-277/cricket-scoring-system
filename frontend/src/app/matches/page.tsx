@@ -14,6 +14,7 @@ import { useMatches } from "@/hooks/useMatches";
 import { useTeams } from "@/hooks/useTeams";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
+import { Skeleton } from "@mantine/core";
 
 export default function MatchesPage() {
   const { matches, isLoading, createMatch, isCreating } = useMatches();
@@ -139,7 +140,11 @@ export default function MatchesPage() {
         </div>
 
         {isLoading ? (
-          <p>Loading...</p>
+          <div className="flex flex-col gap-4">
+            {[1, 2, 3, 4].map((index) => (
+              <Skeleton key={index} width={"100%"} height={208} radius={6} />
+            ))}
+          </div>
         ) : (
           <div className="space-y-8">
             {sortedDateKeys.map((dateKey) => (
@@ -173,7 +178,9 @@ export default function MatchesPage() {
 
                     return (
                       <button
-                        className="p-3 border-1 border-gray-300 rounded-md"
+                        className={`p-3 border-1 border-gray-300 rounded-md ${
+                          match.status === "completed" ? "cursor-pointer" : ""
+                        }`}
                         key={match._id}
                         onClick={() => {
                           if (match.status === "completed") {

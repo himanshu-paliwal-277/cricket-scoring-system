@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import { StatsSection } from "@/components/ui/StatsSection";
 import { statsService } from "@/services/statsService";
+import { Skeleton } from "@mantine/core";
 
 export default function StatsPage() {
   const [mostRuns, setMostRuns] = useState<any[]>([]);
@@ -61,8 +62,11 @@ export default function StatsPage() {
   if (isLoading) {
     return (
       <Layout>
-        <div className="flex justify-center items-center min-h-[calc(100dvh - 60px)]">
-          <p className="text-lg">Loading stats...</p>
+        <div>
+          <Skeleton width={200} height={28} />
+          <Skeleton width={"100%"} height={428} className="mt-6" />
+          <Skeleton width={"100%"} height={428} className="mt-6" />
+          <Skeleton width={"100%"} height={428} className="mt-6" />
         </div>
       </Layout>
     );

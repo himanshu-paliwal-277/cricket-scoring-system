@@ -11,6 +11,7 @@ import { statsService, InningScorecard } from "@/services/statsService";
 import { MatchHeader } from "@/components/scoreboard/MatchHeader";
 import { BattingScorecard } from "@/components/scoreboard/BattingScorecard";
 import { BowlingScorecard } from "@/components/scoreboard/BowlingScorecard";
+import { Skeleton } from "@mantine/core";
 
 export default function ScoreboardPage() {
   const params = useParams();
@@ -66,8 +67,28 @@ export default function ScoreboardPage() {
   if (isLoading || matchLoading) {
     return (
       <Layout>
-        <div className="flex justify-center items-center min-h-[calc(100dvh - 60px)]">
-          <p className="text-lg">Loading scorecard...</p>
+        <div>
+          <div className="mb-8 flex justify-between ">
+            <Skeleton width={100} height={10} />
+            {/* <Skeleton width={50} height={10} /> */}
+          </div>
+          <div className="flex justify-between mb-12">
+            <div className="flex gap-4">
+              <div className="flex flex-col gap-3 items-center">
+                <Skeleton width={45} height={45} />
+                <Skeleton width={80} height={20} />
+              </div>
+              <Skeleton width={50} height={40} />
+            </div>
+            <div className="flex flex-row-reverse gap-4">
+              <div className="flex flex-col gap-3 items-center">
+                <Skeleton width={45} height={45} />
+                <Skeleton width={80} height={20} />
+              </div>
+              <Skeleton width={50} height={40} />
+            </div>
+          </div>
+          <Skeleton width={"100%"} height={350} />
         </div>
       </Layout>
     );

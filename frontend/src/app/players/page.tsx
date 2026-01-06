@@ -9,6 +9,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { usePlayers } from "@/hooks/usePlayers";
+import { Skeleton } from "@mantine/core";
 
 export default function PlayersPage() {
   const { players, isLoading, createPlayer, isCreating, deletePlayer } =
@@ -48,7 +49,7 @@ export default function PlayersPage() {
           </div>
 
           {isLoading ? (
-            <p>Loading...</p>
+            <Skeleton width={"100%"} height={500} className="" />
           ) : (
             <div className="border-1 border-gray-300 rounded-sm overflow-hidden">
               <div className="border-b-1 text-sm border-gray-400 bg-gray-100 px-3 py-2 flex items-center justify-between">
