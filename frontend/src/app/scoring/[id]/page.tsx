@@ -522,7 +522,7 @@ export default function ScoringPage() {
 
   return (
     <Layout>
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="max-w-6xl mx-auto">
         {/* <div>
           <h1 className="sm:text-2xl text-lg sm:text-left text-center font-bold mb-4">
             {match?.teamA.name} <br className="sm:hidden" />{" "}
@@ -560,71 +560,343 @@ export default function ScoringPage() {
           />
         )}
 
-        {/* Innings Selector */}
-        {innings.length > 0 && (
-          <div className="flex sm:gap-2 justify-center">
-            {innings.map((inningData) => (
-              <button
-                key={inningData.inningNumber}
-                onClick={() =>
-                  setSelectedInning(inningData.inningNumber as 1 | 2)
+        <div className="">
+          <div className="text-center ">
+            {/* <h2 className="text-4xl font-bold mb-1 pt-2">
+              {inning?.totalRuns}/{inning?.totalWickets}
+            </h2>
+            <p className="text-lg text-gray-600">
+              {inning?.currentOver}.{inning?.currentBall} overs
+            </p> */}
+            {/* Show required runs for second inning when <= 30 runs needed */}
+            {match?.currentInning === 2 &&
+              inning &&
+              firstInning &&
+              !inning.isCompleted &&
+              (() => {
+                const target = (firstInning.totalRuns || 0) + 1;
+                const runsNeeded = target - (inning.totalRuns || 0);
+                const totalBalls = (match?.overs || 0) * 6;
+                const ballsPlayed =
+                  (inning.currentOver || 0) * 6 + (inning.currentBall || 0);
+                const ballsRemaining = totalBalls - ballsPlayed;
+
+                if (runsNeeded > 0 && runsNeeded <= 30) {
+                  return (
+                    <p className="text-blue-600 font-semibold py-3 text-sm">
+                      Need {runsNeeded} run{runsNeeded !== 1 ? "s" : ""} in{" "}
+                      {ballsRemaining} ball{ballsRemaining !== 1 ? "s" : ""}
+                    </p>
+                  );
                 }
-                className={`sm:w-auto border-b-3 p-2 w-[50%] sm:rounded-md rounded-none ${
-                  selectedInning === inningData.inningNumber
-                    ? "border-green-500 "
-                    : "border-gray-200"
-                }`}
-              >
-                <span
-                  className={`${
-                    selectedInning === inningData.inningNumber
-                      ? " font-semibold text-black"
-                      : ""
-                  } text-sm`}
-                >
-                  {inningData.battingTeam.name}
-                </span>
-              </button>
-            ))}
+                return null;
+              })()}
           </div>
-        )}
 
-        {/* Inning Scoreboard - Shows selected inning data */}
-        {(() => {
-          const currentInningData = innings.find(
-            (i) => i.inningNumber === selectedInning
-          );
-
-          if (!currentInningData) return null;
-
-          return (
+          <div className="grid grid-cols-2 sm:gap-4 mb-6">
+            <div className="">
+              <h3 className="font-semibold text-sm">Striker</h3>
+              <p className="sm:text-lg flex text-sm">
+                <div className="sm:mr-5 mr-2 ">
+                  {truncateString(inning?.striker?.userId.name, 16) + "* " ||
+                    "N/A"}
+                </div>
+                {inning?.striker
+                  ? `${getBatsmanStats(inning.striker._id).runs}(${
+                      getBatsmanStats(inning.striker._id).balls
+                    })`
+                  : ""}
+              </p>
+            </div>
             <div>
-              {/* Batting Scorecard */}
-              {currentInningData.battingStats &&
-                currentInningData.battingStats.length > 0 && (
-                  <BattingScorecard
-                    battingStats={currentInningData.battingStats}
-                    captainId={
-                      typeof currentInningData.battingTeam?.captain === "string"
-                        ? currentInningData.battingTeam?.captain
-                        : currentInningData.battingTeam?.captain?._id
-                    }
-                    getDismissalText={getDismissalText}
-                  />
-                )}
+              <h3 className="font-semibold sm:text-left text-right text-sm">
+                Non-Striker
+              </h3>
+              <p className="flex sm:text-lg sm:justify-start justify-end text-sm">
+                <div className="sm:mr-5 mr-2 ">
+                  {truncateString(inning?.nonStriker?.userId.name, 16) || "N/A"}
+                </div>
+                {inning?.nonStriker
+                  ? `${getBatsmanStats(inning.nonStriker._id).runs}(${
+                      getBatsmanStats(inning.nonStriker._id).balls
+                    })`
+                  : ""}
+              </p>
+            </div>
+          </div>
 
-              {/* Bowling Scorecard */}
-              <div className="mt-5">
-                {currentInningData.bowlingStats &&
-                  currentInningData.bowlingStats.length > 0 && (
-                    <BowlingScorecard
-                      bowlingStats={currentInningData.bowlingStats}
+          <div className="mb-6">
+            <h3 className="font-semibold mb-2 text-sm">Current Bowler</h3>
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-sm">
+                  {inning?.currentBowler?.userId.name || "N/A"}
+                </p>
+                {inning?.currentBowler && (
+                  <p className="text-xs text-gray-600">
+                    Balls:{" "}
+                    {Math.floor(
+                      getBowlerStats(inning.currentBowler._id).balls / 6
+                    )}
+                    .{getBowlerStats(inning.currentBowler._id).balls % 6} Runs:{" "}
+                    {getBowlerStats(inning.currentBowler._id).runs}{" "}
+                    <br className="sm:hidden" />
+                    Economy: {
+                      getBowlerStats(inning.currentBowler._id).economy
+                    }{" "}
+                    Wickets: {getBowlerStats(inning.currentBowler._id).wickets}
+                  </p>
+                )}
+              </div>
+              {match?.status === "live" && canScore && (
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowBowlerModal(true)}
+                >
+                  Change
+                </Button>
+              )}
+            </div>
+            {isSameBowlerAsLastOver() && (
+              <div className="bg-red-50 border border-red-200 text-red-800 px-3 py-1.5 rounded mt-4">
+                <p className="text-xs font-semibold">
+                  The same bowler cannot bowl for 2 consecutive overs.
+                </p>
+              </div>
+            )}
+          </div>
+
+          {match?.status === "live" && canScore && !checkAllPlayersOut() && (
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-2">
+                Quick Actions
+              </label>
+              <div className="grid sm:grid-cols-4 grid-cols-2 gap-2">
+                <Button
+                  variant="secondary"
+                  onClick={handleWideClick}
+                  isLoading={isAddingBall}
+                  disabled={isSameBowlerAsLastOver()}
+                >
+                  Wide (+1)
+                </Button>
+                <Button
+                  variant={ballType === "noBall" ? "primary" : "secondary"}
+                  onClick={() => setBallType("noBall")}
+                  disabled={isSameBowlerAsLastOver()}
+                >
+                  No Ball
+                </Button>
+                <Button
+                  variant="danger"
+                  onClick={() => handleAddBall(0, "wicket")}
+                  isLoading={isAddingBall}
+                  disabled={isSameBowlerAsLastOver()}
+                >
+                  Wicket
+                </Button>
+                <Button
+                  variant={ballType === "normal" ? "primary" : "secondary"}
+                  onClick={() => setBallType("normal")}
+                  disabled={isSameBowlerAsLastOver()}
+                >
+                  Normal
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {match?.status === "live" && canScore && !checkAllPlayersOut() && (
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-2">
+                Add Runs {ballType !== "normal" && `(${ballType})`}
+              </label>
+              <div className="grid sm:grid-cols-4 grid-cols-3 gap-2">
+                {[0, 1, 2, 3, 4, 6].map((runs) => (
+                  <Button
+                    key={runs}
+                    onClick={() => handleAddBall(runs, ballType)}
+                    isLoading={isAddingBall}
+                    className="text-2xl sm:h-16 h-12"
+                    disabled={isSameBowlerAsLastOver()}
+                  >
+                    {runs}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {match?.status === "live" && canScore && (
+            <div className="grid grid-cols-3 gap-2">
+              <Button
+                variant="danger"
+                onClick={() => inning && undoLastBall(inning._id)}
+              >
+                Undo Last Ball
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => inning && swapStrike(inning._id)}
+              >
+                Swap Strike
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => setShowBatsmanModal(true)}
+                disabled={checkAllPlayersOut()}
+              >
+                Change Batsman
+              </Button>
+            </div>
+          )}
+        </div>
+
+        <div>
+          <div className="flex justify-between items-center my-4">
+            <h3 className="font-semibold">Current Over</h3>
+            {inning?.balls && inning.balls.length > 0 && (
+              <span className="text-sm font-semibold text-gray-700">
+                {inning.balls
+                  .filter(
+                    (ball) =>
+                      ball.overNumber === inning.currentOver && ball.isValid
+                  )
+                  .reduce((total, ball) => total + (ball.runs || 0), 0)}{" "}
+                runs
+              </span>
+            )}
+          </div>
+          <div className="flex gap-2 mb-6 flex-wrap">
+            {inning?.balls && inning.balls.length > 0 ? (
+              inning.balls
+                .filter(
+                  (ball) =>
+                    ball.overNumber === inning.currentOver && ball.isValid
+                )
+                .map((ball) => (
+                  <div
+                    key={ball._id}
+                    className={`sm:w-12 sm:h-12 w-10 h-10 flex items-center justify-center rounded font-bold text-lg ${
+                      ball.ballType === "wicket"
+                        ? "bg-red-500 text-white"
+                        : ball.ballType === "wide" || ball.ballType === "noBall"
+                        ? "bg-yellow-500 text-white"
+                        : ball.runs === 4
+                        ? "bg-blue-500 text-white"
+                        : ball.runs === 6
+                        ? "bg-purple-500 text-white"
+                        : "bg-gray-200 text-gray-800"
+                    }`}
+                  >
+                    {ball.ballType === "wicket"
+                      ? "W"
+                      : ball.ballType === "wide"
+                      ? `${ball.runs}Wd`
+                      : ball.ballType === "noBall"
+                      ? `${ball.runs}Nb`
+                      : ball.runs}
+                  </div>
+                ))
+            ) : (
+              <p className="text-gray-500 text-sm">No balls bowled yet</p>
+            )}
+          </div>
+
+          <h3 className="font-semibold mb-2">Extras</h3>
+          <div className="flex w-full items-center">
+            <div className="flex-1 flex items-center gap-2">
+              <p className="text-sm text-gray-600">Wides:</p>
+              <p className="text-lg font-semibold">{inning?.extras.wides}</p>
+            </div>
+            <div className="flex-1 flex items-center gap-2">
+              <p className="text-sm text-gray-600">No Balls:</p>
+              <p className="text-lg font-semibold">{inning?.extras.noBalls}</p>
+            </div>
+            {/* <div>
+              <p className="text-sm text-gray-600">Byes</p>
+              <p className="text-lg font-semibold">{inning?.extras.byes}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Leg Byes</p>
+              <p className="text-lg font-semibold">{inning?.extras.legByes}</p>
+            </div> */}
+          </div>
+
+          <div className="mt-2">
+            <h3 className="font-semibold">Total Over: {match?.overs}</h3>
+          </div>
+        </div>
+
+        <div className="w-full h-[1px] my-5 bg-gray-300 "></div>
+
+        <div>
+          {/* Innings Selector */}
+          {innings.length > 0 && (
+            <div className="flex sm:gap-2 justify-center">
+              {innings.map((inningData) => (
+                <button
+                  key={inningData.inningNumber}
+                  onClick={() =>
+                    setSelectedInning(inningData.inningNumber as 1 | 2)
+                  }
+                  className={`sm:w-auto border-b-3 p-2 w-[50%] sm:rounded-md rounded-none ${
+                    selectedInning === inningData.inningNumber
+                      ? "border-green-500 "
+                      : "border-gray-200"
+                  }`}
+                >
+                  <span
+                    className={`${
+                      selectedInning === inningData.inningNumber
+                        ? " font-semibold text-black"
+                        : ""
+                    } text-sm`}
+                  >
+                    {inningData.battingTeam.name}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Inning Scoreboard - Shows selected inning data */}
+          {(() => {
+            const currentInningData = innings.find(
+              (i) => i.inningNumber === selectedInning
+            );
+
+            if (!currentInningData) return null;
+
+            return (
+              <div>
+                {/* Batting Scorecard */}
+                {currentInningData.battingStats &&
+                  currentInningData.battingStats.length > 0 && (
+                    <BattingScorecard
+                      battingStats={currentInningData.battingStats}
+                      captainId={
+                        typeof currentInningData.battingTeam?.captain ===
+                        "string"
+                          ? currentInningData.battingTeam?.captain
+                          : currentInningData.battingTeam?.captain?._id
+                      }
+                      getDismissalText={getDismissalText}
                     />
                   )}
-              </div>
 
-              {/* Partnerships */}
-              {/* <div className="mt-5">
+                {/* Bowling Scorecard */}
+                <div className="mt-5">
+                  {currentInningData.bowlingStats &&
+                    currentInningData.bowlingStats.length > 0 && (
+                      <BowlingScorecard
+                        bowlingStats={currentInningData.bowlingStats}
+                      />
+                    )}
+                </div>
+
+                {/* Partnerships */}
+                {/* <div className="mt-5">
                 {currentInningData.battingStats &&
                   currentInningData.battingStats.length >= 1 && (
                     <div className="mb-4">
@@ -699,277 +971,9 @@ export default function ScoringPage() {
                     </div>
                   )}
               </div> */}
-            </div>
-          );
-        })()}
-
-        <div className="pt-6">
-          <div className="text-center mb-6 ">
-            <h2 className="text-4xl font-bold mb-1 pt-2">
-              {inning?.totalRuns}/{inning?.totalWickets}
-            </h2>
-            <p className="text-lg text-gray-600">
-              {inning?.currentOver}.{inning?.currentBall} overs
-            </p>
-            {/* Show required runs for second inning when <= 30 runs needed */}
-            {match?.currentInning === 2 &&
-              inning &&
-              firstInning &&
-              !inning.isCompleted &&
-              (() => {
-                const target = (firstInning.totalRuns || 0) + 1;
-                const runsNeeded = target - (inning.totalRuns || 0);
-                const totalBalls = (match?.overs || 0) * 6;
-                const ballsPlayed =
-                  (inning.currentOver || 0) * 6 + (inning.currentBall || 0);
-                const ballsRemaining = totalBalls - ballsPlayed;
-
-                if (runsNeeded > 0 && runsNeeded <= 30) {
-                  return (
-                    <p className="text-blue-600 font-semibold mt-2 text-md">
-                      Need {runsNeeded} run{runsNeeded !== 1 ? "s" : ""} in{" "}
-                      {ballsRemaining} ball{ballsRemaining !== 1 ? "s" : ""}
-                    </p>
-                  );
-                }
-                return null;
-              })()}
-          </div>
-
-          <div className="grid grid-cols-2 sm:gap-4 mb-6">
-            <div className="border-r border-gray-400 pr-4">
-              <h3 className="font-semibold mb-2">Striker</h3>
-              <p className="sm:text-lg flex">
-                <div className="sm:mr-5 mr-2">
-                  {truncateString(inning?.striker?.userId.name, 16) + "* " ||
-                    "N/A"}
-                </div>
-                {inning?.striker
-                  ? `${getBatsmanStats(inning.striker._id).runs}(${
-                      getBatsmanStats(inning.striker._id).balls
-                    })`
-                  : ""}
-              </p>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-2 sm:text-left text-right">
-                Non-Striker
-              </h3>
-              <p className="flex sm:text-lg sm:justify-start justify-end">
-                <div className="sm:mr-5 mr-2 ">
-                  {truncateString(inning?.nonStriker?.userId.name, 16) || "N/A"}
-                </div>
-                {inning?.nonStriker
-                  ? `${getBatsmanStats(inning.nonStriker._id).runs}(${
-                      getBatsmanStats(inning.nonStriker._id).balls
-                    })`
-                  : ""}
-              </p>
-            </div>
-          </div>
-
-          <div className="mb-6">
-            <h3 className="font-semibold mb-2">Current Bowler</h3>
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-lg">
-                  {inning?.currentBowler?.userId.name || "N/A"}
-                </p>
-                {inning?.currentBowler && (
-                  <p className="text-sm text-gray-600">
-                    Balls:{" "}
-                    {Math.floor(
-                      getBowlerStats(inning.currentBowler._id).balls / 6
-                    )}
-                    .{getBowlerStats(inning.currentBowler._id).balls % 6} Runs:{" "}
-                    {getBowlerStats(inning.currentBowler._id).runs}{" "}
-                    <br className="sm:hidden" />
-                    Economy: {
-                      getBowlerStats(inning.currentBowler._id).economy
-                    }{" "}
-                    Wickets: {getBowlerStats(inning.currentBowler._id).wickets}
-                  </p>
-                )}
               </div>
-              {match?.status === "live" && canScore && (
-                <Button
-                  variant="secondary"
-                  onClick={() => setShowBowlerModal(true)}
-                >
-                  Change
-                </Button>
-              )}
-            </div>
-            {isSameBowlerAsLastOver() && (
-              <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mt-3">
-                <p className="text-sm font-semibold">
-                  ⚠️ Change bowler! The same bowler cannot bowl for 2
-                  consecutive overs.
-                </p>
-              </div>
-            )}
-          </div>
-
-          {match?.status === "live" && canScore && !checkAllPlayersOut() && (
-            <div className="mb-6">
-              <label className="block text-sm font-medium mb-2">
-                Quick Actions
-              </label>
-              <div className="grid sm:grid-cols-4 grid-cols-2 gap-2">
-                <Button
-                  variant="secondary"
-                  onClick={handleWideClick}
-                  isLoading={isAddingBall}
-                  disabled={isSameBowlerAsLastOver()}
-                >
-                  Wide (+1)
-                </Button>
-                <Button
-                  variant={ballType === "noBall" ? "primary" : "secondary"}
-                  onClick={() => setBallType("noBall")}
-                  disabled={isSameBowlerAsLastOver()}
-                >
-                  No Ball
-                </Button>
-                <Button
-                  variant="danger"
-                  onClick={() => handleAddBall(0, "wicket")}
-                  isLoading={isAddingBall}
-                  disabled={isSameBowlerAsLastOver()}
-                >
-                  Wicket
-                </Button>
-                <Button
-                  variant={ballType === "normal" ? "primary" : "secondary"}
-                  onClick={() => setBallType("normal")}
-                  disabled={isSameBowlerAsLastOver()}
-                >
-                  Normal
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {match?.status === "live" && canScore && !checkAllPlayersOut() && (
-            <div className="mb-6">
-              <label className="block text-sm font-medium mb-2">
-                Add Runs {ballType !== "normal" && `(${ballType})`}
-              </label>
-              <div className="grid sm:grid-cols-4 grid-cols-3 gap-2">
-                {[0, 1, 2, 3, 4, 6].map((runs) => (
-                  <Button
-                    key={runs}
-                    onClick={() => handleAddBall(runs, ballType)}
-                    isLoading={isAddingBall}
-                    className="text-2xl h-16"
-                    disabled={isSameBowlerAsLastOver()}
-                  >
-                    {runs}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {match?.status === "live" && canScore && (
-            <div className="grid grid-cols-3 gap-2">
-              <Button
-                variant="danger"
-                onClick={() => inning && undoLastBall(inning._id)}
-              >
-                Undo Last Ball
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => inning && swapStrike(inning._id)}
-              >
-                Swap Strike
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => setShowBatsmanModal(true)}
-                disabled={checkAllPlayersOut()}
-              >
-                Change Batsman
-              </Button>
-            </div>
-          )}
-        </div>
-
-        <div>
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-semibold">Current Over</h3>
-            {inning?.balls && inning.balls.length > 0 && (
-              <span className="text-sm font-semibold text-gray-700">
-                {inning.balls
-                  .filter(
-                    (ball) =>
-                      ball.overNumber === inning.currentOver && ball.isValid
-                  )
-                  .reduce((total, ball) => total + (ball.runs || 0), 0)}{" "}
-                runs
-              </span>
-            )}
-          </div>
-          <div className="flex gap-2 mb-6 flex-wrap">
-            {inning?.balls && inning.balls.length > 0 ? (
-              inning.balls
-                .filter(
-                  (ball) =>
-                    ball.overNumber === inning.currentOver && ball.isValid
-                )
-                .map((ball) => (
-                  <div
-                    key={ball._id}
-                    className={`sm:w-12 sm:h-12 w-10 h-10 flex items-center justify-center rounded font-bold text-lg ${
-                      ball.ballType === "wicket"
-                        ? "bg-red-500 text-white"
-                        : ball.ballType === "wide" || ball.ballType === "noBall"
-                        ? "bg-yellow-500 text-white"
-                        : ball.runs === 4
-                        ? "bg-blue-500 text-white"
-                        : ball.runs === 6
-                        ? "bg-purple-500 text-white"
-                        : "bg-gray-200 text-gray-800"
-                    }`}
-                  >
-                    {ball.ballType === "wicket"
-                      ? "W"
-                      : ball.ballType === "wide"
-                      ? `${ball.runs}Wd`
-                      : ball.ballType === "noBall"
-                      ? `${ball.runs}Nb`
-                      : ball.runs}
-                  </div>
-                ))
-            ) : (
-              <p className="text-gray-500 text-sm">No balls bowled yet</p>
-            )}
-          </div>
-
-          <h3 className="font-semibold mb-2">Extras</h3>
-          <div className="flex w-full items-center">
-            <div className="flex-1 flex items-center gap-2">
-              <p className="text-sm text-gray-600">Wides:</p>
-              <p className="text-lg font-semibold">{inning?.extras.wides}</p>
-            </div>
-            <div className="flex-1 flex items-center gap-2">
-              <p className="text-sm text-gray-600">No Balls:</p>
-              <p className="text-lg font-semibold">{inning?.extras.noBalls}</p>
-            </div>
-            {/* <div>
-              <p className="text-sm text-gray-600">Byes</p>
-              <p className="text-lg font-semibold">{inning?.extras.byes}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Leg Byes</p>
-              <p className="text-lg font-semibold">{inning?.extras.legByes}</p>
-            </div> */}
-          </div>
-
-          <div className="mt-2">
-            <h3 className="font-semibold">Total Over: {match?.overs}</h3>
-          </div>
+            );
+          })()}
         </div>
 
         {inning && inning?.balls && inning.balls.length > 6 && (

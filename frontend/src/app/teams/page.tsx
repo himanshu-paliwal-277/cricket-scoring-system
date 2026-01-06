@@ -10,6 +10,7 @@ import { useTeams } from "@/hooks/useTeams";
 import { usePlayers } from "@/hooks/usePlayers";
 import { Team } from "@/services/teamService";
 import { useAuth } from "@/hooks/useAuth";
+import { Skeleton } from "@mantine/core";
 
 export default function TeamsPage() {
   const { teams, isLoading, updateTeam, isUpdating } = useTeams();
@@ -194,7 +195,10 @@ export default function TeamsPage() {
           </div>
 
           {isLoading ? (
-            <p>Loading...</p>
+            <div className="flex flex-col gap-6">
+              <Skeleton width={"100%"} height={227} className="mt-6" />
+              <Skeleton width={"100%"} height={227} className="mt-6" />
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {renderTeamCard(team1)}

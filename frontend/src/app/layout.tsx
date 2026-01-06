@@ -45,7 +45,6 @@ export default function RootLayout({
         <Providers>
           <MantineProvider>
             {children}
-
             <Notifications />
           </MantineProvider>
         </Providers>

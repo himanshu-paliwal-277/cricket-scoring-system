@@ -10,6 +10,7 @@ import { Select } from "@/components/ui/Select";
 import { useMatch, useMatches } from "@/hooks/useMatches";
 import { usePlayers } from "@/hooks/usePlayers";
 import Image from "next/image";
+import { Skeleton } from "@mantine/core";
 
 export default function StartMatchPage() {
   const router = useRouter();
@@ -61,7 +62,7 @@ export default function StartMatchPage() {
   if (isLoading || !match)
     return (
       <Layout>
-        <p>Loading...</p>
+        <Skeleton width={"100%"} height={450} className="mt-6" />
       </Layout>
     );
 
