@@ -36,8 +36,12 @@ export const useAuth = () => {
         router.push("/dashboard");
       }
     },
-    onError: (error) => {
-      console.error("Registration failed:", error);
+    onError: (error: any) => {
+      const errorMessage = error?.response?.data?.message || error?.message || "Registration failed";
+      notifications.show({
+        message: errorMessage,
+        color: "red",
+      });
     },
   });
 
@@ -54,8 +58,12 @@ export const useAuth = () => {
         });
       }
     },
-    onError: (error) => {
-      console.error("Login failed:", error);
+    onError: (error: any) => {
+      const errorMessage = error?.response?.data?.message || error?.message || "Login failed";
+      notifications.show({
+        message: errorMessage,
+        color: "red",
+      });
     },
   });
 

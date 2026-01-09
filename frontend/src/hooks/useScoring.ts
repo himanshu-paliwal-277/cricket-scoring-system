@@ -39,8 +39,10 @@ export const useScoring = (matchId: string) => {
       // });
     },
     onError: (err: any) => {
+      const errorMessage = err?.response?.data?.message || err?.message || "Failed to add ball";
       notifications.show({
-        message: err?.message || "Failed to add ball",
+        message: errorMessage,
+        color: "red",
       });
     },
   });
@@ -56,8 +58,10 @@ export const useScoring = (matchId: string) => {
       });
     },
     onError: (err: any) => {
+      const errorMessage = err?.response?.data?.message || err?.message || "Failed to undo last ball";
       notifications.show({
-        message: err?.message || "Failed to undo last ball",
+        message: errorMessage,
+        color: "red",
       });
     },
   });
@@ -72,8 +76,10 @@ export const useScoring = (matchId: string) => {
       // });
     },
     onError: (err: any) => {
+      const errorMessage = err?.response?.data?.message || err?.message || "Failed to swap strike";
       notifications.show({
-        message: err?.message || "Failed to swap strike",
+        message: errorMessage,
+        color: "red",
       });
     },
   });
@@ -94,8 +100,10 @@ export const useScoring = (matchId: string) => {
       // });
     },
     onError: (err: any) => {
+      const errorMessage = err?.response?.data?.message || err?.message || "Failed to change bowler";
       notifications.show({
-        message: err?.message || "Failed to change bowler",
+        message: errorMessage,
+        color: "red",
       });
     },
   });
@@ -116,8 +124,10 @@ export const useScoring = (matchId: string) => {
       // });
     },
     onError: (err: any) => {
+      const errorMessage = err?.response?.data?.message || err?.message || "Failed to change batsman";
       notifications.show({
-        message: err?.message || "Failed to change batsman",
+        message: errorMessage,
+        color: "red",
       });
     },
   });

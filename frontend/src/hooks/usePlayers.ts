@@ -24,8 +24,10 @@ export const usePlayers = () => {
       });
     },
     onError: (err: any) => {
+      const errorMessage = err?.response?.data?.message || err?.message || "Failed to create player";
       notifications.show({
-        message: err?.message || "Failed to create player",
+        message: errorMessage,
+        color: "red",
       });
     },
   });
@@ -45,8 +47,10 @@ export const usePlayers = () => {
       });
     },
     onError: (err: any) => {
+      const errorMessage = err?.response?.data?.message || err?.message || "Failed to update player";
       notifications.show({
-        message: err?.message || "Failed to update player",
+        message: errorMessage,
+        color: "red",
       });
     },
   });
@@ -60,8 +64,10 @@ export const usePlayers = () => {
       });
     },
     onError: (err: any) => {
+      const errorMessage = err?.response?.data?.message || err?.message || "Failed to delete player";
       notifications.show({
-        message: err?.message || "Failed to delete player",
+        message: errorMessage,
+        color: "red",
       });
     },
   });
@@ -103,8 +109,10 @@ export const usePlayer = (id: string) => {
       });
     },
     onError: (err: any) => {
+      const errorMessage = err?.response?.data?.message || err?.message || "Failed to update player";
       notifications.show({
-        message: err?.message || "Failed to update player",
+        message: errorMessage,
+        color: "red",
       });
     },
   });

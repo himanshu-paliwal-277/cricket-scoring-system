@@ -6,6 +6,7 @@ import { Layout } from "@/components/Layout";
 import { StatsSection } from "@/components/ui/StatsSection";
 import { statsService } from "@/services/statsService";
 import { Skeleton } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 
 export default function StatsPage() {
   const [mostRuns, setMostRuns] = useState<any[]>([]);
@@ -52,8 +53,12 @@ export default function StatsPage() {
       setHighestScores(highest);
       setMostFifties(fifties);
       setMostTwentyFives(twentyFives);
-    } catch (error) {
-      console.error("Failed to load stats:", error);
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || error?.message || "Failed to load stats";
+      notifications.show({
+        message: errorMessage,
+        color: "red",
+      });
     } finally {
       setIsLoading(false);
     }

@@ -24,8 +24,10 @@ export const useTeams = () => {
       });
     },
     onError: (err: any) => {
+      const errorMessage = err?.response?.data?.message || err?.message || "Failed to create team";
       notifications.show({
-        message: err?.message || "Failed to create team",
+        message: errorMessage,
+        color: "red",
       });
     },
   });
@@ -40,8 +42,10 @@ export const useTeams = () => {
       });
     },
     onError: (err: any) => {
+      const errorMessage = err?.response?.data?.message || err?.message || "Failed to update team";
       notifications.show({
-        message: err?.message || "Failed to update team",
+        message: errorMessage,
+        color: "red",
       });
     },
   });
@@ -55,8 +59,10 @@ export const useTeams = () => {
       });
     },
     onError: (err: any) => {
+      const errorMessage = err?.response?.data?.message || err?.message || "Failed to delete team";
       notifications.show({
-        message: err?.message || "Failed to delete team",
+        message: errorMessage,
+        color: "red",
       });
     },
   });

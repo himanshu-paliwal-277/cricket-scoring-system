@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -11,6 +12,7 @@ import { usePlayers } from "@/hooks/usePlayers";
 import { Team } from "@/services/teamService";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 
 export default function TeamsPage() {
   const { teams, isLoading, updateTeam, isUpdating } = useTeams();
@@ -104,8 +106,12 @@ export default function TeamsPage() {
 
       // Clear selection after adding
       setSelectedCommonPlayer("");
-    } catch (error) {
-      console.error("Error adding common player:", error);
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || error?.message || "Error adding common player";
+      notifications.show({
+        message: errorMessage,
+        color: "red",
+      });
     } finally {
       setIsAddingCommonPlayer(false);
     }

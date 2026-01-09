@@ -12,6 +12,7 @@ import { MatchHeader } from "@/components/scoreboard/MatchHeader";
 import { BattingScorecard } from "@/components/scoreboard/BattingScorecard";
 import { BowlingScorecard } from "@/components/scoreboard/BowlingScorecard";
 import { Skeleton } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 
 export default function ScoreboardPage() {
   const params = useParams();
@@ -30,8 +31,12 @@ export default function ScoreboardPage() {
       setIsLoading(true);
       const data = await statsService.getMatchScorecard(matchId);
       setInnings(data);
-    } catch (error) {
-      console.error("Failed to load scorecard:", error);
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || error?.message || "Failed to load scorecard";
+      notifications.show({
+        message: errorMessage,
+        color: "red",
+      });
     } finally {
       setIsLoading(false);
     }

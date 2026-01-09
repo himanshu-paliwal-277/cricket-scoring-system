@@ -18,6 +18,7 @@ import { BattingScorecard } from "@/components/scoreboard/BattingScorecard";
 import { BowlingScorecard } from "@/components/scoreboard/BowlingScorecard";
 import { MatchHeader } from "@/components/scoreboard/MatchHeader";
 import { formatISODate } from "@/utils/dateFormatter";
+import { notifications } from "@mantine/notifications";
 import { Skeleton } from "@mantine/core";
 
 export default function ScoringPage() {
@@ -63,8 +64,12 @@ export default function ScoringPage() {
       try {
         const data = await statsService.getMatchScorecard(matchId);
         setInnings(data);
-      } catch (error) {
-        console.error("Failed to load innings:", error);
+      } catch (error: any) {
+        const errorMessage = error?.response?.data?.message || error?.message || "Failed to load innings";
+        notifications.show({
+          message: errorMessage,
+          color: "red",
+        });
       }
     };
     loadInnings();

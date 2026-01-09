@@ -28,8 +28,10 @@ export const useMatches = () => {
       });
     },
     onError: (err: any) => {
+      const errorMessage = err?.response?.data?.message || err?.message || "Failed to create match";
       notifications.show({
-        message: err?.message || "Failed to create match",
+        message: errorMessage,
+        color: "red",
       });
     },
   });
@@ -44,8 +46,10 @@ export const useMatches = () => {
       });
     },
     onError: (err: any) => {
+      const errorMessage = err?.response?.data?.message || err?.message || "Failed to start match";
       notifications.show({
-        message: err?.message || "Failed to start match",
+        message: errorMessage,
+        color: "red",
       });
     },
   });
@@ -56,6 +60,13 @@ export const useMatches = () => {
       queryClient.invalidateQueries({ queryKey: ["matches"] });
       notifications.show({
         message: "Match completed successfully",
+      });
+    },
+    onError: (err: any) => {
+      const errorMessage = err?.response?.data?.message || err?.message || "Failed to complete match";
+      notifications.show({
+        message: errorMessage,
+        color: "red",
       });
     },
   });
@@ -98,8 +109,10 @@ export const useMatch = (id: string) => {
       });
     },
     onError: (err: any) => {
+      const errorMessage = err?.response?.data?.message || err?.message || "Failed to end match";
       notifications.show({
-        message: err?.message || "Failed to end match",
+        message: errorMessage,
+        color: "red",
       });
     },
   });
@@ -116,8 +129,10 @@ export const useMatch = (id: string) => {
       });
     },
     onError: (err: any) => {
+      const errorMessage = err?.response?.data?.message || err?.message || "Failed to start inning";
       notifications.show({
-        message: err?.message || "Failed to start inning",
+        message: errorMessage,
+        color: "red",
       });
     },
   });
