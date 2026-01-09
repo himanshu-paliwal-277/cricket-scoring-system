@@ -110,12 +110,19 @@ export function MatchHeader({
           //   <p className="text-gray-400 text-sm">(- overs)</p>
           // </div>
           <TeamScoreBox
-            teamLogo={teamB?.logo}
+            teamLogo={
+              firstInning && teamA && teamB
+                ? firstInning.battingTeam.name === teamA.name
+                  ? teamB.logo
+                  : teamA.logo
+                : teamB?.logo
+            }
             teamName={
-              teamB?.shortName ||
-              // secondInning?.battingTeam?.shortName ||
-              // secondInning?.battingTeam?.name ||
-              "Team"
+              firstInning && teamA && teamB
+                ? firstInning.battingTeam.name === teamA.name
+                  ? teamB.shortName || teamB.name
+                  : teamA.shortName || teamA.name
+                : teamB?.shortName || "Team"
             }
             isSecond
           />
