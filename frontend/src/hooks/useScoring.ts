@@ -25,6 +25,7 @@ export const useScoring = (matchId: string) => {
       return failureCount < 3;
     },
     refetchOnWindowFocus: isClient,
+    refetchInterval: 10000, // 10 seconds
   });
 
   const addBallMutation = useMutation({

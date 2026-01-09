@@ -4,7 +4,6 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { Layout } from "@/components/Layout";
-import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useScoring } from "@/hooks/useScoring";
 import { useMatch } from "@/hooks/useMatches";
@@ -72,37 +71,38 @@ export default function ScoringPage() {
   }, [matchId, inning?.totalRuns, inning?.totalWickets]);
 
   // Short polling for player role and non-logged-in users - fetch inning score every 5 seconds
-  useEffect(() => {
-    // Don't poll if user is loading
-    if (isLoadingUser) {
-      return;
-    }
+  // useEffect(() => {
+  //   // Don't poll if user is loading
+  //   if (isLoadingUser) {
+  //     return;
+  //   }
 
-    // Don't poll for scorer or owner roles
-    if (user?.role === "scorer" || user?.role === "owner") {
-      return;
-    }
+  //   // Don't poll for scorer or owner roles
+  //   if (user?.role === "scorer" || user?.role === "owner") {
+  //     return;
+  //   }
 
-    // Don't poll if match is not live
-    if (match?.status !== "live") {
-      return;
-    }
+  //   // Don't poll if match is not live
+  //   if (match?.status !== "live") {
+  //     return;
+  //   }
 
-    // Poll for player role or non-logged-in users (user is null/undefined)
-    const pollInterval = setInterval(async () => {
-      try {
-        const data = await statsService.getMatchScorecard(matchId);
-        setInnings(data);
-      } catch (error) {
-        console.error("Failed to poll innings data:", error);
-      }
-    }, 5000); // Poll every 5 seconds
+  //   // Poll for player role or non-logged-in users (user is null/undefined)
+  //   const pollInterval = setInterval(async () => {
+  //     try {
+  //       const data = await statsService.getMatchScorecard(matchId);
+  //       setInnings(data);
+  //     } catch (error) {
+  //       console.error("Failed to poll innings data:", error);
+  //     }
+  //   }, 5000); // Poll every 5 seconds
 
-    // Cleanup interval on unmount or when dependencies change
-    return () => clearInterval(pollInterval);
-  }, [user?.role, match?.status, matchId, isLoadingUser]);
+  //   // Cleanup interval on unmount or when dependencies change
+  //   return () => clearInterval(pollInterval);
+  // }, [user?.role, match?.status, matchId, isLoadingUser]);
 
   // Determine teams for current inning
+
   const currentInningBattingTeam =
     match?.currentInning === 1
       ? match.tossDecision === "bat" && match.tossWinner
@@ -508,7 +508,7 @@ export default function ScoringPage() {
             <div className="text-center py-8">
               <p className="text-gray-600 mb-4">
                 The {match?.currentInning === 1 ? "first" : "second"} inning
-                {`hasn't started yet.`}
+                {` hasn't started yet.`}
               </p>
               <p className="text-sm text-gray-500">
                 Please wait for the scorer to start the inning.
@@ -593,7 +593,7 @@ export default function ScoringPage() {
               })()}
           </div>
 
-          <div className="grid grid-cols-2 sm:gap-4 mb-6">
+          <div className="grid grid-cols-2 sm:gap-4 mb-6 mt-4">
             <div className="">
               <h3 className="font-semibold text-sm">Striker</h3>
               <p className="sm:text-lg flex text-sm">
@@ -657,13 +657,16 @@ export default function ScoringPage() {
                 </Button>
               )}
             </div>
-            {isSameBowlerAsLastOver() && (
-              <div className="bg-red-50 border border-red-200 text-red-800 px-3 py-1.5 rounded mt-4">
-                <p className="text-xs font-semibold">
-                  The same bowler cannot bowl for 2 consecutive overs.
-                </p>
-              </div>
-            )}
+            {isSameBowlerAsLastOver() &&
+              !!user &&
+              user?.role !== "player" &&
+              match.status === "live" && ( // and match is not end
+                <div className="bg-red-50 border border-red-200 text-red-800 px-3 py-1.5 rounded mt-4">
+                  <p className="text-xs font-semibold">
+                    The same bowler cannot bowl for 2 consecutive overs.
+                  </p>
+                </div>
+              )}
           </div>
 
           {match?.status === "live" && canScore && !checkAllPlayersOut() && (
@@ -1093,7 +1096,7 @@ export default function ScoringPage() {
           </div>
         )}
 
-        {match?.status === "completed" && (
+        {/* {match?.status === "completed" && (
           <div>
             <div className="text-center">
               <h3 className="font-semibold text-xl mb-2">Match Completed</h3>
@@ -1117,7 +1120,7 @@ export default function ScoringPage() {
               )}
             </div>
           </div>
-        )}
+        )} */}
 
         {(() => {
           // Calculate team players only when inning is active
@@ -1134,7 +1137,7 @@ export default function ScoringPage() {
           return (
             <>
               <Modal
-                isOpen={showEndMatchModal}
+                isOpen={showEndMatchModal && !!user && user?.role !== "player"}
                 onClose={() => setShowEndMatchModal(false)}
                 title="End Match Confirmation"
               >
@@ -1164,7 +1167,9 @@ export default function ScoringPage() {
               </Modal>
 
               <Modal
-                isOpen={showChangeInningModal && user?.role !== "player"}
+                isOpen={
+                  showChangeInningModal && !!user && user?.role !== "player"
+                }
                 onClose={() => setShowChangeInningModal(false)}
                 title="Start Second Inning"
               >
@@ -1286,7 +1291,7 @@ export default function ScoringPage() {
               </Modal>
 
               <Modal
-                isOpen={showBowlerModal}
+                isOpen={showBowlerModal && !!user && user?.role !== "player"}
                 onClose={() => setShowBowlerModal(false)}
                 title="Change Bowler"
               >
@@ -1344,7 +1349,7 @@ export default function ScoringPage() {
               </Modal>
 
               <Modal
-                isOpen={showBatsmanModal}
+                isOpen={showBatsmanModal && !!user && user?.role !== "player"}
                 onClose={() => setShowBatsmanModal(false)}
                 title="Change Batsman"
               >
@@ -1389,7 +1394,7 @@ export default function ScoringPage() {
               </Modal>
 
               <WicketModal
-                isOpen={showWicketModal}
+                isOpen={showWicketModal && !!user && user?.role !== "player"}
                 onClose={() => setShowWicketModal(false)}
                 onConfirm={handleWicketConfirm}
                 availableBatsmen={availableBatsmen}

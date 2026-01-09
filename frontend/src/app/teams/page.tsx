@@ -246,7 +246,7 @@ export default function TeamsPage() {
                     <option value="">Select a player</option>
                     {getPlayersNotInAnyTeam().map((player) => (
                       <option key={player._id} value={player._id}>
-                        {player.userId.name}
+                        {player?.userId?.name}
                       </option>
                     ))}
                   </select>
