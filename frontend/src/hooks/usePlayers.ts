@@ -72,6 +72,23 @@ export const usePlayers = () => {
     },
   });
 
+  const toggleActiveMutation = useMutation({
+    mutationFn: (id: string) => playerService.toggleActive(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["players"] });
+      notifications.show({
+        message: "Player status updated successfully",
+      });
+    },
+    onError: (err: any) => {
+      const errorMessage = err?.response?.data?.message || err?.message || "Failed to update player status";
+      notifications.show({
+        message: errorMessage,
+        color: "red",
+      });
+    },
+  });
+
   return {
     players,
     isLoading,
@@ -79,9 +96,11 @@ export const usePlayers = () => {
     createPlayer: createMutation.mutate,
     updatePlayer: updateMutation.mutate,
     deletePlayer: deleteMutation.mutate,
+    togglePlayerActive: toggleActiveMutation.mutate,
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
+    isTogglingActive: toggleActiveMutation.isPending,
   };
 };
 

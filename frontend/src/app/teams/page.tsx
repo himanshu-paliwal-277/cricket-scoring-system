@@ -117,20 +117,20 @@ export default function TeamsPage() {
     }
   };
 
-  // Get players who are not in either team
+  // Get players who are not in either team (only active players)
   const getPlayersNotInAnyTeam = () => {
     const team1PlayerIds = team1?.players.map((p) => p._id) || [];
     const team2PlayerIds = team2?.players.map((p) => p._id) || [];
     const allTeamPlayerIds = [...team1PlayerIds, ...team2PlayerIds];
 
-    return players.filter((player) => !allTeamPlayerIds.includes(player._id));
+    return players.filter((player) => !allTeamPlayerIds.includes(player._id) && player.isActive);
   };
 
   const getAvailablePlayers = (currentTeam: Team) => {
     const otherTeam = currentTeam.teamType === "team1" ? team2 : team1;
     const otherTeamPlayerIds = otherTeam?.players.map((p) => p._id) || [];
 
-    return players.filter((player) => !otherTeamPlayerIds.includes(player._id));
+    return players.filter((player) => !otherTeamPlayerIds.includes(player._id) && player.isActive);
   };
 
   const renderTeamCard = (team: Team | undefined) => {

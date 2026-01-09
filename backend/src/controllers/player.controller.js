@@ -145,3 +145,20 @@ export const deletePlayer = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const togglePlayerActive = async (req, res) => {
+  try {
+    const player = await Player.findById(req.params.id);
+    if (!player) {
+      return res.status(404).json({ message: "Player not found" });
+    }
+
+    player.isActive = !player.isActive;
+    await player.save();
+
+    const populatedPlayer = await Player.findById(player._id).populate("userId", "name email");
+    res.json(populatedPlayer);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

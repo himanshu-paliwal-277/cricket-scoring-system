@@ -6,6 +6,7 @@ import {
   getAllPlayers,
   getPlayerById,
   getPlayerStats,
+  togglePlayerActive,
   updatePlayer,
 } from "../../controllers/player.controller.js";
 import { authenticate, authorize } from "../../middleware/auth.js";
@@ -17,6 +18,7 @@ router.get("/:id", authenticate, getPlayerById);
 router.get("/:id/stats", authenticate, getPlayerStats);
 router.post("/", authenticate, authorize("owner", "scorer"), createPlayer);
 router.put("/:id", authenticate, authorize("owner"), updatePlayer);
+router.patch("/:id/toggle-active", authenticate, authorize("owner"), togglePlayerActive);
 router.delete("/:id", authenticate, authorize("owner"), deletePlayer);
 
 export default router;

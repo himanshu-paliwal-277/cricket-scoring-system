@@ -15,6 +15,11 @@ export interface Player {
   highestScore: number;
   totalBallsFaced: number;
   totalBallsBowled: number;
+  totalFours: number;
+  totalSixes: number;
+  total25s: number;
+  total50s: number;
+  isActive: boolean;
 }
 
 export interface CreatePlayerData {
@@ -57,5 +62,10 @@ export const playerService = {
 
   delete: async (id: string): Promise<void> => {
     await axiosInstance.delete(`/players/${id}`);
+  },
+
+  toggleActive: async (id: string): Promise<Player> => {
+    const response = await axiosInstance.patch(`/players/${id}/toggle-active`);
+    return response.data;
   },
 };
