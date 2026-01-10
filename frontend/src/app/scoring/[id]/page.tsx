@@ -76,7 +76,13 @@ export default function ScoringPage() {
       }
     };
     loadInnings();
-  }, [matchId, inning?.totalRuns, inning?.totalWickets, inning?.currentOver, inning?.currentBall]);
+  }, [
+    matchId,
+    inning?.totalRuns,
+    inning?.totalWickets,
+    inning?.currentOver,
+    inning?.currentBall,
+  ]);
 
   // Short polling for player role and non-logged-in users - fetch inning score every 5 seconds
   // useEffect(() => {
@@ -564,7 +570,7 @@ export default function ScoringPage() {
             innings={innings}
             resultText={match.resultText}
             matchStatus={match.status}
-            isLive={true}
+            isLive={match.status === "live"}
           />
         )}
 
@@ -601,7 +607,7 @@ export default function ScoringPage() {
               })()}
           </div>
 
-          <div className="grid grid-cols-2 sm:gap-4 mb-6 mt-4">
+          <div className="grid grid-cols-2 sm:gap-4 my-5">
             <div className="">
               <h3 className="font-semibold text-sm">Striker</h3>
               <p className="sm:text-lg flex text-sm">
@@ -841,10 +847,10 @@ export default function ScoringPage() {
 
         <div className="w-full h-[1px] my-5 bg-gray-300 "></div>
 
-        <div>
+        <div className="">
           {/* Innings Selector */}
           {innings.length > 0 && (
-            <div className="flex sm:gap-2 justify-center">
+            <div className="flex sm:gap-2 justify-center mb-4">
               {innings.map((inningData) => (
                 <button
                   key={inningData.inningNumber}
@@ -917,18 +923,23 @@ export default function ScoringPage() {
                   const battingTeamId = currentInningData.battingTeam._id;
 
                   // Get the correct team (either teamA or teamB) that matches the batting team
-                  const battingTeam = match?.teamA._id === battingTeamId
-                    ? match?.teamA
-                    : match?.teamB;
+                  const battingTeam =
+                    match?.teamA._id === battingTeamId
+                      ? match?.teamA
+                      : match?.teamB;
 
                   // Filter players from the batting team who haven't batted yet
-                  const yetToBatPlayers = battingTeam?.players
-                    ?.filter((playerId: string) => !battedPlayerIds.includes(playerId))
-                    .map((playerId: string) => {
-                      const player = players.find((p) => p._id === playerId);
-                      return player?.userId?.name;
-                    })
-                    .filter(Boolean) || [];
+                  const yetToBatPlayers =
+                    battingTeam?.players
+                      ?.filter(
+                        (playerId: string) =>
+                          !battedPlayerIds.includes(playerId)
+                      )
+                      .map((playerId: string) => {
+                        const player = players.find((p) => p._id === playerId);
+                        return player?.userId?.name;
+                      })
+                      .filter(Boolean) || [];
 
                   return yetToBatPlayers.length > 0 ? (
                     <div className="mt-5">
@@ -942,7 +953,10 @@ export default function ScoringPage() {
 
                 {/* Fall of wickets */}
                 {(() => {
-                  if (!currentInningData.balls || currentInningData.balls.length === 0) {
+                  if (
+                    !currentInningData.balls ||
+                    currentInningData.balls.length === 0
+                  ) {
                     return null;
                   }
 
@@ -1150,8 +1164,8 @@ export default function ScoringPage() {
         )}
 
         {match?.status !== "completed" && canScore && (
-          <div>
-            <div className="text-center space-y-3 mt-5">
+          <div className="mt-8">
+            <div className="text-center space-y-3 border-1 border-gray-400 bg-red-50 rounded-md p-4">
               <h3 className="font-semibold mb-4">Match Controls</h3>
 
               {/* Change Inning Button - only show in first inning */}
