@@ -1492,6 +1492,8 @@ export default function ScoringPage() {
                     .map((id: string) => players.find((p) => p._id === id))
                     .filter(Boolean) || []
                 }
+                currentStrikerId={inning?.striker?._id}
+                currentNonStrikerId={inning?.nonStriker?._id}
               />
             </>
           );

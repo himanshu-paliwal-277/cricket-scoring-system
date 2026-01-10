@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Modal } from "./ui/Modal";
 import { Select } from "./ui/Select";
 import { Button } from "./ui/Button";
@@ -16,6 +16,8 @@ interface WicketModalProps {
   }) => void;
   availableBatsmen: Array<{ _id: string; userId: { name: string } }>;
   bowlingTeamPlayers: Array<{ _id: string; userId: { name: string } }>;
+  currentStrikerId?: string;
+  currentNonStrikerId?: string;
 }
 
 export function WicketModal({
@@ -24,15 +26,31 @@ export function WicketModal({
   onConfirm,
   availableBatsmen,
   bowlingTeamPlayers,
+  currentStrikerId,
+  currentNonStrikerId,
 }: WicketModalProps) {
   const [wicketType, setWicketType] = useState<string>("bowled");
   const [newBatsmanId, setNewBatsmanId] = useState<string>("");
   const [fielderId, setFielderId] = useState<string>("");
   const [runOutRuns, setRunOutRuns] = useState<number>(0);
 
+  // Filter out the striker (who just got out) from available batsmen
+  const filteredAvailableBatsmen = availableBatsmen.filter(
+    (batsman) => batsman._id !== currentStrikerId
+  );
+
+  // Auto-select if only one batsman is available (last man)
+  useEffect(() => {
+    if (isOpen && filteredAvailableBatsmen.length === 1) {
+      setNewBatsmanId(filteredAvailableBatsmen[0]._id);
+    } else if (isOpen && filteredAvailableBatsmen.length === 0) {
+      setNewBatsmanId("");
+    }
+  }, [isOpen, filteredAvailableBatsmen.length]);
+
   const handleConfirm = () => {
     // Allow confirmation without new batsman if none available (all out)
-    if (availableBatsmen.length > 0 && !newBatsmanId) return;
+    if (filteredAvailableBatsmen.length > 0 && !newBatsmanId) return;
 
     onConfirm({
       wicketType,
@@ -48,6 +66,7 @@ export function WicketModal({
 
   const needsFielder = wicketType === "caught" || wicketType === "stumped";
   const isRunOut = wicketType === "runOut";
+  const isLastMan = filteredAvailableBatsmen.length === 1;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Wicket!">
@@ -95,19 +114,26 @@ export function WicketModal({
           />
         )}
 
-        {availableBatsmen.length > 0 ? (
-          <Select
-            label="New Batsman"
-            value={newBatsmanId}
-            onChange={(e) => setNewBatsmanId(e.target.value)}
-            options={[
-              { value: "", label: "Select New Batsman" },
-              ...availableBatsmen.map((p) => ({
-                value: p._id,
-                label: p.userId.name,
-              })),
-            ]}
-          />
+        {filteredAvailableBatsmen.length > 0 ? (
+          <>
+            <Select
+              label="New Batsman"
+              value={newBatsmanId}
+              onChange={(e) => setNewBatsmanId(e.target.value)}
+              options={[
+                { value: "", label: "Select New Batsman" },
+                ...filteredAvailableBatsmen.map((p) => ({
+                  value: p._id,
+                  label: p.userId.name,
+                })),
+              ]}
+            />
+            {isLastMan && (
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded text-sm text-blue-700">
+                Last man standing! This batsman will continue batting solo.
+              </div>
+            )}
+          </>
         ) : (
           <div className="p-3 bg-gray-100 rounded text-sm text-gray-700">
             All out! No more batsmen available.
@@ -121,7 +147,7 @@ export function WicketModal({
           <Button
             onClick={handleConfirm}
             className="flex-1"
-            disabled={availableBatsmen.length > 0 && !newBatsmanId}
+            disabled={filteredAvailableBatsmen.length > 0 && !newBatsmanId}
           >
             Confirm
           </Button>
