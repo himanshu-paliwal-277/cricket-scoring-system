@@ -167,14 +167,28 @@ export default function MatchesPage() {
                       (i: any) => i.inningNumber === 2
                     );
 
-                    // Determine which team batted first based on toss
+                    // Determine which team batted first (1st inning)
                     const teamABattedFirst =
                       match.tossDecision === "bat"
                         ? match.tossWinner?._id === match.teamA._id
                         : match.tossWinner?._id === match.teamB._id;
 
-                    const teamAInning = teamABattedFirst ? inning1 : inning2;
-                    const teamBInning = teamABattedFirst ? inning2 : inning1;
+                    // First team in card: team that batted in 1st inning
+                    // Second team in card: team that batted in 2nd inning
+                    const firstTeamDisplay = teamABattedFirst
+                      ? match.teamA
+                      : match.teamB;
+                    const secondTeamDisplay = teamABattedFirst
+                      ? match.teamB
+                      : match.teamA;
+                    const firstTeamSnapshot = teamABattedFirst
+                      ? match.teamASnapshot
+                      : match.teamBSnapshot;
+                    const secondTeamSnapshot = teamABattedFirst
+                      ? match.teamBSnapshot
+                      : match.teamASnapshot;
+                    const firstTeamInning = inning1; // Always 1st inning
+                    const secondTeamInning = inning2; // Always 2nd inning
 
                     return (
                       <button
@@ -203,38 +217,38 @@ export default function MatchesPage() {
                             </span>
                           </div>
 
-                          {/* Team A */}
+                          {/* First Team (1st inning batting team) */}
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              {match.teamA?.logo ? (
+                              {firstTeamDisplay?.logo ? (
                                 <div className="w-10 h-10 relative rounded-full overflow-hidden">
                                   <Image
-                                    src={match?.teamA?.logo}
-                                    alt={match?.teamA?.name || "Team Logo"}
+                                    src={firstTeamDisplay?.logo}
+                                    alt={firstTeamSnapshot?.name || firstTeamDisplay?.name || "Team Logo"}
                                     fill
                                     className="object-contain"
                                   />
                                 </div>
                               ) : (
                                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-lg">
-                                  {match.teamA?.name?.charAt(0) || "T"}
+                                  {(firstTeamSnapshot?.name || firstTeamDisplay?.name)?.charAt(0) || "T"}
                                 </div>
                               )}
                               <span className="font-semibold text-sm">
-                                {match.teamA?.name}
+                                {firstTeamSnapshot?.name || firstTeamDisplay?.name}
                               </span>
                             </div>
-                            {teamAInning && match.status === "completed" && (
+                            {firstTeamInning && (match.status === "completed" || match.status === "live") && (
                               <div className="text-right">
                                 <span className="text-lg font-bold">
-                                  {teamAInning.totalRuns}/
-                                  {teamAInning.totalWickets}
+                                  {firstTeamInning.totalRuns}/
+                                  {firstTeamInning.totalWickets}
                                 </span>
                                 <span className="text-gray-600 ml-2">
                                   (
-                                  {`${teamAInning.currentOver}${
-                                    teamAInning.currentBall > 0
-                                      ? "." + teamAInning.currentBall
+                                  {`${firstTeamInning.currentOver}${
+                                    firstTeamInning.currentBall > 0
+                                      ? "." + firstTeamInning.currentBall
                                       : ""
                                   }`}
                                   )
@@ -243,38 +257,38 @@ export default function MatchesPage() {
                             )}
                           </div>
 
-                          {/* Team B */}
+                          {/* Second Team (2nd inning batting team) */}
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              {match.teamB?.logo ? (
+                              {secondTeamDisplay?.logo ? (
                                 <div className="w-10 h-10 relative rounded-full overflow-hidden">
                                   <Image
-                                    src={match?.teamB?.logo}
-                                    alt={match?.teamB?.name || "Team B"}
+                                    src={secondTeamDisplay?.logo}
+                                    alt={secondTeamSnapshot?.name || secondTeamDisplay?.name || "Team B"}
                                     fill
                                     className="object-contain"
                                   />
                                 </div>
                               ) : (
                                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white font-bold text-lg">
-                                  {match.teamB?.name?.charAt(0) || "T"}
+                                  {(secondTeamSnapshot?.name || secondTeamDisplay?.name)?.charAt(0) || "T"}
                                 </div>
                               )}
                               <span className="font-semibold text-sm">
-                                {match.teamB?.name}
+                                {secondTeamSnapshot?.name || secondTeamDisplay?.name}
                               </span>
                             </div>
-                            {teamBInning && match.status === "completed" && (
+                            {secondTeamInning && (match.status === "completed" || match.status === "live") && (
                               <div className="text-right">
                                 <span className="text-lg font-bold">
-                                  {teamBInning.totalRuns}/
-                                  {teamBInning.totalWickets}
+                                  {secondTeamInning.totalRuns}/
+                                  {secondTeamInning.totalWickets}
                                 </span>
                                 <span className="text-gray-600 ml-2">
                                   (
-                                  {`${teamBInning.currentOver}${
-                                    teamBInning.currentBall > 0
-                                      ? "." + teamBInning.currentBall
+                                  {`${secondTeamInning.currentOver}${
+                                    secondTeamInning.currentBall > 0
+                                      ? "." + secondTeamInning.currentBall
                                       : ""
                                   }`}
                                   )
@@ -307,17 +321,19 @@ export default function MatchesPage() {
                                     </Button>
                                   </Link>
                                 )}
-                              {match.status === "live" &&
-                                user?.role !== "player" && (
-                                  <Link
-                                    href={`/scoring/${match._id}`}
-                                    className="flex-1"
-                                  >
-                                    <Button className="w-full bg-green-600 hover:bg-green-700">
-                                      Score
-                                    </Button>
-                                  </Link>
-                                )}
+                              {match.status === "live" && (
+                                <Link
+                                  href={`/scoring/${match._id}`}
+                                  className="flex-1"
+                                >
+                                  <Button className="w-full bg-green-600 hover:bg-green-700">
+                                    {user?.role === "scorer" ||
+                                    user?.role === "owner"
+                                      ? "Score"
+                                      : "View Live Match"}
+                                  </Button>
+                                </Link>
+                              )}
                               {/* {match.status === "completed" && (
                                 <Link
                                   href={`/view-scoreboard/${match._id}`}
