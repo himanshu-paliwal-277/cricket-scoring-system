@@ -34,11 +34,20 @@ export default function MatchesPage() {
     return date instanceof Date ? date.toISOString().split("T")[0] : undefined;
   };
 
+  // Handle date change from DateInput (string | null) to Date | null
+  const handleStartDateChange = (value: string | null) => {
+    setStartDate(value ? new Date(value) : null);
+  };
+
+  const handleEndDateChange = (value: string | null) => {
+    setEndDate(value ? new Date(value) : null);
+  };
+
   // Fetch matches with pagination and filters
   const { matches, pagination, isLoading, createMatch, isCreating } =
     useMatches({
       page: currentPage,
-      limit: 10,
+      limit: 5,
       startDate: formatDateForAPI(startDate),
       endDate: formatDateForAPI(endDate),
     });
@@ -182,7 +191,7 @@ export default function MatchesPage() {
                   </label>
                   <DateInput
                     value={startDate}
-                    onChange={(value) => setStartDate(value)}
+                    onChange={handleStartDateChange}
                     placeholder="Select start date"
                     clearable
                     className="w-full"
@@ -194,7 +203,7 @@ export default function MatchesPage() {
                   </label>
                   <DateInput
                     value={endDate}
-                    onChange={(value) => setEndDate(value)}
+                    onChange={handleEndDateChange}
                     placeholder="Select end date"
                     clearable
                     minDate={startDate || undefined}
