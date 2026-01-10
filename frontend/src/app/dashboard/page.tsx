@@ -8,9 +8,12 @@ import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/hooks/useAuth";
 import { useMatches } from "@/hooks/useMatches";
 import { usePlayerStats } from "@/hooks/usePlayers";
+import { MatchCard } from "@/components/MatchCard";
+import { Skeleton } from "@mantine/core";
+import { Users, Shield, Trophy } from "lucide-react";
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user, isLoading: isLoadingUser } = useAuth();
   const { matches, isLoading } = useMatches();
   const { stats: playerStats, isLoading: statsLoading } = usePlayerStats(
     user?.id || ""
@@ -25,6 +28,14 @@ export default function DashboardPage() {
   const liveMatches = matches?.filter((m) => m.status === "live") || [];
   const upcomingMatches =
     matches?.filter((m) => m.status === "not_started") || [];
+  const recentMatches =
+    matches
+      ?.filter((m) => m.status === "completed")
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )
+      .slice(0, 5) || [];
 
   const handleUpdatePlayer = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +56,18 @@ export default function DashboardPage() {
   return (
     <Layout>
       <div className="space-y-6">
-        {!user && (
+        {/* Loading State for User Authentication */}
+        {isLoadingUser && (
+          <div className="space-y-6">
+            <div>
+              <Skeleton width={300} height={40} radius={6} mb={8} />
+              <Skeleton width={150} height={24} radius={6} />
+            </div>
+          </div>
+        )}
+
+        {/* Welcome Screen for Non-Logged In Users */}
+        {!isLoadingUser && !user && (
           <div className="text-center py-12 space-y-6">
             <div className="space-y-3">
               <h1 className="text-4xl md:text-5xl font-bold text-gray-800">
@@ -69,31 +91,31 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto pt-12">
-              <Card className="text-center p-6 hover:shadow-lg transition">
+              <div className="border border-gray-300 rounded-sm shadow-sm  text-center p-6 hover:shadow-lg transition">
                 <div className="text-4xl mb-3">📊</div>
                 <h3 className="text-lg font-semibold mb-2">Live Scoring</h3>
                 <p className="text-gray-600 text-sm">
                   Score matches in real-time with detailed ball-by-ball tracking
                 </p>
-              </Card>
+              </div>
 
-              <Card className="text-center p-6 hover:shadow-lg transition">
+              <div className="border border-gray-300 rounded-sm shadow-sm text-center p-6 hover:shadow-lg transition">
                 <div className="text-4xl mb-3">👥</div>
                 <h3 className="text-lg font-semibold mb-2">Team Management</h3>
                 <p className="text-gray-600 text-sm">
                   Create and manage teams, track player statistics and
                   performance
                 </p>
-              </Card>
+              </div>
 
-              <Card className="text-center p-6 hover:shadow-lg transition">
+              <div className="border border-gray-300 rounded-sm shadow-sm text-center p-6 hover:shadow-lg transition">
                 <div className="text-4xl mb-3">🏆</div>
                 <h3 className="text-lg font-semibold mb-2">Detailed Stats</h3>
                 <p className="text-gray-600 text-sm">
                   View comprehensive statistics including runs, wickets, and
                   strike rates
                 </p>
-              </Card>
+              </div>
             </div>
           </div>
         )}
@@ -111,7 +133,38 @@ export default function DashboardPage() {
           <div>
             <h2 className="text-2xl font-bold mb-4">Your Cricket Statistics</h2>
             {statsLoading ? (
-              <p>Loading stats...</p>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {[1, 2, 3, 4].map((index) => (
+                    <Skeleton
+                      key={index}
+                      width={"100%"}
+                      height={96}
+                      radius={8}
+                    />
+                  ))}
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {[1, 2, 3, 4, 5, 6].map((index) => (
+                    <Skeleton
+                      key={index}
+                      width={"100%"}
+                      height={96}
+                      radius={8}
+                    />
+                  ))}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[1, 2].map((index) => (
+                    <Skeleton
+                      key={index}
+                      width={"100%"}
+                      height={80}
+                      radius={8}
+                    />
+                  ))}
+                </div>
+              </div>
             ) : user.playerProfile ? (
               <>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
@@ -209,7 +262,7 @@ export default function DashboardPage() {
         )}
 
         {/* {user?.role === "owner" && (
-            <Card>
+            <div>
               <h2 className="sm:text-2xl text-xl font-bold mb-4">
                 Update Player Details
               </h2>
@@ -272,89 +325,122 @@ export default function DashboardPage() {
                   {updatePlayer.isPending ? "Updating..." : "Update Player"}
                 </Button>
               </form>
-            </Card>
+            </div>
           )} */}
 
         {user && user?.role !== "player" && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Link href="/players">
-              <Card className="hover:shadow-lg transition cursor-pointer">
-                <h3 className="text-xl font-semibold mb-2">Players</h3>
-                <p className="text-gray-600">Manage player profiles</p>
-              </Card>
+              <div className="border border-gray-300 rounded-sm shadow-sm p-6 hover:shadow-lg hover:border-blue-400 transition-all cursor-pointer group">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
+                    <Users className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold">Players</h3>
+                </div>
+                <p className="text-gray-600 text-sm">Manage player profiles</p>
+              </div>
             </Link>
 
             <Link href="/teams">
-              <Card className="hover:shadow-lg transition cursor-pointer">
-                <h3 className="text-xl font-semibold mb-2">Teams</h3>
-                <p className="text-gray-600">Create and manage teams</p>
-              </Card>
+              <div className="border border-gray-300 rounded-sm shadow-sm p-6 hover:shadow-lg hover:border-green-400 transition-all cursor-pointer group">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2 bg-green-50 rounded-lg group-hover:bg-green-100 transition-colors">
+                    <Shield className="w-6 h-6 text-green-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold">Teams</h3>
+                </div>
+                <p className="text-gray-600 text-sm">Create and manage teams</p>
+              </div>
             </Link>
 
             <Link href="/matches">
-              <Card className="hover:shadow-lg transition cursor-pointer">
-                <h3 className="text-xl font-semibold mb-2">Matches</h3>
-                <p className="text-gray-600">Schedule and score matches</p>
-              </Card>
+              <div className="border border-gray-300 rounded-sm shadow-sm p-6 hover:shadow-lg hover:border-purple-400 transition-all cursor-pointer group">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2 bg-purple-50 rounded-lg group-hover:bg-purple-100 transition-colors">
+                    <Trophy className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold">Matches</h3>
+                </div>
+                <p className="text-gray-600 text-sm">
+                  Schedule and score matches
+                </p>
+              </div>
             </Link>
           </div>
         )}
 
-        <div>
-          <h2 className="text-2xl font-bold mb-4">Live Matches</h2>
-          {isLoading ? (
-            <p>Loading...</p>
-          ) : liveMatches.length > 0 ? (
+        {/* Loading State for Matches */}
+        {isLoading && (
+          <div className="space-y-6">
+            <div>
+              <Skeleton width={200} height={32} radius={6} mb={16} />
+              <div className="grid gap-4">
+                {[1, 2].map((index) => (
+                  <Skeleton
+                    key={index}
+                    width={"100%"}
+                    height={208}
+                    radius={6}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Live Matches Section - Only show if there are live matches */}
+        {!isLoading && liveMatches.length > 0 && (
+          <div>
+            <h2 className="text-2xl font-bold mb-4">Live Matches</h2>
             <div className="grid gap-4">
               {liveMatches.map((match) => (
-                <Card key={match._id}>
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h3 className="text-xl font-semibold">
-                        {match?.teamA?.name} vs {match?.teamB?.name}
-                      </h3>
-                      <p className="text-green-600 font-semibold">LIVE</p>
-                    </div>
-                    <Link href={`/scoring/${match._id}`}>
-                      <Button>View Score</Button>
-                    </Link>
-                  </div>
-                </Card>
+                <MatchCard
+                  key={match._id}
+                  match={match}
+                  userRole={user?.role}
+                />
               ))}
             </div>
-          ) : (
-            <p className="text-gray-600">No live matches</p>
-          )}
-        </div>
+          </div>
+        )}
 
-        <div>
-          <h2 className="text-2xl font-bold mb-4">Upcoming Matches</h2>
-          {isLoading ? (
-            <p>Loading...</p>
-          ) : upcomingMatches.length > 0 ? (
+        {/* Upcoming Matches Section - Only show if there are upcoming matches */}
+        {!isLoading && upcomingMatches.length > 0 && (
+          <div>
+            <h2 className="text-2xl font-bold mb-4">Upcoming Matches</h2>
             <div className="grid gap-4">
               {upcomingMatches.map((match) => (
-                <Card key={match._id}>
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h3 className="text-xl font-semibold">
-                        {match.teamA.name} vs {match.teamB.name}
-                      </h3>
-                      <p className="text-gray-600">{match.overs} overs</p>
-                    </div>
-                    {user && user?.role !== "player" && (
-                      <Link href={`/matches/${match._id}/start`}>
-                        <Button>Start Match</Button>
-                      </Link>
-                    )}
-                  </div>
-                </Card>
+                <MatchCard
+                  key={match._id}
+                  match={match}
+                  userRole={user?.role}
+                />
               ))}
             </div>
-          ) : (
-            <p className="text-gray-600">No upcoming matches</p>
-          )}
-        </div>
+          </div>
+        )}
+
+        {/* Recent Matches Section */}
+        {!isLoading && recentMatches.length > 0 && (
+          <div>
+            <h2 className="text-2xl font-bold mb-4">Recent Matches</h2>
+            <div className="grid gap-4">
+              {recentMatches.map((match) => (
+                <MatchCard
+                  key={match._id}
+                  match={match}
+                  userRole={user?.role}
+                />
+              ))}
+            </div>
+            <div className="mt-4 text-center">
+              <Link href="/matches">
+                <Button variant="secondary">View More Matches</Button>
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
     </Layout>
   );
