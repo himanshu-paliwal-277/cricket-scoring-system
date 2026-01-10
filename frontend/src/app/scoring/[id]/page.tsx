@@ -76,7 +76,7 @@ export default function ScoringPage() {
       }
     };
     loadInnings();
-  }, [matchId, inning?.totalRuns, inning?.totalWickets]);
+  }, [matchId, inning?.totalRuns, inning?.totalWickets, inning?.currentOver, inning?.currentBall]);
 
   // Short polling for player role and non-logged-in users - fetch inning score every 5 seconds
   // useEffect(() => {
