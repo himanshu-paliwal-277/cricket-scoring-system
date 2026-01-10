@@ -784,7 +784,7 @@ export default function ScoringPage() {
               </span>
             )}
           </div>
-          <div className="flex gap-2 mb-6 flex-wrap">
+          <div className="flex sm:gap-2 gap-1.5 mb-6 flex-wrap">
             {inning?.balls && inning.balls.length > 0 ? (
               inning.balls
                 .filter(
@@ -794,7 +794,7 @@ export default function ScoringPage() {
                 .map((ball) => (
                   <div
                     key={ball._id}
-                    className={`sm:w-12 sm:h-12 w-10 h-10 flex items-center justify-center rounded font-bold text-lg ${
+                    className={`sm:w-12 sm:h-12 w-9 h-9 flex items-center justify-center rounded-sm font-bold sm:text-lg ${
                       ball.ballType === "wicket"
                         ? "bg-red-500 text-white"
                         : ball.ballType === "wide" || ball.ballType === "noBall"

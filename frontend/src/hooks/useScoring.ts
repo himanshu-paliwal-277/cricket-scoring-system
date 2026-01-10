@@ -3,14 +3,19 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { notifications } from "@mantine/notifications";
 import { AddBallData, scoringService } from "@/services/scoringService";
+import { useAuth } from "@/hooks/useAuth";
 
 export const useScoring = (matchId: string) => {
   const queryClient = useQueryClient();
   const [isClient, setIsClient] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // Disable refetch for scorer and owner roles
+  const shouldRefetch = user?.role !== "scorer" && user?.role !== "owner";
 
   const {
     data: inning,
@@ -25,7 +30,7 @@ export const useScoring = (matchId: string) => {
       return failureCount < 3;
     },
     refetchOnWindowFocus: isClient,
-    refetchInterval: 10000, // 10 seconds
+    refetchInterval: shouldRefetch ? 10000 : false, // 10 seconds for players, disabled for scorers/owners
   });
 
   const addBallMutation = useMutation({
