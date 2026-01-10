@@ -65,7 +65,10 @@ export default function ScoringPage() {
         const data = await statsService.getMatchScorecard(matchId);
         setInnings(data);
       } catch (error: any) {
-        const errorMessage = error?.response?.data?.message || error?.message || "Failed to load innings";
+        const errorMessage =
+          error?.response?.data?.message ||
+          error?.message ||
+          "Failed to load innings";
         notifications.show({
           message: errorMessage,
           color: "red",
@@ -903,6 +906,87 @@ export default function ScoringPage() {
                     )}
                 </div>
 
+                {/* Yet to bat */}
+                {(() => {
+                  // Get all players who have batted (appeared in battingStats)
+                  const battedPlayerIds = currentInningData.battingStats.map(
+                    (stat: any) => stat.playerId._id
+                  );
+
+                  // Get the batting team for this inning
+                  const battingTeamId = currentInningData.battingTeam._id;
+
+                  // Get the correct team (either teamA or teamB) that matches the batting team
+                  const battingTeam = match?.teamA._id === battingTeamId
+                    ? match?.teamA
+                    : match?.teamB;
+
+                  // Filter players from the batting team who haven't batted yet
+                  const yetToBatPlayers = battingTeam?.players
+                    ?.filter((playerId: string) => !battedPlayerIds.includes(playerId))
+                    .map((playerId: string) => {
+                      const player = players.find((p) => p._id === playerId);
+                      return player?.userId?.name;
+                    })
+                    .filter(Boolean) || [];
+
+                  return yetToBatPlayers.length > 0 ? (
+                    <div className="mt-5">
+                      <h3 className="font-semibold mb-3">Yet to bat</h3>
+                      <p className="text-sm text-gray-700">
+                        {yetToBatPlayers.join(" • ")}
+                      </p>
+                    </div>
+                  ) : null;
+                })()}
+
+                {/* Fall of wickets */}
+                {(() => {
+                  if (!currentInningData.balls || currentInningData.balls.length === 0) {
+                    return null;
+                  }
+
+                  // Calculate cumulative runs and valid ball count as we go through balls
+                  let cumulativeRuns = 0;
+                  let validBallCount = 0;
+                  const wicketBalls: any[] = [];
+
+                  currentInningData.balls.forEach((ball: any) => {
+                    if (ball.isValid) {
+                      cumulativeRuns += ball.runs || 0;
+                      validBallCount++;
+                    }
+
+                    if (ball.ballType === "wicket") {
+                      // Calculate over.ball format (e.g., 0.4 means 1st over, 4th ball)
+                      const overNum = Math.floor(validBallCount / 6);
+                      const ballNum = validBallCount % 6;
+
+                      wicketBalls.push({
+                        batsman: ball.batsman,
+                        runsAtWicket: cumulativeRuns,
+                        over: ballNum === 0 ? overNum : `${overNum}.${ballNum}`,
+                      });
+                    }
+                  });
+
+                  return wicketBalls.length > 0 ? (
+                    <div className="mt-5">
+                      <h3 className="font-semibold mb-3">Fall of wickets</h3>
+                      <p className="text-sm text-gray-700">
+                        {wicketBalls
+                          .map(
+                            (wicket, index) =>
+                              `${wicket.runsAtWicket}/${index + 1} (${
+                                wicket.batsman?.userId?.name || "Unknown"
+                              }, ${wicket.over} ov)`
+                          )
+                          .join(" • ")}
+                      </p>
+                    </div>
+                  ) : null;
+                })()}
+
                 {/* Partnerships */}
                 {/* <div className="mt-5">
                 {currentInningData.battingStats &&
@@ -986,7 +1070,7 @@ export default function ScoringPage() {
 
         {inning && inning?.balls && inning.balls.length > 6 && (
           <div>
-            <h3 className="font-semibold mb-4">Previous Overs</h3>
+            <h3 className="font-semibold mb-4 mt-5">Previous Overs</h3>
             <div className="space-y-3">
               {inning?.balls && inning.balls.length > 0 ? (
                 Array.from(
@@ -1067,7 +1151,7 @@ export default function ScoringPage() {
 
         {match?.status !== "completed" && canScore && (
           <div>
-            <div className="text-center space-y-3">
+            <div className="text-center space-y-3 mt-5">
               <h3 className="font-semibold mb-4">Match Controls</h3>
 
               {/* Change Inning Button - only show in first inning */}
