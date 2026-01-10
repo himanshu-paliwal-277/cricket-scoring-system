@@ -6,6 +6,7 @@ export interface Player {
     _id: string;
     name: string;
     email: string;
+    photo: string;
   };
   battingStyle: string;
   bowlingStyle: string;

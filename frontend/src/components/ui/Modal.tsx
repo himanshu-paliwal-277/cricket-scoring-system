@@ -17,20 +17,9 @@ export const Modal: React.FC<ModalProps> = ({
   return (
     <div
       className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50
-      transition-opacity duration-300
-      ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+      ${isOpen ? "" : "hidden"}`}
     >
-      <div
-        className={`bg-white rounded-lg shadow-xl max-w-md w-full mx-4
-        transform transition-all
-        duration-200
-        ease-[cubic-bezier(0.16,1,0.3,1)]
-        ${
-          isOpen
-            ? "translate-y-0 scale-100 opacity-100"
-            : "translate-y-2 scale-[0.96] opacity-0"
-        }`}
-      >
+      <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
         <div className="flex items-center justify-between p-4 border-b border-gray-300">
           <h2 className="text-lg sm:text-xl font-semibold">{title}</h2>
           <button

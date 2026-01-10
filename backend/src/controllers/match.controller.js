@@ -314,12 +314,40 @@ export const startInning = async (req, res) => {
 
 export const getAllMatches = async (req, res) => {
   try {
-    const matches = await Match.find()
+    const { page = 1, limit = 5, startDate, endDate } = req.query;
+
+    // Build filter query
+    const filter = {};
+
+    // Add date range filter if provided
+    if (startDate || endDate) {
+      filter.createdAt = {};
+      if (startDate) {
+        filter.createdAt.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        // Set end date to end of day
+        const endDateTime = new Date(endDate);
+        endDateTime.setHours(23, 59, 59, 999);
+        filter.createdAt.$lte = endDateTime;
+      }
+    }
+
+    // Calculate pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    // Get total count for pagination
+    const totalMatches = await Match.countDocuments(filter);
+
+    // Fetch matches with pagination
+    const matches = await Match.find(filter)
       .populate("teamA")
       .populate("teamB")
       .populate("winner")
       .populate("tossWinner")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
 
     // Populate innings data for each match
     const matchesWithInnings = await Promise.all(
@@ -336,7 +364,15 @@ export const getAllMatches = async (req, res) => {
       })
     );
 
-    res.json(matchesWithInnings);
+    res.json({
+      matches: matchesWithInnings,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(totalMatches / parseInt(limit)),
+        totalMatches,
+        limit: parseInt(limit),
+      },
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

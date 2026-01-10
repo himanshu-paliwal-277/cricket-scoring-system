@@ -5,7 +5,7 @@ import User from "../schema/User.js";
 
 export const getAllPlayers = async (req, res) => {
   try {
-    const players = await Player.find().populate("userId", "name email");
+    const players = await Player.find().populate("userId", "name email photo");
     res.json(players);
   } catch (error) {
     res.status(500).json({ message: error.message });

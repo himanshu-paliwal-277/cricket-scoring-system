@@ -100,7 +100,7 @@ export default function StatsPage() {
         const photo = value?.photo; // change this if your API uses a different key
 
         return (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {photo ? (
               <Image
                 src={photo}
@@ -174,7 +174,7 @@ export default function StatsPage() {
         const photo = value?.photo; // change this if your API uses a different key
 
         return (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {photo ? (
               <Image
                 src={photo}
@@ -243,7 +243,7 @@ export default function StatsPage() {
         const photo = value?.photo; // change this if your API uses a different key
 
         return (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {photo ? (
               <Image
                 src={photo}
@@ -306,7 +306,7 @@ export default function StatsPage() {
         const photo = value?.photo; // change this if your API uses a different key
 
         return (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {photo ? (
               <Image
                 src={photo}
@@ -359,7 +359,7 @@ export default function StatsPage() {
         const photo = value?.photo; // change this if your API uses a different key
 
         return (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {photo ? (
               <Image
                 src={photo}
@@ -412,7 +412,7 @@ export default function StatsPage() {
         const photo = value?.photo; // change this if your API uses a different key
 
         return (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {photo ? (
               <Image
                 src={photo}
@@ -464,7 +464,7 @@ export default function StatsPage() {
         const photo = value?.photo; // change this if your API uses a different key
 
         return (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {photo ? (
               <Image
                 src={photo}
@@ -516,7 +516,7 @@ export default function StatsPage() {
         const photo = value?.photo; // change this if your API uses a different key
 
         return (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {photo ? (
               <Image
                 src={photo}

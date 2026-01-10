@@ -11,7 +11,9 @@
       "Bash(npm run build:*)",
       "Bash(mkdir:*)",
       "Bash(tree:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(tasklist:*)",
+      "Bash(findstr:*)"
     ]
   }
 }

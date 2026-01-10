@@ -11,14 +11,37 @@ import { Select } from "@/components/ui/Select";
 import { useMatches } from "@/hooks/useMatches";
 import { useTeams } from "@/hooks/useTeams";
 import { useAuth } from "@/hooks/useAuth";
-import { Skeleton } from "@mantine/core";
+import { Skeleton, Pagination } from "@mantine/core";
 import { MatchCard } from "@/components/MatchCard";
+import { DateInput } from "@mantine/dates";
+import { Filter, X } from "lucide-react";
+import "@mantine/dates/styles.css";
 
 export default function MatchesPage() {
-  const { matches, isLoading, createMatch, isCreating } = useMatches();
   const { teams } = useTeams();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { user } = useAuth();
+
+  // Pagination and filter state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
+
+  // Helper function to format date
+  const formatDateForAPI = (date: Date | null) => {
+    if (!date) return undefined;
+    return date instanceof Date ? date.toISOString().split("T")[0] : undefined;
+  };
+
+  // Fetch matches with pagination and filters
+  const { matches, pagination, isLoading, createMatch, isCreating } =
+    useMatches({
+      page: currentPage,
+      limit: 10,
+      startDate: formatDateForAPI(startDate),
+      endDate: formatDateForAPI(endDate),
+    });
 
   // Initialize formData with default team selections
   const [formData, setFormData] = useState({
@@ -65,6 +88,19 @@ export default function MatchesPage() {
         setFormData({ teamA: "", teamB: "", overs: 6 });
       },
     });
+  };
+
+  // Clear filters
+  const handleClearFilters = () => {
+    setStartDate(null);
+    setEndDate(null);
+    setCurrentPage(1);
+  };
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Group matches by date
@@ -121,10 +157,65 @@ export default function MatchesPage() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Matches</h1>
-          {user && user?.role === "owner" && (
-            <Button onClick={handleModalOpen}>Create Match</Button>
-          )}
+          <div className="flex gap-2">
+            {/* <button
+              className="bg-gray-200 py-2 px-3 rounded-sm"
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              <Filter className="w-4 h-4" />
+            </button> */}
+            {user && user?.role === "owner" && (
+              <Button onClick={handleModalOpen}>Create Match</Button>
+            )}
+          </div>
         </div>
+
+        {/* Date Filter Section */}
+        {showFilters && (
+          <Card>
+            <div className="space-y-4">
+              <h3 className="font-semibold text-lg">Filter by Date Range</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Start Date
+                  </label>
+                  <DateInput
+                    value={startDate}
+                    onChange={(value) => setStartDate(value)}
+                    placeholder="Select start date"
+                    clearable
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    End Date
+                  </label>
+                  <DateInput
+                    value={endDate}
+                    onChange={(value) => setEndDate(value)}
+                    placeholder="Select end date"
+                    clearable
+                    minDate={startDate || undefined}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                {(startDate || endDate) && (
+                  <button
+                    className="flex items-center gap-2 px-3 py-1.5  rounded-sm bg-gray-200"
+                    onClick={handleClearFilters}
+                  >
+                    <X className="w-4 h-4 " />
+                    <span className="text-sm">Clear Filters</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </Card>
+        )}
 
         {isLoading ? (
           <div className="flex flex-col gap-4">
@@ -163,6 +254,23 @@ export default function MatchesPage() {
                 </p>
               </Card>
             )}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {!isLoading && pagination && pagination.totalPages > 1 && (
+          <div className="flex flex-col justify-center items-center gap-4 py-4">
+            <Pagination
+              total={pagination.totalPages}
+              value={currentPage}
+              onChange={handlePageChange}
+              size="md"
+              radius="sm"
+            />
+            <div className="text-sm text-gray-600">
+              Page {pagination.currentPage} of {pagination.totalPages} (
+              {pagination.totalMatches} total matches)
+            </div>
           </div>
         )}
 

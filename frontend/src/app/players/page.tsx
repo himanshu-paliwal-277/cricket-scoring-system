@@ -12,6 +12,7 @@ import { usePlayers } from "@/hooks/usePlayers";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@mantine/core";
 import { Player } from "@/services/playerService";
+import Image from "next/image";
 
 export default function PlayersPage() {
   const {
@@ -205,119 +206,153 @@ export default function PlayersPage() {
           >
             {selectedPlayer && (
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-600">Name</p>
-                    <p className="font-semibold">
+                {/* Player Header */}
+                <div className="flex items-center gap-4 ">
+                  {selectedPlayer.userId.photo ? (
+                    <Image
+                      className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+                      src={selectedPlayer.userId.photo}
+                      alt={selectedPlayer.userId.name}
+                      width={80}
+                      height={80}
+                    />
+                  ) : (
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-2xl font-bold border-2 border-gray-200">
+                      {selectedPlayer.userId.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-gray-900">
                       {selectedPlayer.userId.name}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Email</p>
-                    <p className="font-semibold">
+                    </h3>
+                    <p className="text-sm text-gray-600">
                       {selectedPlayer.userId.email}
                     </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Batting Style</p>
-                    <p className="font-semibold capitalize">
-                      {selectedPlayer.battingStyle.replace("-", " ")}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Bowling Style</p>
-                    <p className="font-semibold capitalize">
-                      {selectedPlayer.bowlingStyle.replace("-", " ")}
-                    </p>
+                    <div className="flex gap-3 mt-2">
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs text-gray-500">Batting:</span>
+                        <span className="text-xs font-semibold text-gray-700 capitalize">
+                          {selectedPlayer.battingStyle.replace("-", " ")}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs text-gray-500">Bowling:</span>
+                        <span className="text-xs font-semibold text-gray-700 capitalize">
+                          {selectedPlayer.bowlingStyle.replace("-", " ")}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div className="border-t pt-4">
-                  <h3 className="font-semibold mb-3">Statistics</h3>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <p className="text-sm text-gray-600">Matches</p>
-                      <p className="text-lg font-bold">
+                {/* Statistics Cards */}
+                <div>
+                  <h3 className="font-semibold text-lg mb-3 text-gray-900">
+                    Career Statistics
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg px-4 py-3 border border-blue-200">
+                      <p className="text-xs text-blue-700 font-medium">
+                        Matches Played
+                      </p>
+                      <p className="text-2xl font-bold text-blue-900 mt-1">
                         {selectedPlayer.matchesPlayed}
                       </p>
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Runs</p>
-                      <p className="text-lg font-bold">
+                    <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg px-4 py-3 border border-green-200">
+                      <p className="text-xs text-green-700 font-medium">
+                        Total Runs
+                      </p>
+                      <p className="text-2xl font-bold text-green-900 mt-1">
                         {selectedPlayer.totalRuns}
                       </p>
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Wickets</p>
-                      <p className="text-lg font-bold">
+                    <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg px-4 py-3 border border-red-200">
+                      <p className="text-xs text-red-700 font-medium">
+                        Wickets
+                      </p>
+                      <p className="text-2xl font-bold text-red-900 mt-1">
                         {selectedPlayer.totalWickets}
                       </p>
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Highest Score</p>
-                      <p className="text-lg font-bold">
+                    <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg px-4 py-3 border border-purple-200">
+                      <p className="text-xs text-purple-700 font-medium">
+                        Highest Score
+                      </p>
+                      <p className="text-2xl font-bold text-purple-900 mt-1">
                         {selectedPlayer.highestScore}
                       </p>
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Fours</p>
-                      <p className="text-lg font-bold">
+                    <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg px-4 py-3 border border-orange-200">
+                      <p className="text-xs text-orange-700 font-medium">
+                        Fours
+                      </p>
+                      <p className="text-2xl font-bold text-orange-900 mt-1">
                         {selectedPlayer.totalFours}
                       </p>
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Sixes</p>
-                      <p className="text-lg font-bold">
+                    <div className="bg-gradient-to-br from-pink-50 to-pink-100 rounded-lg px-4 py-3 border border-pink-200">
+                      <p className="text-xs text-pink-700 font-medium">Sixes</p>
+                      <p className="text-2xl font-bold text-pink-900 mt-1">
                         {selectedPlayer.totalSixes}
                       </p>
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Fifties</p>
-                      <p className="text-lg font-bold">
+                    <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg px-4 py-3 border border-indigo-200">
+                      <p className="text-xs text-indigo-700 font-medium">
+                        Fifties
+                      </p>
+                      <p className="text-2xl font-bold text-indigo-900 mt-1">
                         {selectedPlayer.total50s}
                       </p>
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Twenty-Fives</p>
-                      <p className="text-lg font-bold">
+                    <div className="bg-gradient-to-br from-teal-50 to-teal-100 rounded-lg px-4 py-3 border border-teal-200">
+                      <p className="text-xs text-teal-700 font-medium">
+                        Twenty-Fives
+                      </p>
+                      <p className="text-2xl font-bold text-teal-900 mt-1">
                         {selectedPlayer.total25s}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="border-t pt-4">
-                  <h3 className="font-semibold mb-3">Player Status</h3>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={`w-3 h-3 rounded-full ${
-                          selectedPlayer.isActive
-                            ? "bg-green-500"
-                            : "bg-red-500"
-                        }`}
-                      />
-                      <span className="font-medium">
-                        {selectedPlayer.isActive ? "Active" : "Inactive"}
-                      </span>
+                {/* Player Status */}
+                <div className="">
+                  <h3 className="font-semibold text-lg mb-3 text-gray-900">
+                    Player Status
+                  </h3>
+                  <div className="">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`w-3 h-3 rounded-full ${
+                            selectedPlayer.isActive
+                              ? "bg-green-500"
+                              : "bg-red-500"
+                          }`}
+                        />
+                        <span className="font-semibold text-gray-900">
+                          {selectedPlayer.isActive ? "Active" : "Inactive"}
+                        </span>
+                      </div>
+                      <Button
+                        onClick={handleToggleActive}
+                        isLoading={isTogglingActive}
+                        variant={
+                          selectedPlayer.isActive ? "secondary" : "primary"
+                        }
+                      >
+                        {selectedPlayer.isActive
+                          ? "Deactivate Player"
+                          : "Activate Player"}
+                      </Button>
                     </div>
-                    <Button
-                      onClick={handleToggleActive}
-                      isLoading={isTogglingActive}
-                      variant={
-                        selectedPlayer.isActive ? "secondary" : "primary"
-                      }
-                    >
+                    <p className="text-xs mx-auto text-center mb-2 text-gray-600">
                       {selectedPlayer.isActive
-                        ? "Deactivate Player"
-                        : "Activate Player"}
-                    </Button>
+                        ? "Active players can be selected for teams and matches."
+                        : "Inactive players cannot be selected for teams or matches."}
+                    </p>
                   </div>
-                  <p className="text-sm text-gray-600 mt-2">
-                    {selectedPlayer.isActive
-                      ? "Active players can be selected for teams and matches."
-                      : "Inactive players cannot be selected for teams or matches."}
-                  </p>
                 </div>
               </div>
             )}

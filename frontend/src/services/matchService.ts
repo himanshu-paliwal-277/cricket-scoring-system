@@ -34,6 +34,23 @@ export interface Match {
   innings?: any[]; // Add innings array
 }
 
+export interface MatchesResponse {
+  matches: Match[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalMatches: number;
+    limit: number;
+  };
+}
+
+export interface GetMatchesParams {
+  page?: number;
+  limit?: number;
+  startDate?: string;
+  endDate?: string;
+}
+
 export interface CreateMatchData {
   teamA: string;
   teamB: string;
@@ -47,8 +64,8 @@ export interface StartInningData {
 }
 
 export const matchService = {
-  getAll: async (): Promise<Match[]> => {
-    const response = await axiosInstance.get("/matches");
+  getAll: async (params?: GetMatchesParams): Promise<MatchesResponse> => {
+    const response = await axiosInstance.get("/matches", { params });
     return response.data;
   },
 

@@ -5,19 +5,23 @@ import {
   CreateMatchData,
   matchService,
   StartInningData,
+  GetMatchesParams,
 } from "@/services/matchService";
 
-export const useMatches = () => {
+export const useMatches = (params?: GetMatchesParams) => {
   const queryClient = useQueryClient();
 
   const {
-    data: matches = [],
+    data,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["matches"],
-    queryFn: matchService.getAll,
+    queryKey: ["matches", params],
+    queryFn: () => matchService.getAll(params),
   });
+
+  const matches = data?.matches || [];
+  const pagination = data?.pagination;
 
   const createMutation = useMutation({
     mutationFn: (data: CreateMatchData) => matchService.create(data),
@@ -73,6 +77,7 @@ export const useMatches = () => {
 
   return {
     matches,
+    pagination,
     isLoading,
     error,
     createMatch: createMutation.mutate,
