@@ -5,7 +5,7 @@ import Player from "../schema/Player.js";
 export const getPlayerStats = async (req, res) => {
   try {
     const players = await Player.find()
-      .populate("userId", "name email")
+      .populate("userId", "name email photo")
       .sort({ totalRuns: -1 });
 
     res.json(players);
@@ -17,7 +17,7 @@ export const getPlayerStats = async (req, res) => {
 export const getMostRuns = async (req, res) => {
   try {
     const players = await Player.find()
-      .populate("userId", "name email")
+      .populate("userId", "name email photo")
       .sort({ totalRuns: -1 })
       .limit(10);
 
@@ -30,7 +30,7 @@ export const getMostRuns = async (req, res) => {
 export const getMostWickets = async (req, res) => {
   try {
     const players = await Player.find()
-      .populate("userId", "name email")
+      .populate("userId", "name email photo")
       .sort({ totalWickets: -1 })
       .limit(10);
 
@@ -42,14 +42,15 @@ export const getMostWickets = async (req, res) => {
 
 export const getMostBoundaries = async (req, res) => {
   try {
-    const players = await Player.find()
-      .populate("userId", "name email");
+    const players = await Player.find().populate("userId", "name email photo");
 
     // Calculate total boundaries and sort by total
-    const playersWithBoundaries = players.map(p => ({
-      ...p.toObject(),
-      totalBoundaries: (p.totalFours || 0) + (p.totalSixes || 0)
-    })).sort((a, b) => b.totalBoundaries - a.totalBoundaries)
+    const playersWithBoundaries = players
+      .map((p) => ({
+        ...p.toObject(),
+        totalBoundaries: (p.totalFours || 0) + (p.totalSixes || 0),
+      }))
+      .sort((a, b) => b.totalBoundaries - a.totalBoundaries)
       .slice(0, 10);
 
     res.json(playersWithBoundaries);
@@ -61,7 +62,7 @@ export const getMostBoundaries = async (req, res) => {
 export const getMostFours = async (req, res) => {
   try {
     const players = await Player.find()
-      .populate("userId", "name email")
+      .populate("userId", "name email photo")
       .sort({ totalFours: -1 })
       .limit(10);
 
@@ -74,7 +75,7 @@ export const getMostFours = async (req, res) => {
 export const getMostSixes = async (req, res) => {
   try {
     const players = await Player.find()
-      .populate("userId", "name email")
+      .populate("userId", "name email photo")
       .sort({ totalSixes: -1 })
       .limit(10);
 
@@ -87,7 +88,7 @@ export const getMostSixes = async (req, res) => {
 export const getHighestScores = async (req, res) => {
   try {
     const players = await Player.find()
-      .populate("userId", "name email")
+      .populate("userId", "name email photo")
       .sort({ highestScore: -1 })
       .limit(10);
 
@@ -100,14 +101,14 @@ export const getHighestScores = async (req, res) => {
 export const getMostFifties = async (req, res) => {
   try {
     const players = await Player.find()
-      .populate("userId", "name email")
+      .populate("userId", "name email photo")
       .sort({ total50s: -1 })
       .limit(10);
 
     // Map to include fifties field for frontend compatibility
-    const playersWithFifties = players.map(p => ({
+    const playersWithFifties = players.map((p) => ({
       ...p.toObject(),
-      fifties: p.total50s
+      fifties: p.total50s,
     }));
 
     res.json(playersWithFifties);
@@ -119,14 +120,14 @@ export const getMostFifties = async (req, res) => {
 export const getMostTwentyFives = async (req, res) => {
   try {
     const players = await Player.find()
-      .populate("userId", "name email")
+      .populate("userId", "name email photo")
       .sort({ total25s: -1 })
       .limit(10);
 
     // Map to include twentyFives field for frontend compatibility
-    const playersWithTwentyFives = players.map(p => ({
+    const playersWithTwentyFives = players.map((p) => ({
       ...p.toObject(),
-      twentyFives: p.total25s
+      twentyFives: p.total25s,
     }));
 
     res.json(playersWithTwentyFives);
@@ -144,31 +145,31 @@ export const getMatchScorecard = async (req, res) => {
         path: "battingTeam",
         populate: {
           path: "players",
-          populate: { path: "userId", select: "name email" }
-        }
+          populate: { path: "userId", select: "name email" },
+        },
       })
       .populate({
         path: "bowlingTeam",
         populate: {
           path: "players",
-          populate: { path: "userId", select: "name email" }
-        }
+          populate: { path: "userId", select: "name email" },
+        },
       })
       .populate({
         path: "battingStats.playerId",
-        populate: { path: "userId", select: "name email" }
+        populate: { path: "userId", select: "name email" },
       })
       .populate({
         path: "battingStats.dismissedBy",
-        populate: { path: "userId", select: "name email" }
+        populate: { path: "userId", select: "name email" },
       })
       .populate({
         path: "battingStats.fielder",
-        populate: { path: "userId", select: "name email" }
+        populate: { path: "userId", select: "name email" },
       })
       .populate({
         path: "bowlingStats.playerId",
-        populate: { path: "userId", select: "name email" }
+        populate: { path: "userId", select: "name email" },
       })
       .sort({ inningNumber: 1 });
 
@@ -178,15 +179,15 @@ export const getMatchScorecard = async (req, res) => {
         const balls = await Ball.find({ inningId: inning._id })
           .populate({
             path: "batsman",
-            populate: { path: "userId", select: "name email" }
+            populate: { path: "userId", select: "name email" },
           })
           .populate({
             path: "bowler",
-            populate: { path: "userId", select: "name email" }
+            populate: { path: "userId", select: "name email" },
           })
           .populate({
             path: "fielder",
-            populate: { path: "userId", select: "name email" }
+            populate: { path: "userId", select: "name email" },
           })
           .sort({ createdAt: 1 });
         return {
@@ -213,24 +214,23 @@ export const getAvailableBatsmen = async (req, res) => {
 
     // Get IDs of players who are out
     const outPlayerIds = inning.battingStats
-      .filter(s => s.isOut)
-      .map(s => s.playerId.toString());
+      .filter((s) => s.isOut)
+      .map((s) => s.playerId.toString());
 
     // Get IDs of current batsmen (striker and non-striker)
-    const currentBatsmenIds = [
-      inning.striker?.toString(),
-      inning.nonStriker?.toString()
-    ].filter(Boolean);
+    const currentBatsmenIds = [inning.striker?.toString(), inning.nonStriker?.toString()].filter(
+      Boolean
+    );
 
     const battingTeam = await inning.battingTeam.populate({
       path: "players",
-      populate: { path: "userId", select: "name email" }
+      populate: { path: "userId", select: "name email" },
     });
 
     const totalPlayers = battingTeam.players.length;
     const wicketsFallen = inning.totalWickets || 0;
     const notOutPlayers = battingTeam.players.filter(
-      p => !outPlayerIds.includes(p._id.toString())
+      (p) => !outPlayerIds.includes(p._id.toString())
     );
     const notOutCount = notOutPlayers.length;
 
@@ -250,11 +250,11 @@ export const getAvailableBatsmen = async (req, res) => {
     // Single player remaining - show them so they can bat from both ends
     else if (notOutCount === 1) {
       availableBatsmen = notOutPlayers;
-    }
-    else {
+    } else {
       // Normal scenario: Filter out dismissed players AND current batsmen
       availableBatsmen = battingTeam.players.filter(
-        p => !outPlayerIds.includes(p._id.toString()) && !currentBatsmenIds.includes(p._id.toString())
+        (p) =>
+          !outPlayerIds.includes(p._id.toString()) && !currentBatsmenIds.includes(p._id.toString())
       );
     }
 

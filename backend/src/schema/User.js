@@ -25,6 +25,10 @@ const userSchema = new mongoose.Schema(
       enum: ["owner", "scorer", "player"],
       default: "player",
     },
+    photo: {
+      type: String,
+      trim: true,
+    }
   },
   { timestamps: true }
 );

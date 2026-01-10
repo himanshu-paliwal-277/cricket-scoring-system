@@ -7,6 +7,7 @@ import { StatsSection } from "@/components/ui/StatsSection";
 import { statsService } from "@/services/statsService";
 import { Skeleton } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
+import Image from "next/image";
 
 export default function StatsPage() {
   const [mostRuns, setMostRuns] = useState<any[]>([]);
@@ -54,7 +55,10 @@ export default function StatsPage() {
       setMostFifties(fifties);
       setMostTwentyFives(twentyFives);
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || error?.message || "Failed to load stats";
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to load stats";
       notifications.show({
         message: errorMessage,
         color: "red",
@@ -91,8 +95,36 @@ export default function StatsPage() {
       header: "Player",
       key: "userId",
       align: "left" as const,
-      render: (value: any) => value.name,
+      render: (value: any) => {
+        const name = value?.name || "Unknown";
+        const photo = value?.photo; // change this if your API uses a different key
+
+        return (
+          <div className="flex items-center gap-3">
+            {photo ? (
+              <Image
+                src={photo}
+                alt={name}
+                className="w-8 h-8 rounded-full object-cover border"
+                width={32}
+                height={32}
+                onError={(e) => {
+                  // if image fails to load, hide it
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                }}
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm">
+                {name.charAt(0).toUpperCase()}
+              </div>
+            )}
+
+            <span className="font-medium">{name}</span>
+          </div>
+        );
+      },
     },
+
     { header: "Matches", key: "matchesPlayed", align: "center" as const },
     {
       header: "Runs",
@@ -137,7 +169,34 @@ export default function StatsPage() {
       header: "Player",
       key: "userId",
       align: "left" as const,
-      render: (value: any) => value.name,
+      render: (value: any) => {
+        const name = value?.name || "Unknown";
+        const photo = value?.photo; // change this if your API uses a different key
+
+        return (
+          <div className="flex items-center gap-3">
+            {photo ? (
+              <Image
+                src={photo}
+                alt={name}
+                className="w-8 h-8 rounded-full object-cover border"
+                width={32}
+                height={32}
+                onError={(e) => {
+                  // if image fails to load, hide it
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                }}
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm">
+                {name.charAt(0).toUpperCase()}
+              </div>
+            )}
+
+            <span className="font-medium">{name}</span>
+          </div>
+        );
+      },
     },
     { header: "Matches", key: "matchesPlayed", align: "center" as const },
     {
@@ -179,7 +238,34 @@ export default function StatsPage() {
       header: "Player",
       key: "userId",
       align: "left" as const,
-      render: (value: any) => value.name,
+      render: (value: any) => {
+        const name = value?.name || "Unknown";
+        const photo = value?.photo; // change this if your API uses a different key
+
+        return (
+          <div className="flex items-center gap-3">
+            {photo ? (
+              <Image
+                src={photo}
+                alt={name}
+                className="w-8 h-8 rounded-full object-cover border"
+                width={32}
+                height={32}
+                onError={(e) => {
+                  // if image fails to load, hide it
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                }}
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm">
+                {name.charAt(0).toUpperCase()}
+              </div>
+            )}
+
+            <span className="font-medium">{name}</span>
+          </div>
+        );
+      },
     },
     { header: "Matches", key: "matchesPlayed", align: "center" as const },
     {
@@ -215,7 +301,34 @@ export default function StatsPage() {
       header: "Player",
       key: "userId",
       align: "left" as const,
-      render: (value: any) => value.name,
+      render: (value: any) => {
+        const name = value?.name || "Unknown";
+        const photo = value?.photo; // change this if your API uses a different key
+
+        return (
+          <div className="flex items-center gap-3">
+            {photo ? (
+              <Image
+                src={photo}
+                alt={name}
+                className="w-8 h-8 rounded-full object-cover border"
+                width={32}
+                height={32}
+                onError={(e) => {
+                  // if image fails to load, hide it
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                }}
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm">
+                {name.charAt(0).toUpperCase()}
+              </div>
+            )}
+
+            <span className="font-medium">{name}</span>
+          </div>
+        );
+      },
     },
     { header: "Matches", key: "matchesPlayed", align: "center" as const },
     {
@@ -241,7 +354,34 @@ export default function StatsPage() {
       header: "Player",
       key: "userId",
       align: "left" as const,
-      render: (value: any) => value.name,
+      render: (value: any) => {
+        const name = value?.name || "Unknown";
+        const photo = value?.photo; // change this if your API uses a different key
+
+        return (
+          <div className="flex items-center gap-3">
+            {photo ? (
+              <Image
+                src={photo}
+                alt={name}
+                className="w-8 h-8 rounded-full object-cover border"
+                width={32}
+                height={32}
+                onError={(e) => {
+                  // if image fails to load, hide it
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                }}
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm">
+                {name.charAt(0).toUpperCase()}
+              </div>
+            )}
+
+            <span className="font-medium">{name}</span>
+          </div>
+        );
+      },
     },
     { header: "Matches", key: "matchesPlayed", align: "center" as const },
     {
@@ -267,7 +407,34 @@ export default function StatsPage() {
       header: "Player",
       key: "userId",
       align: "left" as const,
-      render: (value: any) => value.name,
+      render: (value: any) => {
+        const name = value?.name || "Unknown";
+        const photo = value?.photo; // change this if your API uses a different key
+
+        return (
+          <div className="flex items-center gap-3">
+            {photo ? (
+              <Image
+                src={photo}
+                alt={name}
+                className="w-8 h-8 rounded-full object-cover border"
+                width={32}
+                height={32}
+                onError={(e) => {
+                  // if image fails to load, hide it
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                }}
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm">
+                {name.charAt(0).toUpperCase()}
+              </div>
+            )}
+
+            <span className="font-medium">{name}</span>
+          </div>
+        );
+      },
     },
     { header: "Matches", key: "matchesPlayed", align: "center" as const },
     {
@@ -292,7 +459,34 @@ export default function StatsPage() {
       header: "Player",
       key: "userId",
       align: "left" as const,
-      render: (value: any) => value.name,
+      render: (value: any) => {
+        const name = value?.name || "Unknown";
+        const photo = value?.photo; // change this if your API uses a different key
+
+        return (
+          <div className="flex items-center gap-3">
+            {photo ? (
+              <Image
+                src={photo}
+                alt={name}
+                className="w-8 h-8 rounded-full object-cover border"
+                width={32}
+                height={32}
+                onError={(e) => {
+                  // if image fails to load, hide it
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                }}
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm">
+                {name.charAt(0).toUpperCase()}
+              </div>
+            )}
+
+            <span className="font-medium">{name}</span>
+          </div>
+        );
+      },
     },
     { header: "Matches", key: "matchesPlayed", align: "center" as const },
     {
@@ -317,7 +511,34 @@ export default function StatsPage() {
       header: "Player",
       key: "userId",
       align: "left" as const,
-      render: (value: any) => value.name,
+      render: (value: any) => {
+        const name = value?.name || "Unknown";
+        const photo = value?.photo; // change this if your API uses a different key
+
+        return (
+          <div className="flex items-center gap-3">
+            {photo ? (
+              <Image
+                src={photo}
+                alt={name}
+                className="w-8 h-8 rounded-full object-cover border"
+                width={32}
+                height={32}
+                onError={(e) => {
+                  // if image fails to load, hide it
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                }}
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm">
+                {name.charAt(0).toUpperCase()}
+              </div>
+            )}
+
+            <span className="font-medium">{name}</span>
+          </div>
+        );
+      },
     },
     { header: "Matches", key: "matchesPlayed", align: "center" as const },
     {
