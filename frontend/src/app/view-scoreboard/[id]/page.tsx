@@ -257,33 +257,40 @@ export default function ScoreboardPage() {
                 (stat: any) => stat.playerId._id
               );
 
-              // Get team snapshot or current team based on inning
+              // Get the batting team ID for this inning
+              const battingTeamId = currentInning.battingTeam._id;
+
+              // Determine which team snapshot to use based on batting team ID
               const battingTeamSnapshot =
-                currentInning.inningNumber === 1
+                match.teamA._id === battingTeamId
                   ? match.teamASnapshot || match.teamA
                   : match.teamBSnapshot || match.teamB;
 
-              // Filter players who haven't batted yet
+              // Filter players who haven't batted yet from the correct batting team
               const yetToBatPlayers =
-                battingTeamSnapshot.players?.filter(
-                  (player: any) =>
-                    !battedPlayerIds.includes(
-                      player.playerId?._id || player._id
-                    )
-                ) || [];
+                battingTeamSnapshot.players
+                  ?.filter(
+                    (player: any) => {
+                      // Get the actual player ID (could be nested in playerId or be the ID itself)
+                      const playerId = player.playerId?._id || player._id || player;
+                      return !battedPlayerIds.includes(playerId);
+                    }
+                  )
+                  .map((player: any) => {
+                    // Extract player name from various possible structures
+                    return (
+                      player.playerId?.userId?.name ||
+                      player.userId?.name ||
+                      player.name
+                    );
+                  })
+                  .filter(Boolean) || [];
 
               return yetToBatPlayers.length > 0 ? (
                 <div>
                   <h3 className="font-semibold mb-3">Yet to bat</h3>
                   <p className="text-sm text-gray-700">
-                    {yetToBatPlayers
-                      .map(
-                        (player: any) =>
-                          player.playerId?.userId?.name ||
-                          player.userId?.name ||
-                          player.name
-                      )
-                      .join(" • ")}
+                    {yetToBatPlayers.join(" • ")}
                   </p>
                 </div>
               ) : null;
