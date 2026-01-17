@@ -136,6 +136,16 @@ export const statsService = {
     return data;
   },
 
+  async getMostCatches() {
+    const { data } = await AxiosInstance.get("/stats/most-catches");
+    return data;
+  },
+
+  async getMostOnes() {
+    const { data } = await AxiosInstance.get("/stats/most-ones");
+    return data;
+  },
+
   async getAvailableBatsmen(inningId: string) {
     const { data } = await AxiosInstance.get(
       `/stats/available-batsmen/${inningId}`

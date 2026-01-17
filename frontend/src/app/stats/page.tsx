@@ -18,6 +18,8 @@ export default function StatsPage() {
   const [highestScores, setHighestScores] = useState<any[]>([]);
   const [mostFifties, setMostFifties] = useState<any[]>([]);
   const [mostTwentyFives, setMostTwentyFives] = useState<any[]>([]);
+  const [mostCatches, setMostCatches] = useState<any[]>([]);
+  const [mostOnes, setMostOnes] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -36,6 +38,8 @@ export default function StatsPage() {
         highest,
         fifties,
         twentyFives,
+        catches,
+        ones,
       ] = await Promise.all([
         statsService.getMostRuns(),
         statsService.getMostWickets(),
@@ -45,6 +49,8 @@ export default function StatsPage() {
         statsService.getHighestScores(),
         statsService.getMostFifties(),
         statsService.getMostTwentyFives(),
+        statsService.getMostCatches(),
+        statsService.getMostOnes(),
       ]);
       setMostRuns(runs);
       setMostWickets(wickets);
@@ -54,6 +60,8 @@ export default function StatsPage() {
       setHighestScores(highest);
       setMostFifties(fifties);
       setMostTwentyFives(twentyFives);
+      setMostCatches(catches);
+      setMostOnes(ones);
     } catch (error: any) {
       const errorMessage =
         error?.response?.data?.message ||
@@ -550,6 +558,109 @@ export default function StatsPage() {
     { header: "Total Runs", key: "totalRuns", align: "center" as const },
   ];
 
+  const mostCatchesColumns = [
+    {
+      header: "Rank",
+      key: "rank",
+      align: "left" as const,
+      render: (_: any, __: any, index?: number) => (
+        <span className="font-semibold">{(index ?? 0) + 1}</span>
+      ),
+    },
+    {
+      header: "Player",
+      key: "userId",
+      align: "left" as const,
+      render: (value: any) => {
+        const name = value?.name || "Unknown";
+        const photo = value?.photo;
+
+        return (
+          <div className="flex items-center gap-2">
+            {photo ? (
+              <Image
+                src={photo}
+                alt={name}
+                className="w-8 h-8 rounded-full object-cover border"
+                width={32}
+                height={32}
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                }}
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm">
+                {name.charAt(0).toUpperCase()}
+              </div>
+            )}
+
+            <span className="font-medium">{name}</span>
+          </div>
+        );
+      },
+    },
+    { header: "Matches", key: "matchesPlayed", align: "center" as const },
+    {
+      header: "Catches",
+      key: "totalCatches",
+      align: "center" as const,
+      className: "font-bold text-green-600",
+      render: (value: any) => value || 0,
+    },
+  ];
+
+  const mostOnesColumns = [
+    {
+      header: "Rank",
+      key: "rank",
+      align: "left" as const,
+      render: (_: any, __: any, index?: number) => (
+        <span className="font-semibold">{(index ?? 0) + 1}</span>
+      ),
+    },
+    {
+      header: "Player",
+      key: "userId",
+      align: "left" as const,
+      render: (value: any) => {
+        const name = value?.name || "Unknown";
+        const photo = value?.photo;
+
+        return (
+          <div className="flex items-center gap-2">
+            {photo ? (
+              <Image
+                src={photo}
+                alt={name}
+                className="w-8 h-8 rounded-full object-cover border"
+                width={32}
+                height={32}
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                }}
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm">
+                {name.charAt(0).toUpperCase()}
+              </div>
+            )}
+
+            <span className="font-medium">{name}</span>
+          </div>
+        );
+      },
+    },
+    { header: "Matches", key: "matchesPlayed", align: "center" as const },
+    {
+      header: "1s",
+      key: "totalOnes",
+      align: "center" as const,
+      className: "font-bold text-indigo-600",
+      render: (value: any) => value || 0,
+    },
+    { header: "Total Runs", key: "totalRuns", align: "center" as const },
+  ];
+
   return (
     <Layout>
       <div className="max-w-7xl mx-auto space-y-6">
@@ -594,6 +705,16 @@ export default function StatsPage() {
           title="Most 25s"
           columns={mostTwentyFivesColumns}
           data={mostTwentyFives}
+        />
+        <StatsSection
+          title="Most Catches"
+          columns={mostCatchesColumns}
+          data={mostCatches}
+        />
+        <StatsSection
+          title="Most 1s"
+          columns={mostOnesColumns}
+          data={mostOnes}
         />
       </div>
     </Layout>

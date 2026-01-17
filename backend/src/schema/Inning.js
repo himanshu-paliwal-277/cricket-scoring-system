@@ -62,6 +62,7 @@ const inningSchema = new mongoose.Schema(
         balls: { type: Number, default: 0 },
         fours: { type: Number, default: 0 },
         sixes: { type: Number, default: 0 },
+        ones: { type: Number, default: 0 },
         strikeRate: { type: Number, default: 0 },
         isOut: { type: Boolean, default: false },
         dismissalType: { type: String, enum: ["bowled", "caught", "lbw", "stumped", "runOut", "hitWicket", "none"], default: "none" },
@@ -78,6 +79,12 @@ const inningSchema = new mongoose.Schema(
         wickets: { type: Number, default: 0 },
         maidens: { type: Number, default: 0 },
         economy: { type: Number, default: 0 }
+      }
+    ],
+    fieldingStats: [
+      {
+        playerId: { type: mongoose.Schema.Types.ObjectId, ref: "Player", required: true },
+        catches: { type: Number, default: 0 }
       }
     ],
     isCompleted: {

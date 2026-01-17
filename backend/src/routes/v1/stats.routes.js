@@ -5,8 +5,10 @@ import {
   getHighestScores,
   getMatchScorecard,
   getMostBoundaries,
+  getMostCatches,
   getMostFifties,
   getMostFours,
+  getMostOnes,
   getMostRuns,
   getMostSixes,
   getMostTwentyFives,
@@ -24,6 +26,8 @@ router.get("/most-sixes", getMostSixes);
 router.get("/highest-scores", getHighestScores);
 router.get("/most-fifties", getMostFifties);
 router.get("/most-twenty-fives", getMostTwentyFives);
+router.get("/most-catches", getMostCatches);
+router.get("/most-ones", getMostOnes);
 router.get("/scorecard/:matchId", getMatchScorecard);
 router.get("/available-batsmen/:inningId", getAvailableBatsmen);
 

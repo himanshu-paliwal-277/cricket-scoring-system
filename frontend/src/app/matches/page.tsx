@@ -47,7 +47,7 @@ export default function MatchesPage() {
   const { matches, pagination, isLoading, createMatch, isCreating } =
     useMatches({
       page: currentPage,
-      limit: 5,
+      limit: 10,
       startDate: formatDateForAPI(startDate),
       endDate: formatDateForAPI(endDate),
     });
@@ -62,11 +62,11 @@ export default function MatchesPage() {
   // Get default team A and B based on teams array
   const defaultTeamA = useMemo(
     () => (teams && teams.length >= 1 ? teams[0]._id : ""),
-    [teams]
+    [teams],
   );
   const defaultTeamB = useMemo(
     () => (teams && teams.length >= 2 ? teams[1]._id : ""),
-    [teams]
+    [teams],
   );
 
   // Update formData when modal opens with default values
@@ -158,7 +158,7 @@ export default function MatchesPage() {
 
   const groupedMatches = matches ? groupMatchesByDate(matches) : {};
   const sortedDateKeys = Object.keys(groupedMatches).sort(
-    (a, b) => new Date(b).getTime() - new Date(a).getTime()
+    (a, b) => new Date(b).getTime() - new Date(a).getTime(),
   );
 
   return (

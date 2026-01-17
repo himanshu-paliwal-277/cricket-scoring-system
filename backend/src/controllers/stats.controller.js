@@ -136,6 +136,32 @@ export const getMostTwentyFives = async (req, res) => {
   }
 };
 
+export const getMostCatches = async (req, res) => {
+  try {
+    const players = await Player.find()
+      .populate("userId", "name email photo")
+      .sort({ totalCatches: -1 })
+      .limit(10);
+
+    res.json(players);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getMostOnes = async (req, res) => {
+  try {
+    const players = await Player.find()
+      .populate("userId", "name email photo")
+      .sort({ totalOnes: -1 })
+      .limit(10);
+
+    res.json(players);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const getMatchScorecard = async (req, res) => {
   try {
     const { matchId } = req.params;

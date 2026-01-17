@@ -102,7 +102,8 @@ export const addBall = async (req, res) => {
       inning.currentBall += 1;
     }
 
-    // Count boundaries (only on normal balls)
+    // Count boundaries and singles (only on normal balls)
+    if (runs === 1 && ballType === "normal") batsmanStats.ones = (batsmanStats.ones || 0) + 1;
     if (runs === 4 && ballType === "normal") batsmanStats.fours += 1;
     if (runs === 6 && ballType === "normal") batsmanStats.sixes += 1;
 
@@ -132,6 +133,21 @@ export const addBall = async (req, res) => {
 
       if (fielder && (wicketType === "caught" || wicketType === "stumped")) {
         batsmanStats.fielder = fielder;
+
+        // Track catches in fielding stats
+        if (wicketType === "caught") {
+          let fielderStats = inning.fieldingStats.find(
+            s => s.playerId.toString() === fielder.toString()
+          );
+          if (!fielderStats) {
+            inning.fieldingStats.push({
+              playerId: fielder,
+              catches: 1
+            });
+          } else {
+            fielderStats.catches += 1;
+          }
+        }
       }
 
       // Handle new batsman coming in after wicket

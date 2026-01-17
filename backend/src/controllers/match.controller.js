@@ -23,6 +23,7 @@ export const updatePlayerStatsAfterMatch = async (matchId) => {
           totalBallsFaced: stat.balls,
           totalFours: stat.fours,
           totalSixes: stat.sixes,
+          totalOnes: stat.ones || 0,
         },
         $max: { highestScore: stat.runs },
       };
@@ -49,6 +50,19 @@ export const updatePlayerStatsAfterMatch = async (matchId) => {
         $inc: {
           totalWickets: stat.wickets,
           totalBallsBowled: stat.balls,
+        },
+      });
+
+      playersUpdated.add(playerId);
+    }
+
+    // Update fielding stats (catches)
+    for (const stat of inning.fieldingStats || []) {
+      const playerId = stat.playerId.toString();
+
+      await Player.findByIdAndUpdate(playerId, {
+        $inc: {
+          totalCatches: stat.catches || 0,
         },
       });
 
