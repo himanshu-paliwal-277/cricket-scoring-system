@@ -1,6 +1,8 @@
 import Ball from "../schema/Ball.js";
 import Inning from "../schema/Inning.js";
+import Match from "../schema/Match.js";
 import Player from "../schema/Player.js";
+import Team from "../schema/Team.js";
 
 export const getPlayerStats = async (req, res) => {
   try {
@@ -285,6 +287,50 @@ export const getAvailableBatsmen = async (req, res) => {
     }
 
     res.json(availableBatsmen);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getHeadToHead = async (req, res) => {
+  try {
+    // Get the two teams
+    const teams = await Team.find({}).limit(2);
+    if (teams.length < 2) {
+      return res.status(404).json({ message: "Need at least 2 teams" });
+    }
+
+    const teamA = teams[0];
+    const teamB = teams[1];
+
+    // Get all completed matches between these teams
+    const matches = await Match.find({
+      status: "completed",
+      $or: [
+        { teamA: teamA._id, teamB: teamB._id },
+        { teamA: teamB._id, teamB: teamA._id },
+      ],
+    }).populate("winner", "name logo");
+
+    const totalMatches = matches.length;
+    let teamAWins = 0;
+    let teamBWins = 0;
+
+    matches.forEach((match) => {
+      if (match.winner) {
+        if (match.winner._id.toString() === teamA._id.toString()) {
+          teamAWins++;
+        } else if (match.winner._id.toString() === teamB._id.toString()) {
+          teamBWins++;
+        }
+      }
+    });
+
+    res.json({
+      teamA: { _id: teamA._id, name: teamA.name, logo: teamA.logo, wins: teamAWins },
+      teamB: { _id: teamB._id, name: teamB.name, logo: teamB.logo, wins: teamBWins },
+      totalMatches,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

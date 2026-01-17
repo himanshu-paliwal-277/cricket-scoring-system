@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -11,19 +11,30 @@ import { usePlayerStats } from "@/hooks/usePlayers";
 import { MatchCard } from "@/components/MatchCard";
 import { Skeleton } from "@mantine/core";
 import { Users, Shield, Trophy } from "lucide-react";
+import { statsService } from "@/services/statsService";
+import Image from "next/image";
 
 export default function DashboardPage() {
   const { user, isLoading: isLoadingUser } = useAuth();
   const { matches, isLoading } = useMatches();
   const { stats: playerStats, isLoading: statsLoading } = usePlayerStats(
-    user?.id || ""
+    user?.id || "",
   );
-  // const { updatePlayer } = usePlayer(user?.id || "");
 
   const [updateForm, setUpdateForm] = useState({
     battingStyle: "",
     bowlingStyle: "",
   });
+
+  const [headToHead, setHeadToHead] = useState<{
+    teamA: { _id: string; name: string; logo?: string; wins: number };
+    teamB: { _id: string; name: string; logo?: string; wins: number };
+    totalMatches: number;
+  } | null>(null);
+
+  useEffect(() => {
+    statsService.getHeadToHead().then(setHeadToHead).catch(console.error);
+  }, []);
 
   const liveMatches = matches?.filter((m) => m.status === "live") || [];
   const upcomingMatches =
@@ -33,7 +44,7 @@ export default function DashboardPage() {
       ?.filter((m) => m.status === "completed")
       .sort(
         (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       )
       .slice(0, 5) || [];
 
@@ -417,6 +428,92 @@ export default function DashboardPage() {
                   userRole={user?.role}
                 />
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Head to Head Section */}
+        {headToHead && headToHead.totalMatches > 0 && (
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold mb-4 text-center">
+              Head to Head
+            </h2>
+            <div className="bg-gradient-to-r from-blue-50 via-white to-green-50 border border-gray-200 rounded-lg sm:p-6 p-4">
+              <div className="flex items-center justify-between">
+                {/* Team A */}
+                <div className="flex-1 text-center">
+                  <div className="flex flex-col items-center">
+                    {headToHead.teamA.logo ? (
+                      <Image
+                        src={headToHead.teamA.logo}
+                        alt={headToHead.teamA.name}
+                        className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-contain sm:mb-2 mb-1"
+                        width={64}
+                        height={64}
+                      />
+                    ) : (
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-blue-100 flex items-center justify-center mb-2 border-2 border-blue-200">
+                        <span className="text-2xl sm:text-3xl font-bold text-blue-600">
+                          {headToHead.teamA.name.substring(0, 2).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                    <p className="font-semibold text-sm sm:text-base">
+                      {headToHead.teamA.name}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Stats */}
+                <div className="flex-1 text-center px-4">
+                  <div className="flex items-center justify-center gap-4 sm:gap-8">
+                    <div className="text-center">
+                      <p className="text-3xl sm:text-4xl font-bold text-blue-600">
+                        {headToHead.teamA.wins}
+                      </p>
+                      <p className="text-xs sm:text-sm text-gray-500">Wins</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-lg sm:text-xl font-semibold text-gray-400">
+                        {headToHead.totalMatches}
+                      </p>
+                      <p className="text-xs sm:text-sm text-gray-500">
+                        Matches
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-3xl sm:text-4xl font-bold text-green-600">
+                        {headToHead.teamB.wins}
+                      </p>
+                      <p className="text-xs sm:text-sm text-gray-500">Wins</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Team B */}
+                <div className="flex-1 text-center">
+                  <div className="flex flex-col items-center">
+                    {headToHead.teamB.logo ? (
+                      <Image
+                        src={headToHead.teamB.logo}
+                        alt={headToHead.teamB.name}
+                        className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-contain sm:mb-2 mb-1"
+                        width={64}
+                        height={64}
+                      />
+                    ) : (
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-green-100 flex items-center justify-center mb-2 border-2 border-green-200">
+                        <span className="text-2xl sm:text-3xl font-bold text-green-600">
+                          {headToHead.teamB.name.substring(0, 2).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                    <p className="font-semibold text-sm sm:text-base">
+                      {headToHead.teamB.name}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}

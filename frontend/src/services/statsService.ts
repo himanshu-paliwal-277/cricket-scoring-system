@@ -157,4 +157,9 @@ export const statsService = {
     const { data } = await AxiosInstance.get("/stats/players");
     return data;
   },
+
+  async getHeadToHead() {
+    const { data } = await AxiosInstance.get("/stats/head-to-head");
+    return data;
+  },
 };
