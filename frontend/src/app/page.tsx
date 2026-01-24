@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import Logo from "../../public/logo.png";
 
 export default function Home() {
   const router = useRouter();
@@ -23,7 +22,7 @@ export default function Home() {
         <div className="loading-logo">
           <div className="relative w-28 h-28 rounded-2xl overflow-hidden shadow-xl shadow-emerald-200/50">
             <Image
-              src={Logo}
+              src="/logo.png"
               alt="Cricket Scoring System"
               fill
               className="object-cover"
