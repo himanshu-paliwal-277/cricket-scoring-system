@@ -96,58 +96,80 @@ export const statsService = {
     return data;
   },
 
-  async getMostRuns() {
-    const { data } = await AxiosInstance.get("/stats/most-runs");
+  async getMostRuns(limit?: number) {
+    const { data } = await AxiosInstance.get("/stats/most-runs", {
+      params: limit ? { limit } : undefined,
+    });
     return data;
   },
 
-  async getMostWickets() {
-    const { data } = await AxiosInstance.get("/stats/most-wickets");
+  async getMostWickets(limit?: number) {
+    const { data } = await AxiosInstance.get("/stats/most-wickets", {
+      params: limit ? { limit } : undefined,
+    });
     return data;
   },
 
-  async getMostBoundaries() {
-    const { data } = await AxiosInstance.get("/stats/most-boundaries");
+  async getMostBoundaries(limit?: number) {
+    const { data } = await AxiosInstance.get("/stats/most-boundaries", {
+      params: limit ? { limit } : undefined,
+    });
     return data;
   },
 
-  async getMostFours() {
-    const { data } = await AxiosInstance.get("/stats/most-fours");
+  async getMostFours(limit?: number) {
+    const { data } = await AxiosInstance.get("/stats/most-fours", {
+      params: limit ? { limit } : undefined,
+    });
     return data;
   },
 
-  async getMostSixes() {
-    const { data } = await AxiosInstance.get("/stats/most-sixes");
+  async getMostSixes(limit?: number) {
+    const { data } = await AxiosInstance.get("/stats/most-sixes", {
+      params: limit ? { limit } : undefined,
+    });
     return data;
   },
 
-  async getHighestScores() {
-    const { data } = await AxiosInstance.get("/stats/highest-scores");
+  async getHighestScores(limit?: number) {
+    const { data } = await AxiosInstance.get("/stats/highest-scores", {
+      params: limit ? { limit } : undefined,
+    });
     return data;
   },
 
-  async getMostFifties() {
-    const { data } = await AxiosInstance.get("/stats/most-fifties");
+  async getMostFifties(limit?: number) {
+    const { data } = await AxiosInstance.get("/stats/most-fifties", {
+      params: limit ? { limit } : undefined,
+    });
     return data;
   },
 
-  async getMostTwentyFives() {
-    const { data } = await AxiosInstance.get("/stats/most-twenty-fives");
+  async getMostTwentyFives(limit?: number) {
+    const { data } = await AxiosInstance.get("/stats/most-twenty-fives", {
+      params: limit ? { limit } : undefined,
+    });
     return data;
   },
 
-  async getMostCatches() {
-    const { data } = await AxiosInstance.get("/stats/most-catches");
+  async getMostCatches(limit?: number) {
+    const { data } = await AxiosInstance.get("/stats/most-catches", {
+      params: limit ? { limit } : undefined,
+    });
     return data;
   },
 
-  async getMostOnes() {
-    const { data } = await AxiosInstance.get("/stats/most-ones");
+  async getMostOnes(limit?: number) {
+    const { data } = await AxiosInstance.get("/stats/most-ones", {
+      params: limit ? { limit } : undefined,
+    });
     return data;
   },
 
-  async getBestEconomy() {
-    const { data } = await AxiosInstance.get("/stats/best-economy");
+  async getBestEconomy(limit?: number) {
+    const { data } = await AxiosInstance.get("/stats/best-economy", {
+      params: limit ? { limit } : undefined,
+    });
     return data;
   },
 

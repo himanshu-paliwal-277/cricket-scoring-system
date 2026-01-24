@@ -18,10 +18,11 @@ export const getPlayerStats = async (req, res) => {
 
 export const getMostRuns = async (req, res) => {
   try {
+    const limit = parseInt(req.query.limit) || 10;
     const players = await Player.find()
       .populate("userId", "name email photo")
       .sort({ totalRuns: -1 })
-      .limit(10);
+      .limit(limit);
 
     res.json(players);
   } catch (error) {
@@ -31,10 +32,11 @@ export const getMostRuns = async (req, res) => {
 
 export const getMostWickets = async (req, res) => {
   try {
+    const limit = parseInt(req.query.limit) || 10;
     const players = await Player.find()
       .populate("userId", "name email photo")
       .sort({ totalWickets: -1 })
-      .limit(10);
+      .limit(limit);
 
     res.json(players);
   } catch (error) {
@@ -44,6 +46,7 @@ export const getMostWickets = async (req, res) => {
 
 export const getMostBoundaries = async (req, res) => {
   try {
+    const limit = parseInt(req.query.limit) || 10;
     const players = await Player.find().populate("userId", "name email photo");
 
     // Calculate total boundaries and sort by total
@@ -53,7 +56,7 @@ export const getMostBoundaries = async (req, res) => {
         totalBoundaries: (p.totalFours || 0) + (p.totalSixes || 0),
       }))
       .sort((a, b) => b.totalBoundaries - a.totalBoundaries)
-      .slice(0, 10);
+      .slice(0, limit);
 
     res.json(playersWithBoundaries);
   } catch (error) {
@@ -63,10 +66,11 @@ export const getMostBoundaries = async (req, res) => {
 
 export const getMostFours = async (req, res) => {
   try {
+    const limit = parseInt(req.query.limit) || 10;
     const players = await Player.find()
       .populate("userId", "name email photo")
       .sort({ totalFours: -1 })
-      .limit(10);
+      .limit(limit);
 
     res.json(players);
   } catch (error) {
@@ -76,10 +80,11 @@ export const getMostFours = async (req, res) => {
 
 export const getMostSixes = async (req, res) => {
   try {
+    const limit = parseInt(req.query.limit) || 10;
     const players = await Player.find()
       .populate("userId", "name email photo")
       .sort({ totalSixes: -1 })
-      .limit(10);
+      .limit(limit);
 
     res.json(players);
   } catch (error) {
@@ -89,10 +94,11 @@ export const getMostSixes = async (req, res) => {
 
 export const getHighestScores = async (req, res) => {
   try {
+    const limit = parseInt(req.query.limit) || 10;
     const players = await Player.find()
       .populate("userId", "name email photo")
       .sort({ highestScore: -1 })
-      .limit(10);
+      .limit(limit);
 
     res.json(players);
   } catch (error) {
@@ -102,10 +108,11 @@ export const getHighestScores = async (req, res) => {
 
 export const getMostFifties = async (req, res) => {
   try {
+    const limit = parseInt(req.query.limit) || 10;
     const players = await Player.find()
       .populate("userId", "name email photo")
       .sort({ total50s: -1 })
-      .limit(10);
+      .limit(limit);
 
     // Map to include fifties field for frontend compatibility
     const playersWithFifties = players.map((p) => ({
@@ -121,10 +128,11 @@ export const getMostFifties = async (req, res) => {
 
 export const getMostTwentyFives = async (req, res) => {
   try {
+    const limit = parseInt(req.query.limit) || 10;
     const players = await Player.find()
       .populate("userId", "name email photo")
       .sort({ total25s: -1 })
-      .limit(10);
+      .limit(limit);
 
     // Map to include twentyFives field for frontend compatibility
     const playersWithTwentyFives = players.map((p) => ({
@@ -140,10 +148,11 @@ export const getMostTwentyFives = async (req, res) => {
 
 export const getMostCatches = async (req, res) => {
   try {
+    const limit = parseInt(req.query.limit) || 10;
     const players = await Player.find()
       .populate("userId", "name email photo")
       .sort({ totalCatches: -1 })
-      .limit(10);
+      .limit(limit);
 
     res.json(players);
   } catch (error) {
@@ -153,10 +162,11 @@ export const getMostCatches = async (req, res) => {
 
 export const getMostOnes = async (req, res) => {
   try {
+    const limit = parseInt(req.query.limit) || 10;
     const players = await Player.find()
       .populate("userId", "name email photo")
       .sort({ totalOnes: -1 })
-      .limit(10);
+      .limit(limit);
 
     res.json(players);
   } catch (error) {
@@ -166,6 +176,7 @@ export const getMostOnes = async (req, res) => {
 
 export const getBestEconomy = async (req, res) => {
   try {
+    const limit = parseInt(req.query.limit) || 10;
     // Get players who have bowled at least 12 balls (2 overs minimum)
     const players = await Player.find({ totalBallsBowled: { $gte: 12 } })
       .populate("userId", "name email photo");
@@ -182,7 +193,7 @@ export const getBestEconomy = async (req, res) => {
         };
       })
       .sort((a, b) => a.economy - b.economy)
-      .slice(0, 10);
+      .slice(0, limit);
 
     res.json(playersWithEconomy);
   } catch (error) {

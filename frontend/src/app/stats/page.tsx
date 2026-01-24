@@ -5,11 +5,14 @@ import { useState, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import { StatsSection } from "@/components/ui/StatsSection";
 import { statsService } from "@/services/statsService";
+import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import Image from "next/image";
 
 export default function StatsPage() {
+  const { user } = useAuth();
+  const isOwner = user?.role === "owner";
   const [mostRuns, setMostRuns] = useState<any[]>([]);
   const [mostWickets, setMostWickets] = useState<any[]>([]);
   const [mostBoundaries, setMostBoundaries] = useState<any[]>([]);
@@ -743,56 +746,78 @@ export default function StatsPage() {
               title="Most Runs"
               columns={mostRunsColumns}
               data={mostRuns}
+              showSeeMore={isOwner}
+              seeMoreLink="/stats/most-runs"
             />
             <StatsSection
               title="Most Wickets"
               columns={mostWicketsColumns}
               data={mostWickets}
+              showSeeMore={isOwner}
+              seeMoreLink="/stats/most-wickets"
             />
             <StatsSection
               title="Most Boundaries"
               columns={mostBoundariesColumns}
               data={mostBoundaries}
+              showSeeMore={isOwner}
+              seeMoreLink="/stats/most-boundaries"
             />
             <StatsSection
               title="Most Fours"
               columns={mostFoursColumns}
               data={mostFours}
+              showSeeMore={isOwner}
+              seeMoreLink="/stats/most-fours"
             />
             <StatsSection
               title="Most Sixes"
               columns={mostSixesColumns}
               data={mostSixes}
+              showSeeMore={isOwner}
+              seeMoreLink="/stats/most-sixes"
             />
             <StatsSection
               title="Highest Scores"
               columns={highestScoresColumns}
               data={highestScores}
+              showSeeMore={isOwner}
+              seeMoreLink="/stats/highest-scores"
             />
             <StatsSection
               title="Most Fifties (50s)"
               columns={mostFiftiesColumns}
               data={mostFifties}
+              showSeeMore={isOwner}
+              seeMoreLink="/stats/most-fifties"
             />
             <StatsSection
               title="Most 25s"
               columns={mostTwentyFivesColumns}
               data={mostTwentyFives}
+              showSeeMore={isOwner}
+              seeMoreLink="/stats/most-twenty-fives"
             />
             <StatsSection
               title="Best Economy"
               columns={bestEconomyColumns}
               data={bestEconomy}
+              showSeeMore={isOwner}
+              seeMoreLink="/stats/best-economy"
             />
             <StatsSection
               title="Most Catches"
               columns={mostCatchesColumns}
               data={mostCatches}
+              showSeeMore={isOwner}
+              seeMoreLink="/stats/most-catches"
             />
             <StatsSection
               title="Most 1s"
               columns={mostOnesColumns}
               data={mostOnes}
+              showSeeMore={isOwner}
+              seeMoreLink="/stats/most-ones"
             />
           </>
         )}
