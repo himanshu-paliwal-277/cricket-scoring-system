@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Layout } from "@/components/Layout";
 import { Card } from "@/components/ui/Card";
@@ -18,7 +18,7 @@ import { DateInput } from "@mantine/dates";
 import { Filter, X } from "lucide-react";
 import "@mantine/dates/styles.css";
 
-export default function MatchesPage() {
+function MatchesContent() {
   const { teams } = useTeams();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { user } = useAuth();
@@ -393,5 +393,28 @@ export default function MatchesPage() {
         </Modal>
       </div>
     </Layout>
+  );
+}
+
+export default function MatchesPage() {
+  return (
+    <Suspense
+      fallback={
+        <Layout>
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h1 className="text-2xl font-bold">Matches</h1>
+            </div>
+            <div className="flex flex-col gap-4">
+              {[1, 2, 3, 4].map((index) => (
+                <Skeleton key={index} width={"100%"} height={208} radius={6} />
+              ))}
+            </div>
+          </div>
+        </Layout>
+      }
+    >
+      <MatchesContent />
+    </Suspense>
   );
 }
