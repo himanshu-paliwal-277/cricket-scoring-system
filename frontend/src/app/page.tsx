@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Logo from "../../public/logo.png";
 
 export default function Home() {
   const router = useRouter();
@@ -10,7 +11,7 @@ export default function Home() {
   useEffect(() => {
     const timer = setTimeout(() => {
       router.push("/dashboard");
-    }, 3000);
+    }, 4000);
 
     return () => clearTimeout(timer);
   }, [router]);
@@ -22,7 +23,7 @@ export default function Home() {
         <div className="loading-logo">
           <div className="relative w-28 h-28 rounded-2xl overflow-hidden shadow-xl shadow-emerald-200/50">
             <Image
-              src="/logo.png"
+              src={Logo}
               alt="Cricket Scoring System"
               fill
               className="object-cover"
@@ -36,9 +37,7 @@ export default function Home() {
           <h1 className="text-2xl font-bold text-gray-800 tracking-tight">
             Cricket Scoring
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Live Match Management
-          </p>
+          <p className="text-sm text-gray-500 mt-1">Live Match Management</p>
         </div>
 
         {/* Loading indicator */}

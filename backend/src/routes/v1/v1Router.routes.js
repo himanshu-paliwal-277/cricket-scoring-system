@@ -9,6 +9,13 @@ import teamRouter from "./team.routes.js";
 
 const router = express.Router();
 
+router.get("/", (req, res) => {
+  return res.status(200).json({
+    success: true,
+    message: "Server is up and running",
+  });
+});
+
 router.use("/auth", authRouter);
 router.use("/players", playerRouter);
 router.use("/teams", teamRouter);
