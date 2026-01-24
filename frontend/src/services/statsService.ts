@@ -146,6 +146,11 @@ export const statsService = {
     return data;
   },
 
+  async getBestEconomy() {
+    const { data } = await AxiosInstance.get("/stats/best-economy");
+    return data;
+  },
+
   async getAvailableBatsmen(inningId: string) {
     const { data } = await AxiosInstance.get(
       `/stats/available-batsmen/${inningId}`

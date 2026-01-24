@@ -2,6 +2,7 @@ import express from "express";
 
 import {
   getAvailableBatsmen,
+  getBestEconomy,
   getHeadToHead,
   getHighestScores,
   getMatchScorecard,
@@ -29,6 +30,7 @@ router.get("/most-fifties", getMostFifties);
 router.get("/most-twenty-fives", getMostTwentyFives);
 router.get("/most-catches", getMostCatches);
 router.get("/most-ones", getMostOnes);
+router.get("/best-economy", getBestEconomy);
 router.get("/scorecard/:matchId", getMatchScorecard);
 router.get("/available-batsmen/:inningId", getAvailableBatsmen);
 router.get("/head-to-head", getHeadToHead);

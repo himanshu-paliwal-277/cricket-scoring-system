@@ -20,6 +20,7 @@ export default function StatsPage() {
   const [mostTwentyFives, setMostTwentyFives] = useState<any[]>([]);
   const [mostCatches, setMostCatches] = useState<any[]>([]);
   const [mostOnes, setMostOnes] = useState<any[]>([]);
+  const [bestEconomy, setBestEconomy] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -40,6 +41,7 @@ export default function StatsPage() {
         twentyFives,
         catches,
         ones,
+        economy,
       ] = await Promise.all([
         statsService.getMostRuns(),
         statsService.getMostWickets(),
@@ -51,6 +53,7 @@ export default function StatsPage() {
         statsService.getMostTwentyFives(),
         statsService.getMostCatches(),
         statsService.getMostOnes(),
+        statsService.getBestEconomy(),
       ]);
       setMostRuns(runs);
       setMostWickets(wickets);
@@ -62,6 +65,7 @@ export default function StatsPage() {
       setMostTwentyFives(twentyFives);
       setMostCatches(catches);
       setMostOnes(ones);
+      setBestEconomy(economy);
     } catch (error: any) {
       const errorMessage =
         error?.response?.data?.message ||
@@ -565,6 +569,73 @@ export default function StatsPage() {
     { header: "Total Runs", key: "totalRuns", align: "center" as const },
   ];
 
+  const bestEconomyColumns = [
+    {
+      header: "Rank",
+      key: "rank",
+      align: "left" as const,
+      render: (_: any, __: any, index?: number) => (
+        <span className="font-semibold">{(index ?? 0) + 1}</span>
+      ),
+    },
+    {
+      header: "Player",
+      key: "userId",
+      align: "left" as const,
+      render: (value: any) => {
+        const name = value?.name || "Unknown";
+        const photo = value?.photo;
+
+        return (
+          <div className="flex items-center gap-2">
+            {photo ? (
+              <Image
+                src={photo}
+                alt={name}
+                className="w-8 h-8 rounded-full object-cover border"
+                width={32}
+                height={32}
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                }}
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm">
+                {name.charAt(0).toUpperCase()}
+              </div>
+            )}
+
+            <span className="font-medium">{name}</span>
+          </div>
+        );
+      },
+    },
+    { header: "Matches", key: "matchesPlayed", align: "center" as const },
+    {
+      header: "Overs",
+      key: "overs",
+      align: "center" as const,
+      render: (_: any, row: any) => {
+        const balls = row.totalBallsBowled || 0;
+        return `${Math.floor(balls / 6)}.${balls % 6}`;
+      },
+    },
+    {
+      header: "Runs",
+      key: "totalRunsConceded",
+      align: "center" as const,
+      render: (value: any) => value || 0,
+    },
+    { header: "Wickets", key: "totalWickets", align: "center" as const },
+    {
+      header: "Econ",
+      key: "economy",
+      align: "center" as const,
+      className: "font-bold text-emerald-600",
+      render: (value: any) => value?.toFixed(2) || "0.00",
+    },
+  ];
+
   const mostCatchesColumns = [
     {
       header: "Rank",
@@ -712,6 +783,11 @@ export default function StatsPage() {
           title="Most 25s"
           columns={mostTwentyFivesColumns}
           data={mostTwentyFives}
+        />
+        <StatsSection
+          title="Best Economy"
+          columns={bestEconomyColumns}
+          data={bestEconomy}
         />
         <StatsSection
           title="Most Catches"

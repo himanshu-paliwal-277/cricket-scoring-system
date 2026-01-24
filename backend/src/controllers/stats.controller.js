@@ -164,6 +164,32 @@ export const getMostOnes = async (req, res) => {
   }
 };
 
+export const getBestEconomy = async (req, res) => {
+  try {
+    // Get players who have bowled at least 12 balls (2 overs minimum)
+    const players = await Player.find({ totalBallsBowled: { $gte: 12 } })
+      .populate("userId", "name email photo");
+
+    // Calculate economy and sort by lowest (best) economy
+    const playersWithEconomy = players
+      .map((p) => {
+        const economy = p.totalBallsBowled > 0
+          ? (p.totalRunsConceded / p.totalBallsBowled) * 6
+          : 0;
+        return {
+          ...p.toObject(),
+          economy: parseFloat(economy.toFixed(2)),
+        };
+      })
+      .sort((a, b) => a.economy - b.economy)
+      .slice(0, 10);
+
+    res.json(playersWithEconomy);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const getMatchScorecard = async (req, res) => {
   try {
     const { matchId } = req.params;
