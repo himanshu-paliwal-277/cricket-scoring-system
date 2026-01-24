@@ -41,6 +41,10 @@ const playerSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    totalRunsConceded: {
+      type: Number,
+      default: 0,
+    },
     totalFours: {
       type: Number,
       default: 0,

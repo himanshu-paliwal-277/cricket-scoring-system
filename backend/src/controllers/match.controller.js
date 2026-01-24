@@ -50,6 +50,7 @@ export const updatePlayerStatsAfterMatch = async (matchId) => {
         $inc: {
           totalWickets: stat.wickets,
           totalBallsBowled: stat.balls,
+          totalRunsConceded: stat.runsConceded || 0,
         },
       });
 

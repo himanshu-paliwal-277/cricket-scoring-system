@@ -15,7 +15,9 @@
       "Bash(tasklist:*)",
       "Bash(findstr:*)",
       "Bash(node scripts/updatePlayerStats.js:*)",
-      "Bash(node -e \"\nconst mongoose = require\\(''mongoose''\\);\nmongoose.connect\\(''mongodb+srv://himanshu27:MkFCLzg6n5sDSfIR@cluster0.op48u.mongodb.net/cricket-scoring-system?retryWrites=true&w=majority''\\).then\\(async \\(\\) => {\n  const db = mongoose.connection.db;\n  const collections = await db.listCollections\\(\\).toArray\\(\\);\n  console.log\\(''Collections:'', collections.map\\(c => c.name\\)\\);\n  const ball = await db.collection\\(''balls''\\).findOne\\({}\\);\n  if \\(ball\\) console.log\\(''Sample ball:'', JSON.stringify\\(ball, null, 2\\)\\);\n  await mongoose.disconnect\\(\\);\n}\\);\n\")"
+      "Bash(node -e \"\nconst mongoose = require\\(''mongoose''\\);\nmongoose.connect\\(''mongodb+srv://himanshu27:MkFCLzg6n5sDSfIR@cluster0.op48u.mongodb.net/cricket-scoring-system?retryWrites=true&w=majority''\\).then\\(async \\(\\) => {\n  const db = mongoose.connection.db;\n  const collections = await db.listCollections\\(\\).toArray\\(\\);\n  console.log\\(''Collections:'', collections.map\\(c => c.name\\)\\);\n  const ball = await db.collection\\(''balls''\\).findOne\\({}\\);\n  if \\(ball\\) console.log\\(''Sample ball:'', JSON.stringify\\(ball, null, 2\\)\\);\n  await mongoose.disconnect\\(\\);\n}\\);\n\")",
+      "Bash(cd c:UsersHimanshu PaliwalDesktop\"\"My Projects \"cricket-scoring-system)",
+      "Bash(node scripts/updateBowlingStats.js:*)"
     ]
   }
 }

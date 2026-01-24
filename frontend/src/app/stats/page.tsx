@@ -223,12 +223,19 @@ export default function StatsPage() {
       },
     },
     {
+      header: "Runs",
+      key: "totalRunsConceded",
+      align: "center" as const,
+      render: (value: any) => value || 0,
+    },
+    {
       header: "Econ",
       key: "economy",
       align: "center" as const,
       render: (_: any, row: any) => {
         const balls = row.totalBallsBowled || 0;
-        return balls > 0 ? ((row.totalRuns / balls) * 6).toFixed(2) : "0.00";
+        const runsConceded = row.totalRunsConceded || 0;
+        return balls > 0 ? ((runsConceded / balls) * 6).toFixed(2) : "0.00";
       },
     },
   ];
