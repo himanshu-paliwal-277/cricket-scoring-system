@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Layout } from "@/components/Layout";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -21,12 +22,33 @@ export default function MatchesPage() {
   const { teams } = useTeams();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { user } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // Get initial page from URL query params
+  const initialPage = Number(searchParams.get("page")) || 1;
 
   // Pagination and filter state
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(initialPage);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+
+  // Update URL with new page value
+  const updatePageInUrl = useCallback(
+    (page: number) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (page === 1) {
+        params.delete("page");
+      } else {
+        params.set("page", page.toString());
+      }
+      const newUrl = params.toString() ? `${pathname}?${params}` : pathname;
+      router.replace(newUrl, { scroll: false });
+    },
+    [searchParams, pathname, router]
+  );
 
   // Helper function to format date
   const formatDateForAPI = (date: Date | null) => {
@@ -104,11 +126,13 @@ export default function MatchesPage() {
     setStartDate(null);
     setEndDate(null);
     setCurrentPage(1);
+    updatePageInUrl(1);
   };
 
   // Handle page change
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+    updatePageInUrl(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 

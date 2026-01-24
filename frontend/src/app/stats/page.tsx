@@ -80,19 +80,6 @@ export default function StatsPage() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <Layout>
-        <div>
-          <Skeleton width={200} height={28} />
-          <Skeleton width={"100%"} height={428} className="mt-6" />
-          <Skeleton width={"100%"} height={428} className="mt-6" />
-          <Skeleton width={"100%"} height={428} className="mt-6" />
-        </div>
-      </Layout>
-    );
-  }
-
   // Column definitions
   const mostRunsColumns = [
     {
@@ -744,61 +731,71 @@ export default function StatsPage() {
       <div className="max-w-7xl mx-auto space-y-6">
         <h1 className="text-2xl font-bold mb-6">Player Statistics</h1>
 
-        <StatsSection
-          title="Most Runs"
-          columns={mostRunsColumns}
-          data={mostRuns}
-        />
-        <StatsSection
-          title="Most Wickets"
-          columns={mostWicketsColumns}
-          data={mostWickets}
-        />
-        <StatsSection
-          title="Most Boundaries"
-          columns={mostBoundariesColumns}
-          data={mostBoundaries}
-        />
-        <StatsSection
-          title="Most Fours"
-          columns={mostFoursColumns}
-          data={mostFours}
-        />
-        <StatsSection
-          title="Most Sixes"
-          columns={mostSixesColumns}
-          data={mostSixes}
-        />
-        <StatsSection
-          title="Highest Scores"
-          columns={highestScoresColumns}
-          data={highestScores}
-        />
-        <StatsSection
-          title="Most Fifties (50s)"
-          columns={mostFiftiesColumns}
-          data={mostFifties}
-        />
-        <StatsSection
-          title="Most 25s"
-          columns={mostTwentyFivesColumns}
-          data={mostTwentyFives}
-        />
-        <StatsSection
-          title="Best Economy"
-          columns={bestEconomyColumns}
-          data={bestEconomy}
-        />
-        <StatsSection
-          title="Most Catches"
-          columns={mostCatchesColumns}
-          data={mostCatches}
-        />
-        <StatsSection
-          title="Most 1s"
-          columns={mostOnesColumns}
-          data={mostOnes}
-        />
+        {isLoading ? (
+          <div>
+            <Skeleton width={"100%"} height={428} className="mt-6" />
+            <Skeleton width={"100%"} height={428} className="mt-6" />
+            <Skeleton width={"100%"} height={428} className="mt-6" />
+          </div>
+        ) : (
+          <>
+            <StatsSection
+              title="Most Runs"
+              columns={mostRunsColumns}
+              data={mostRuns}
+            />
+            <StatsSection
+              title="Most Wickets"
+              columns={mostWicketsColumns}
+              data={mostWickets}
+            />
+            <StatsSection
+              title="Most Boundaries"
+              columns={mostBoundariesColumns}
+              data={mostBoundaries}
+            />
+            <StatsSection
+              title="Most Fours"
+              columns={mostFoursColumns}
+              data={mostFours}
+            />
+            <StatsSection
+              title="Most Sixes"
+              columns={mostSixesColumns}
+              data={mostSixes}
+            />
+            <StatsSection
+              title="Highest Scores"
+              columns={highestScoresColumns}
+              data={highestScores}
+            />
+            <StatsSection
+              title="Most Fifties (50s)"
+              columns={mostFiftiesColumns}
+              data={mostFifties}
+            />
+            <StatsSection
+              title="Most 25s"
+              columns={mostTwentyFivesColumns}
+              data={mostTwentyFives}
+            />
+            <StatsSection
+              title="Best Economy"
+              columns={bestEconomyColumns}
+              data={bestEconomy}
+            />
+            <StatsSection
+              title="Most Catches"
+              columns={mostCatchesColumns}
+              data={mostCatches}
+            />
+            <StatsSection
+              title="Most 1s"
+              columns={mostOnesColumns}
+              data={mostOnes}
+            />
+          </>
+        )}
       </div>
     </Layout>
   );
