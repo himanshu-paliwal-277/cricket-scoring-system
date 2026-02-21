@@ -142,13 +142,33 @@ export const useMatch = (id: string) => {
     },
   });
 
+  const updateMatchMutation = useMutation({
+    mutationFn: (data: { overs?: number }) => matchService.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["match", id] });
+      queryClient.invalidateQueries({ queryKey: ["matches"] });
+      notifications.show({
+        message: "Match updated successfully",
+      });
+    },
+    onError: (err: any) => {
+      const errorMessage = err?.response?.data?.message || err?.message || "Failed to update match";
+      notifications.show({
+        message: errorMessage,
+        color: "red",
+      });
+    },
+  });
+
   return {
     match,
     isLoading,
     error,
     endMatch: endMatchMutation.mutate,
     startInning: startInningMutation.mutate,
+    updateMatch: updateMatchMutation.mutate,
     isEndingMatch: endMatchMutation.isPending,
     isStartingInning: startInningMutation.isPending,
+    isUpdatingMatch: updateMatchMutation.isPending,
   };
 };

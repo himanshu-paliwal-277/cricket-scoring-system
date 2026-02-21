@@ -20,6 +20,8 @@ import { MatchHeader } from "@/components/scoreboard/MatchHeader";
 import { formatISODate } from "@/utils/dateFormatter";
 import { notifications } from "@mantine/notifications";
 import { Skeleton } from "@mantine/core";
+import { Input } from "@/components/ui/Input";
+import { useTeams } from "@/hooks/useTeams";
 
 export default function ScoringPage() {
   const params = useParams();
@@ -34,9 +36,10 @@ export default function ScoringPage() {
     changeBatsman,
     isAddingBall,
   } = useScoring(matchId);
-  const { match, endMatch, startInning, isEndingMatch, isStartingInning } =
+  const { match, endMatch, startInning, updateMatch, isEndingMatch, isStartingInning, isUpdatingMatch } =
     useMatch(matchId);
-  const { players } = usePlayers();
+  const { players, createPlayer, isCreating: isCreatingPlayer } = usePlayers();
+  const { updateTeam, isUpdating: isUpdatingTeam } = useTeams();
   const { user, isLoading: isLoadingUser } = useAuth();
   const [ballType, setBallType] = useState<
     "normal" | "wide" | "noBall" | "wicket"
@@ -46,6 +49,23 @@ export default function ScoringPage() {
   const [showEndMatchModal, setShowEndMatchModal] = useState(false);
   const [showChangeInningModal, setShowChangeInningModal] = useState(false);
   const [showWicketModal, setShowWicketModal] = useState(false);
+  const [showEditMatchModal, setShowEditMatchModal] = useState(false);
+
+  // Edit match state
+  const [editOvers, setEditOvers] = useState<number>(0);
+  const [playersToAddTeamA, setPlayersToAddTeamA] = useState<string[]>([]);
+  const [playersToAddTeamB, setPlayersToAddTeamB] = useState<string[]>([]);
+  const [showCreatePlayerForm, setShowCreatePlayerForm] = useState(false);
+  const [newPlayerData, setNewPlayerData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    battingStyle: "right-hand",
+    bowlingStyle: "right-arm-fast",
+    addToBoth: false,
+    addToTeamA: false,
+    addToTeamB: false,
+  });
   const [newBowlerId, setNewBowlerId] = useState("");
   const [newBatsmanId, setNewBatsmanId] = useState("");
   const [inningStriker, setInningStriker] = useState("");
@@ -191,6 +211,100 @@ export default function ScoringPage() {
       setPreviousBall(inning.currentBall);
     }
   }, [inning?.currentBall, match?.status]);
+
+  const handleOpenEditMatch = () => {
+    setEditOvers(match?.overs || 0);
+    setPlayersToAddTeamA([]);
+    setPlayersToAddTeamB([]);
+    setShowCreatePlayerForm(false);
+    setNewPlayerData({
+      name: "",
+      email: "",
+      password: "",
+      battingStyle: "right-hand",
+      bowlingStyle: "right-arm-fast",
+      addToBoth: false,
+      addToTeamA: false,
+      addToTeamB: false,
+    });
+    setShowEditMatchModal(true);
+  };
+
+  const handleSaveEditMatch = async () => {
+    const promises: Promise<any>[] = [];
+
+    if (editOvers !== match?.overs) {
+      promises.push(
+        new Promise<void>((resolve, reject) =>
+          updateMatch({ overs: editOvers }, { onSuccess: () => resolve(), onError: reject })
+        )
+      );
+    }
+
+    if (playersToAddTeamA.length > 0) {
+      const currentTeamAPlayers = match?.teamA?.players || [];
+      const updatedTeamAPlayers = [...currentTeamAPlayers, ...playersToAddTeamA];
+      promises.push(
+        new Promise<void>((resolve, reject) =>
+          updateTeam(
+            { id: match?.teamA?._id, data: { players: updatedTeamAPlayers } },
+            { onSuccess: () => resolve(), onError: reject }
+          )
+        )
+      );
+    }
+
+    if (playersToAddTeamB.length > 0) {
+      const currentTeamBPlayers = match?.teamB?.players || [];
+      const updatedTeamBPlayers = [...currentTeamBPlayers, ...playersToAddTeamB];
+      promises.push(
+        new Promise<void>((resolve, reject) =>
+          updateTeam(
+            { id: match?.teamB?._id, data: { players: updatedTeamBPlayers } },
+            { onSuccess: () => resolve(), onError: reject }
+          )
+        )
+      );
+    }
+
+    try {
+      await Promise.all(promises);
+      setShowEditMatchModal(false);
+    } catch {
+      // errors shown via notifications from hooks
+    }
+  };
+
+  const handleCreateNewPlayer = () => {
+    const { name, email, password, battingStyle, bowlingStyle, addToBoth, addToTeamA, addToTeamB } = newPlayerData;
+    createPlayer(
+      { name, email, password, battingStyle, bowlingStyle },
+      {
+        onSuccess: (createdPlayer: any) => {
+          const newId = createdPlayer?._id || createdPlayer?.player?._id;
+          if (!newId) return;
+          if (addToBoth) {
+            setPlayersToAddTeamA((prev) => [...prev, newId]);
+            setPlayersToAddTeamB((prev) => [...prev, newId]);
+          } else {
+            if (addToTeamA) setPlayersToAddTeamA((prev) => [...prev, newId]);
+            if (addToTeamB) setPlayersToAddTeamB((prev) => [...prev, newId]);
+          }
+          setShowCreatePlayerForm(false);
+          setNewPlayerData({
+            name: "",
+            email: "",
+            password: "",
+            battingStyle: "right-hand",
+            bowlingStyle: "right-arm-fast",
+            addToBoth: false,
+            addToTeamA: false,
+            addToTeamB: false,
+          });
+        },
+      }
+    );
+  };
 
   const handleEndMatch = () => {
     setShowEndMatchModal(true);
@@ -1181,6 +1295,16 @@ export default function ScoringPage() {
                   <p className="text-sm text-gray-500">
                     Start the second inning manually
                   </p>
+                  <Button
+                    variant="secondary"
+                    onClick={handleOpenEditMatch}
+                    className="w-full"
+                  >
+                    Edit Match
+                  </Button>
+                  <p className="text-sm text-gray-500">
+                    Change overs or add players to teams
+                  </p>
                 </>
               )}
 
@@ -1509,6 +1633,254 @@ export default function ScoringPage() {
                 currentStrikerId={inning?.striker?._id}
                 currentNonStrikerId={inning?.nonStriker?._id}
               />
+
+              <Modal
+                isOpen={showEditMatchModal && !!user && user?.role !== "player"}
+                onClose={() => setShowEditMatchModal(false)}
+                title="Edit Match"
+              >
+                <div className="space-y-6">
+                  {/* Overs */}
+                  <div>
+                    <h4 className="font-semibold mb-2">Change Overs</h4>
+                    <Input
+                      label="Total Overs"
+                      type="number"
+                      value={editOvers}
+                      onChange={(e) => setEditOvers(Number(e.target.value))}
+                      min={1}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Current: {match?.overs} overs</p>
+                  </div>
+
+                  {/* Add players to Team A */}
+                  <div>
+                    <h4 className="font-semibold mb-2">Add Players to {match?.teamA?.name}</h4>
+                    <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-200 rounded p-2">
+                      {players
+                        .filter((p) => {
+                          const teamAIds: string[] = (match?.teamA?.players || []).map((id: any) =>
+                            typeof id === "string" ? id : id._id
+                          );
+                          const teamBIds: string[] = (match?.teamB?.players || []).map((id: any) =>
+                            typeof id === "string" ? id : id._id
+                          );
+                          return !teamAIds.includes(p._id) && !teamBIds.includes(p._id) && !playersToAddTeamA.includes(p._id);
+                        })
+                        .map((p) => (
+                          <label key={p._id} className="flex items-center gap-2 cursor-pointer text-sm">
+                            <input
+                              type="checkbox"
+                              checked={playersToAddTeamA.includes(p._id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setPlayersToAddTeamA((prev) => [...prev, p._id]);
+                                } else {
+                                  setPlayersToAddTeamA((prev) => prev.filter((id) => id !== p._id));
+                                }
+                              }}
+                            />
+                            {p.userId.name}
+                          </label>
+                        ))}
+                      {players.filter((p) => {
+                        const teamAIds: string[] = (match?.teamA?.players || []).map((id: any) =>
+                          typeof id === "string" ? id : id._id
+                        );
+                        const teamBIds: string[] = (match?.teamB?.players || []).map((id: any) =>
+                          typeof id === "string" ? id : id._id
+                        );
+                        return !teamAIds.includes(p._id) && !teamBIds.includes(p._id);
+                      }).length === 0 && (
+                        <p className="text-xs text-gray-500">No available players</p>
+                      )}
+                    </div>
+                    {playersToAddTeamA.length > 0 && (
+                      <p className="text-xs text-green-600 mt-1">
+                        {playersToAddTeamA.length} player(s) selected to add
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Add players to Team B */}
+                  <div>
+                    <h4 className="font-semibold mb-2">Add Players to {match?.teamB?.name}</h4>
+                    <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-200 rounded p-2">
+                      {players
+                        .filter((p) => {
+                          const teamAIds: string[] = (match?.teamA?.players || []).map((id: any) =>
+                            typeof id === "string" ? id : id._id
+                          );
+                          const teamBIds: string[] = (match?.teamB?.players || []).map((id: any) =>
+                            typeof id === "string" ? id : id._id
+                          );
+                          return !teamAIds.includes(p._id) && !teamBIds.includes(p._id) && !playersToAddTeamB.includes(p._id);
+                        })
+                        .map((p) => (
+                          <label key={p._id} className="flex items-center gap-2 cursor-pointer text-sm">
+                            <input
+                              type="checkbox"
+                              checked={playersToAddTeamB.includes(p._id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setPlayersToAddTeamB((prev) => [...prev, p._id]);
+                                } else {
+                                  setPlayersToAddTeamB((prev) => prev.filter((id) => id !== p._id));
+                                }
+                              }}
+                            />
+                            {p.userId.name}
+                          </label>
+                        ))}
+                      {players.filter((p) => {
+                        const teamAIds: string[] = (match?.teamA?.players || []).map((id: any) =>
+                          typeof id === "string" ? id : id._id
+                        );
+                        const teamBIds: string[] = (match?.teamB?.players || []).map((id: any) =>
+                          typeof id === "string" ? id : id._id
+                        );
+                        return !teamAIds.includes(p._id) && !teamBIds.includes(p._id);
+                      }).length === 0 && (
+                        <p className="text-xs text-gray-500">No available players</p>
+                      )}
+                    </div>
+                    {playersToAddTeamB.length > 0 && (
+                      <p className="text-xs text-green-600 mt-1">
+                        {playersToAddTeamB.length} player(s) selected to add
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Create New Player */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-semibold">Create New Player</h4>
+                      <button
+                        type="button"
+                        className="text-sm text-blue-600 underline"
+                        onClick={() => setShowCreatePlayerForm((v) => !v)}
+                      >
+                        {showCreatePlayerForm ? "Cancel" : "+ New Player"}
+                      </button>
+                    </div>
+                    {showCreatePlayerForm && (
+                      <div className="border border-gray-200 rounded p-3 space-y-3">
+                        <Input
+                          label="Name"
+                          value={newPlayerData.name}
+                          onChange={(e) => setNewPlayerData((d) => ({ ...d, name: e.target.value }))}
+                        />
+                        <Input
+                          label="Email"
+                          type="email"
+                          value={newPlayerData.email}
+                          onChange={(e) => setNewPlayerData((d) => ({ ...d, email: e.target.value }))}
+                        />
+                        <Input
+                          label="Password"
+                          type="password"
+                          value={newPlayerData.password}
+                          onChange={(e) => setNewPlayerData((d) => ({ ...d, password: e.target.value }))}
+                        />
+                        <Select
+                          label="Batting Style"
+                          value={newPlayerData.battingStyle}
+                          onChange={(e) => setNewPlayerData((d) => ({ ...d, battingStyle: e.target.value }))}
+                          options={[
+                            { value: "right-hand", label: "Right Hand" },
+                            { value: "left-hand", label: "Left Hand" },
+                          ]}
+                        />
+                        <Select
+                          label="Bowling Style"
+                          value={newPlayerData.bowlingStyle}
+                          onChange={(e) => setNewPlayerData((d) => ({ ...d, bowlingStyle: e.target.value }))}
+                          options={[
+                            { value: "right-arm-fast", label: "Right Arm Fast" },
+                            { value: "left-arm-fast", label: "Left Arm Fast" },
+                            { value: "right-arm-spin", label: "Right Arm Spin" },
+                            { value: "left-arm-spin", label: "Left Arm Spin" },
+                          ]}
+                        />
+                        <div className="space-y-1 text-sm">
+                          <p className="font-medium text-gray-700">Add to:</p>
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={newPlayerData.addToBoth}
+                              onChange={(e) =>
+                                setNewPlayerData((d) => ({
+                                  ...d,
+                                  addToBoth: e.target.checked,
+                                  addToTeamA: false,
+                                  addToTeamB: false,
+                                }))
+                              }
+                            />
+                            Both Teams (Common Player)
+                          </label>
+                          {!newPlayerData.addToBoth && (
+                            <>
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={newPlayerData.addToTeamA}
+                                  onChange={(e) =>
+                                    setNewPlayerData((d) => ({ ...d, addToTeamA: e.target.checked }))
+                                  }
+                                />
+                                {match?.teamA?.name}
+                              </label>
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={newPlayerData.addToTeamB}
+                                  onChange={(e) =>
+                                    setNewPlayerData((d) => ({ ...d, addToTeamB: e.target.checked }))
+                                  }
+                                />
+                                {match?.teamB?.name}
+                              </label>
+                            </>
+                          )}
+                        </div>
+                        <Button
+                          onClick={handleCreateNewPlayer}
+                          className="w-full"
+                          isLoading={isCreatingPlayer}
+                          disabled={
+                            !newPlayerData.name ||
+                            !newPlayerData.email ||
+                            !newPlayerData.password ||
+                            (!newPlayerData.addToBoth && !newPlayerData.addToTeamA && !newPlayerData.addToTeamB)
+                          }
+                        >
+                          Create Player
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <Button
+                      variant="primary"
+                      onClick={handleSaveEditMatch}
+                      className="flex-1"
+                      isLoading={isUpdatingMatch || isUpdatingTeam}
+                      disabled={isUpdatingMatch || isUpdatingTeam}
+                    >
+                      Save Changes
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={() => setShowEditMatchModal(false)}
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </Modal>
             </>
           );
         })()}

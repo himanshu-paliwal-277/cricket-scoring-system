@@ -101,4 +101,9 @@ export const matchService = {
     const response = await axiosInstance.post(`/matches/${id}/end`);
     return response.data.match;
   },
+
+  update: async (id: string, data: { overs?: number }): Promise<Match> => {
+    const response = await axiosInstance.patch(`/matches/${id}`, data);
+    return response.data.match;
+  },
 };

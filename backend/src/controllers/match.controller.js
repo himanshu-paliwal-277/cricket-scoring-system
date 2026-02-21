@@ -519,6 +519,39 @@ export const getCurrentInning = async (req, res) => {
   }
 };
 
+export const updateMatch = async (req, res) => {
+  try {
+    const { overs } = req.body;
+    const match = await Match.findById(req.params.id);
+
+    if (!match) {
+      return res.status(404).json({ message: "Match not found" });
+    }
+
+    if (match.status !== "live") {
+      return res.status(400).json({ message: "Match is not live" });
+    }
+
+    if (match.currentInning !== 1) {
+      return res.status(400).json({ message: "Cannot edit match during second inning" });
+    }
+
+    if (overs !== undefined) {
+      if (overs < 1) {
+        return res.status(400).json({ message: "Overs must be at least 1" });
+      }
+      match.overs = overs;
+    }
+
+    await match.save();
+
+    const populatedMatch = await Match.findById(match._id).populate("teamA").populate("teamB");
+    res.json({ match: populatedMatch });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const endMatch = async (req, res) => {
   try {
     const match = await Match.findById(req.params.id).populate("teamA teamB");

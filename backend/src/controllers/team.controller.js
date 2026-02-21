@@ -130,45 +130,7 @@ export const updateTeam = async (req, res) => {
       return res.status(404).json({ message: "Team not found" });
     }
 
-    // Check if team is in any live match
-    const liveMatch = await Match.findOne({
-      $or: [{ teamA: team._id }, { teamB: team._id }],
-      status: "live",
-    });
-
-    if (liveMatch) {
-      return res.status(400).json({
-        message: "Team is in a live match and cannot be edited",
-      });
-    }
-
-    if (!liveMatch && team.isLocked) {
-      team.isLocked = false;
-      await team.save();
-    }
-
-    if (team.isLocked) {
-      return res.status(400).json({ message: "Team is locked, cannot edit" });
-    }
-
     const { players, captain } = req.body;
-
-    // Get the other team to check for player conflicts
-    const otherTeamType = team.teamType === "team1" ? "team2" : "team1";
-    const otherTeam = await Team.findOne({ teamType: otherTeamType });
-
-    if (players) {
-      // Check if any selected players are already in the other team
-      const conflictingPlayers = players.filter((playerId) =>
-        otherTeam.players.some((p) => p.toString() === playerId.toString())
-      );
-
-      if (conflictingPlayers.length > 0) {
-        return res.status(400).json({
-          message: "Some selected players are already in the other team",
-        });
-      }
-    }
 
     if (captain && players && !players.includes(captain)) {
       return res.status(400).json({ message: "Captain must be in the team" });

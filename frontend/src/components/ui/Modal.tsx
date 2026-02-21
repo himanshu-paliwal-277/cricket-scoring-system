@@ -19,7 +19,7 @@ export const Modal: React.FC<ModalProps> = ({
       className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50
       ${isOpen ? "" : "hidden"}`}
     >
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+      <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-4 border-b border-gray-300">
           <h2 className="text-lg sm:text-xl font-semibold">{title}</h2>
           <button
