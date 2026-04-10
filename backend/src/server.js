@@ -11,6 +11,10 @@ const ALLOWED_ORIGINS = [
   "http://localhost:3000",
   "http://localhost:3001",
   "https://cricket-scoring-system.netlify.app",
+  // Extra origins from env (comma-separated), used for server/production deploys
+  ...(process.env.EXTRA_ALLOWED_ORIGINS
+    ? process.env.EXTRA_ALLOWED_ORIGINS.split(",")
+    : []),
 ];
 
 // CORS configuration
