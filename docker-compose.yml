@@ -1,9 +1,7 @@
 services:
   # ── Backend ──────────────────────────────────────────────────────────────────
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: himanshu277/cricket-backend:latest
     container_name: cricket-backend
     restart: unless-stopped
     ports:
@@ -19,13 +17,7 @@ services:
 
   # ── Frontend ─────────────────────────────────────────────────────────────────
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        # For local: browser hits localhost:4000
-        # For server: change to http://YOUR_SERVER_IP:4000/api/v1
-        - NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL:-http://localhost:4000/api/v1}
+    image: himanshu277/cricket-frontend:latest
     container_name: cricket-frontend
     restart: unless-stopped
     ports:
