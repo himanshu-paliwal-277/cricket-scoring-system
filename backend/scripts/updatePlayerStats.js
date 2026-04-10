@@ -39,10 +39,10 @@ async function updatePlayerStats() {
 
     // Update each player
     for (const [playerId, stats] of Object.entries(playerStats)) {
-      const result = await db.collection("players").updateOne(
-        { _id: new mongoose.Types.ObjectId(playerId) },
-        { $set: { totalOnes: stats.ones, totalCatches: stats.catches } }
-      );
+      // const result = await db.collection("players").updateOne(
+      //   { _id: new mongoose.Types.ObjectId(playerId) },
+      //   { $set: { totalOnes: stats.ones, totalCatches: stats.catches } }
+      // );
       console.log(`Updated player ${playerId}: ones=${stats.ones}, catches=${stats.catches}`);
     }
 
