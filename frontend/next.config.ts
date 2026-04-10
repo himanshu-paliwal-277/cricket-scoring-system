@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Standalone output: bundles only required files — drastically reduces Docker image size
+  output: "standalone",
   // Generate unique build ID for each deployment to bust caches
   generateBuildId: async () => {
     return `build-${Date.now()}`;
