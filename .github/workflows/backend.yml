@@ -36,6 +36,6 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd ~/cricket-scoring-system
+            cd ~/devops/projects/cricket-scoring-system
             docker compose pull backend
             docker compose up -d backend
