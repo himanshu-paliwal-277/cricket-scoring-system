@@ -1,0 +1,18 @@
+# Environment variables — never commit these
+.env
+.env.local
+.env.production
+backend/.env
+frontend/.env
+
+# Dependencies
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+
+# Next.js build output
+frontend/.next/
+
+# OS
+.DS_Store
+Thumbs.db
