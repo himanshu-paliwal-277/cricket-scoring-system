@@ -39,3 +39,4 @@ jobs:
             cd ~/devops/projects/cricket-scoring-system
             docker compose pull backend
             docker compose up -d backend
+            docker image prune -f
