@@ -18,7 +18,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 flex items-center justify-center">
       <div className="flex flex-col items-center gap-6">
-        {/* Logo with pulse animation */}
+        {/* Logo with pulse animation */} 
         <div className="loading-logo">
           <div className="relative w-28 h-28 rounded-2xl overflow-hidden shadow-xl shadow-emerald-200/50">
             <Image
