@@ -11,9 +11,6 @@ services:
       - MONGODB_URI=${MONGODB_URI}
       - PORT=4000
       - JWT_SECRET=${JWT_SECRET}
-      # On the server set this to: http://YOUR_SERVER_IP:3000
-      # Leave empty for local (localhost:3000 is already allowed in code)
-      - EXTRA_ALLOWED_ORIGINS=${EXTRA_ALLOWED_ORIGINS:-}
 
   # ── Frontend ─────────────────────────────────────────────────────────────────
   frontend:

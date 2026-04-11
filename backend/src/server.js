@@ -7,33 +7,7 @@ import apiRouter from "./routes/apiRouter.routes.js";
 
 const app = express();
 
-const ALLOWED_ORIGINS = [
-  "http://localhost:3000",
-  "http://localhost:3001",
-  "https://cricket-scoring-system.netlify.app",
-  // Extra origins from env (comma-separated), used for server/production deploys
-  ...(process.env.EXTRA_ALLOWED_ORIGINS
-    ? process.env.EXTRA_ALLOWED_ORIGINS.split(",")
-    : []),
-];
-
-// CORS configuration
-const corsOptions = {
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or Postman)
-    if (!origin) return callback(null, true);
-
-    if (ALLOWED_ORIGINS.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true,
-  optionsSuccessStatus: 200,
-};
-
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(express.json());
 
 app.use("/api", apiRouter);
